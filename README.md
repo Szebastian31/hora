@@ -1,6 +1,6 @@
 # Hora
 
-<p align="center"><img src="icons/icon-1024.png" width="160" alt="Hora app icon"></p>
+<p align="center"><img src="icons/icon-rounded-1024.png" width="160" alt="Hora app icon"></p>
 
 <p align="center"><b>A clock, alarm, timer and stopwatch that tells you how right it is.</b></p>
 
