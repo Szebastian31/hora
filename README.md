@@ -8,6 +8,14 @@
 
 No app store, no account, no ads. Get the **Android app**, or use Hora in any phone's browser.
 
+<p align="center">
+  <img src="screenshots/clock.svg" width="24%" alt="Clock tab: live sky, big time, sunrise and sunset, world cities">
+  <img src="screenshots/alarms.svg" width="24%" alt="Alarms tab: each alarm with its own wake-up scene">
+  <img src="screenshots/timer.svg" width="24%" alt="Timer tab: drag ring and live countdown pill">
+  <img src="screenshots/ringing.svg" width="24%" alt="Ringing alarm: slide up to stop, tap to snooze">
+</p>
+<p align="center"><sub>Clock · Alarms · Timer with the live pill · Wake-up screen</sub></p>
+
 ---
 
 ## Getting started
