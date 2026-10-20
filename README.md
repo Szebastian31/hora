@@ -17,7 +17,7 @@ No app store, no account, no ads. Get the **Android app**, or use Hora in any ph
 <p align="center"><sub>Clock · Alarms · Timer with the live pill · Wake-up screen</sub></p>
 
 ---
-You can support me and [Buy me a coffee](https://buycoffee.to/szebastian) ☕️
+<p align="center">You can support me and [Buy me a coffee](https://buycoffee.to/szebastian) ☕️ </p>
 ---
 
 ## Getting started
