@@ -18,6 +18,7 @@ No app store, no account, no ads. Get the **Android app**, or use Hora in any ph
 
 ---
 <p align="center">You can support me and [Buy me a coffee](https://buycoffee.to/szebastian) ☕️ </p>
+
 ---
 
 ## Getting started
