@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hora icons</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<style>
+:root{--ink:#1d2230;--muted:#6c6a66;--page:#efe8da;--display:ui-rounded,"SF Pro Rounded","SF Pro Display",-apple-system,system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;padding:48px 28px 80px}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(1000px 600px at 75% 10%,rgba(255,255,255,.7),transparent 60%),radial-gradient(800px 500px at 10% 95%,rgba(196,170,120,.25),transparent 60%);pointer-events:none;z-index:-1}
+main{max-width:980px;margin:0 auto}
+.top{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:48px;align-items:center;margin-bottom:44px}
+h1{font-family:var(--display);font-weight:800;font-size:54px;letter-spacing:-2px;line-height:1}
+.lede{font-size:17px;line-height:1.5;color:var(--muted);margin:14px 0 22px;max-width:470px}
+.hero{width:300px;height:300px;border-radius:68px;box-shadow:0 40px 80px rgba(20,25,70,.35),0 0 0 1px rgba(0,0,0,.05)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 20px;border-radius:16px;border:0;background:var(--ink);color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:var(--display)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:rgba(255,255,255,.7);color:var(--ink);border:1px solid rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.f{background:rgba(255,255,255,.65);border:1px solid rgba(0,0,0,.06);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.f .pv{height:120px;display:flex;align-items:center;justify-content:center}
+.f img{border-radius:22%;box-shadow:0 14px 30px rgba(20,25,70,.25)}
+.f.mk img{border-radius:50%}
+.f b{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:-.2px}
+.f code{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:12px;color:#b4532a}
+.f p{font-size:12.5px;color:var(--muted);line-height:1.45;flex:1}
+.f .btn{justify-content:center;padding:10px 14px;font-size:13.5px;border-radius:12px}
+h2{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.4px;margin:40px 0 12px}
+.note{font-size:14px;line-height:1.6;color:var(--muted);max-width:720px}
+.note b{color:var(--ink)}
+.note code{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:12.5px;background:rgba(255,255,255,.7);padding:1px 6px;border-radius:6px;color:var(--ink)}
+.fam{display:flex;gap:18px;align-items:center;margin-top:14px}
+.fam div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.fam img{width:64px;height:64px;border-radius:15px;box-shadow:0 8px 20px rgba(20,25,70,.22)}
+@media (max-width:720px){.top{grid-template-columns:1fr}.hero{width:220px;height:220px;border-radius:50px}}
+@media print{.btn{display:none}}
+</style>
+</head>
+<body>
+<main>
+  <section class="top">
+    <div>
+      <h1>Hora icon</h1>
+      <p class="lede">The same dawn sky as Caelum and Consensus Weather, now with a frosted glass dial, bold rounded hands and a glowing blue timer ring.</p>
+      <button class="btn" id="all">Download all PNGs</button>
+    </div>
+    <img class="hero" id="hero" alt="Hora app icon">
+  </section>
+
+  <div class="grid" id="grid"></div>
+
+  <h2>Where the files go</h2>
+  <p class="note">Put every PNG into the <code>icons</code> folder of the Hora project, next to <code>icon.svg</code>, and keep the file names exactly as they download. <b>icon-1024.png</b> is the one to use anywhere you just want a nice picture of the icon, like the GitHub README or a social preview.</p>
+  <p class="note" style="margin-top:18px">At small sizes, like in a dock or a browser tab:</p>
+  <div class="fam" id="fam"></div>
+</main>
+<script src="icons/hora-icon.js"></script>
+<script>
+const FILES = [
+  { name: "icon-1024.png", size: 1024, round: false, title: "Large icon", text: "Full resolution, for the README, previews and sharing." },
+  { name: "icon-512.png", size: 512, round: false, title: "App icon 512", text: "Used by Android when Hora is installed." },
+  { name: "icon-192.png", size: 192, round: false, title: "App icon 192", text: "Home screen icon and the long-press shortcuts." },
+  { name: "icon-maskable-512.png", size: 512, mask: true, title: "Adaptive icon", text: "Android crops this to a circle or squircle, so the dial sits a little smaller.", mk: true },
+  { name: "apple-touch-icon.png", size: 180, round: false, title: "iPhone icon", text: "Used when someone adds Hora to an iPhone home screen." },
+  { name: "icon-rounded-1024.png", size: 1024, round: true, title: "Rounded preview", text: "Pre-rounded corners, for a transparent PNG to drop into designs." }
+];
+const svgUrl = o => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(horaIcon(o));
+function render(o, size) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas"); c.width = c.height = size;
+      const x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(img, 0, 0, size, size);
+      c.toBlob(b => b ? res(b) : rej(new Error("no blob")), "image/png");
+    };
+    img.onerror = rej; img.src = svgUrl(o);
+  });
+}
+async function download(f) {
+  const b = await render(f, f.size), a = document.createElement("a");
+  a.href = URL.createObjectURL(b); a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+document.getElementById("hero").src = svgUrl({ round: true });
+document.getElementById("grid").innerHTML = FILES.map((f, i) => `<div class="f ${f.mk ? "mk" : ""}"><div class="pv"><img src="${svgUrl(f)}" width="${f.size >= 512 ? 108 : f.size >= 180 ? 96 : 84}" height="${f.size >= 512 ? 108 : f.size >= 180 ? 96 : 84}" alt=""></div>
+  <b>${f.title}</b><code>${f.name} · ${f.size}×${f.size}</code><p>${f.text}</p><button class="btn ghost" data-i="${i}">Download PNG</button></div>`).join("");
+document.querySelectorAll("[data-i]").forEach(b => b.onclick = async () => { b.textContent = "Saving…"; try { await download(FILES[b.dataset.i]); b.textContent = "Downloaded ✓"; } catch (e) { b.textContent = "Try again"; } });
+document.getElementById("all").onclick = async e => {
+  const b = e.currentTarget; b.textContent = "Saving…";
+  for (const f of FILES) { try { await download(f); } catch (_) {} await new Promise(r => setTimeout(r, 450)); }
+  b.textContent = "All downloaded ✓";
+};
+document.getElementById("fam").innerHTML = [64, 40, 24].map(s => `<div><img src="${svgUrl({ round: true })}" style="width:${s}px;height:${s}px;border-radius:${s * .23}px">${s} px</div>`).join("");
+</script>
+</body>
+</html>
