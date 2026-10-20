@@ -40,7 +40,52 @@ let S;
 try { S = Object.assign(JSON.parse(JSON.stringify(DEF)), JSON.parse(localStorage.getItem("hora") || "{}")); }
 catch (e) { S = JSON.parse(JSON.stringify(DEF)); }
 if (!S.fontChosen || S.font === "yourbold" || S.font === "matrole") S.font = "crust";
-const save = () => { try { localStorage.setItem("hora", JSON.stringify(S)); } catch (e) {} };
+const save = () => { try { localStorage.setItem("hora", JSON.stringify(S)); } catch (e) {} schedNative(); };
+
+/* ---------- Android app bridge (window.HoraNative exists only inside the APK) ---------- */
+const NAT = window.HoraNative || null, NATIVE = !!NAT;
+if (NATIVE) {
+  const wn = document.getElementById("webNote"); if (wn) wn.innerHTML = wn.dataset.native;
+  const dc = document.querySelector("#defCard h3"); if (dc) dc.textContent = "Alarms on this phone";
+  document.documentElement.classList.add("native");
+  try { Object.defineProperty(navigator, "vibrate", { configurable: true, value: p => { NAT.vibrate(Array.isArray(p) ? p.join(",") : String(p)); return true; } }); } catch (e) {}
+}
+let schT = null;
+/* hand Android every upcoming ring, in device time, so it can wake Hora even when it's closed */
+function schedNative() {
+  if (!NATIVE) return;
+  clearTimeout(schT);
+  schT = setTimeout(() => {
+    try {
+      const off = S.correct ? OFF : 0, n = now(), ev = [];
+      // the next few rings of each alarm, so repeats keep working even if Hora isn't opened for days
+      S.alarms.forEach(a => { let at = a.on ? NEXT[a.id] : null; for (let i = 0; at && i < 4; i++) { ev.push({ k: "a" + a.id + "@" + at, at: at - off, label: a.label || "Alarm" }); if (!a.days.some(Boolean)) break; at = nextAt(a, at + 1000); } });
+      SNOOZES.forEach(s => ev.push({ k: "s" + s.a.id + "@" + s.at, at: s.at - off, label: (s.a.label || "Alarm") + " (snoozed)" }));
+      S.timers.forEach(t => { if (t.run && !t.done) ev.push({ k: "t" + t.id + "@" + t.endAt, at: t.endAt - off, label: t.label + " timer" }); });
+      NAT.schedule(JSON.stringify(ev.filter(e => e.at > n - off - 1000).sort((x, y) => x.at - y.at).slice(0, 40)));
+    } catch (e) {}
+  }, 60);
+}
+window.horaInsets = (top, bottom) => { const r = document.documentElement.style; r.setProperty("--sat", top + "px"); r.setProperty("--sab", bottom + "px"); };
+/* Android Back: close a sheet, then go to the Clock tab, then leave the app */
+window.horaBack = () => {
+  if (typeof RING !== "undefined" && RING) return true;
+  if ($("#sheet").classList.contains("show")) { closeSheet(); return true; }
+  if (VIEW !== "vClock") { go("vClock"); return true; }
+  return false;
+};
+/* "Hey Google, set an alarm for 7" or "set a timer for 10 minutes" */
+window.horaIntent = o => {
+  try {
+    if (o.type === "alarm" && o.h != null) {
+      const a = { id: Date.now(), h: o.h, m: o.m || 0, label: o.label || "", days: o.days || [0,0,0,0,0,0,0], on: true, sound: "glass", gentle: true, snooze: 9, scene: "sunrise" };
+      S.alarms.push(a); save(); recalcAlarms(); go("vAlarm"); renderAll(); toast("Alarm set for " + pad(a.h) + ":" + pad(a.m) + " · rings in " + dur(NEXT[a.id] - now()));
+    } else if (o.type === "timer" && o.seconds > 0) {
+      S.setMs = o.seconds * 1000; S.setLabel = o.label || "Timer"; S.focus = null; go("vTimer"); startTimer();
+    } else if (o.type === "alarms") go("vAlarm");
+    else if (o.type === "timers") go("vTimer");
+  } catch (e) {}
+};
 
 /* ---------- time & honesty ---------- */
 let OFF = 0, UNC = null, SYNC = "idle", SYNCED_AT = 0;
@@ -91,6 +136,7 @@ const localKey = ms => { const d = new Date(ms); return d.getFullYear() + pad(d.
    intersecting several replies narrows it. */
 async function sync() {
   SYNC = "idle"; paintBadge();
+  if (NATIVE) { NAT.checkClock(); return; }   // Android does the same check and answers via horaClock
   let lo = -Infinity, hi = Infinity, n = 0;
   const base = location.href.split("#")[0].split("?")[0];
   for (let i = 0; i < 7; i++) {
@@ -108,6 +154,10 @@ async function sync() {
   else { OFF = 0; UNC = null; SYNC = "fail"; }
   SYNCED_AT = Date.now();
   paintBadge(); recalcAlarms();
+}
+window.horaClock = (n, lo, hi) => {
+  if (n >= 2 && lo <= hi) { OFF = (lo + hi) / 2; UNC = (hi - lo) / 2; SYNC = "ok"; } else { OFF = 0; UNC = null; SYNC = "fail"; }
+  SYNCED_AT = Date.now(); paintBadge(); recalcAlarms();
 }
 function paintBadge() {
   const b = $("#sync"), t = $("#syncTxt"); b.className = "badge";
@@ -187,6 +237,7 @@ function paintSky() {
   } else { top = sk.top; bot = sk.bot; stars = sk.stars; glow = sk.glow || 0; }
   scr.style.setProperty("--sky-top", top); scr.style.setProperty("--sky-bot", bot);
   scr.classList.toggle("light", sk.cls === "light"); scr.classList.toggle("red", sk.cls === "red");
+  if (NATIVE) try { NAT.statusBar(sk.cls === "light"); } catch (e) {}
   $("#stars").style.opacity = stars; $("#glow").style.opacity = glow;
   document.querySelector('meta[name="theme-color"]').content = top;
 }
@@ -567,6 +618,10 @@ $("#editCities").onclick = () => {
 
 /* ---------- alarms ---------- */
 const NEXT = {}; let SNOOZES = [];
+/* snoozes are saved so they survive Hora being closed */
+function saveSnoozes() { try { localStorage.setItem("hora-snz", JSON.stringify(SNOOZES.map(s => ({ at: s.at, id: s.a.id, auto: s.auto || 0 })))); } catch (e) {} schedNative(); }
+function addSnooze(s) { SNOOZES.push(s); saveSnoozes(); }
+try { SNOOZES = JSON.parse(localStorage.getItem("hora-snz") || "[]").map(s => ({ at: s.at, a: S.alarms.find(a => a.id === s.id), auto: s.auto })).filter(s => s.a); } catch (e) { SNOOZES = []; }
 const DAYN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function nextAt(a, from) {
   const b = new Date(from), any = a.days.some(Boolean);
@@ -577,7 +632,7 @@ function nextAt(a, from) {
   }
   return null;
 }
-function recalcAlarms() { const n = now(); S.alarms.forEach(a => NEXT[a.id] = a.on ? nextAt(a, n) : null); }
+function recalcAlarms() { const n = now(); S.alarms.forEach(a => NEXT[a.id] = a.on ? nextAt(a, n) : null); schedNative(); }
 function daysText(a) {
   const d = a.days, c = d.filter(Boolean).length;
   if (!c) return "Once";
@@ -738,6 +793,8 @@ function editAlarm(src) {
 /* ---------- ringing ---------- */
 let RING = null, ringIv = null, ringStart = 0, QUEUE = [], ringAuto = null;
 function soundLoop(o) {
+  // tell Android an alarm is ringing: keep the screen on, raise the volume, and report whether sound really started
+  if (NATIVE) setTimeout(() => { if (RING === o) try { NAT.ringing(true, o.sound === "custom" ? !!(AUD && !AUD.paused) : !!(AC && AC.state === "running")); } catch (e) {} }, 900);
   const own = o.sound === "custom", key = own ? "glass" : o.sound;
   const vol = () => o.gentle ? Math.min(1, .12 + (Date.now() - ringStart) / 30000) : .9;
   // Schedule each phrase on the audio clock so the loop is seamless instead of drifting with timers.
@@ -765,7 +822,7 @@ function soundLoop(o) {
 }
 function autoEnd(o) {
   if (o.kind === "alarm" && !o.preview && (o.a.after || "snooze") === "snooze" && (o.auto || 0) < 3) {
-    SNOOZES.push({ at: now() + o.a.snooze * 60000, a: o.a, auto: (o.auto || 0) + 1 });
+    addSnooze({ at: now() + o.a.snooze * 60000, a: o.a, auto: (o.auto || 0) + 1 });
     stopRing(); toast("No answer, snoozed for " + o.a.snooze + " min");
   } else stopRing();
 }
@@ -785,7 +842,7 @@ function ring(o) {
   soundLoop(o);
   $("#rA").onclick = e => {
     e.stopPropagation();
-    if (!o.preview) { SNOOZES.push({ at: now() + o.a.snooze * 60000, a: o.a }); toast("Snoozed until " + hmA(new Date(now() + o.a.snooze * 60000))); }
+    if (!o.preview) { addSnooze({ at: now() + o.a.snooze * 60000, a: o.a }); toast("Snoozed until " + hmA(new Date(now() + o.a.snooze * 60000))); }
     tick(.9); stopRing();
   };
   // slide up anywhere above the snooze button
@@ -808,6 +865,7 @@ function paintAuto() {
 }
 function stopRing() {
   clearInterval(ringIv); clearTimeout(ringAuto); stopFile(); RING = null;
+  if (NATIVE) try { NAT.ringing(false, true); } catch (e) {}
   const R0 = $("#ring"); R0.classList.remove("show", "drag"); R0.style.setProperty("--up", 0); R0.onpointerdown = R0.onpointermove = R0.onpointerup = R0.onpointercancel = null;
   ISL.open = false;
   if (navigator.vibrate) navigator.vibrate(0);
@@ -1112,6 +1170,7 @@ addEventListener("beforeinstallprompt", e => { e.preventDefault(); INSTALL = e; 
 addEventListener("appinstalled", () => { INSTALL = null; toast("Hora is on your home screen"); renderDefault(); });
 const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 function renderDefault() {
+  if (NATIVE) return renderNativeCard();
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), inst = standalone();
   const add = inst ? `<div class="instok">✓ Installed. Hora opens like an app.</div>`
     : INSTALL ? `<button class="btn wide" id="instBtn" style="width:100%;margin-bottom:12px">Add Hora to home screen</button>`
@@ -1127,6 +1186,25 @@ function renderDefault() {
     if ($("#instBtn")) $("#instBtn").onclick = async () => { INSTALL.prompt(); const r = await INSTALL.userChoice.catch(() => ({})); if (r.outcome === "accepted") INSTALL = null; renderDefault(); };
   }
 }
+/* inside the APK: show whether Android will let alarms ring on time */
+function renderNativeCard() {
+  let exact = true, batt = true, notif = true, full = true, ver = "";
+  try { exact = NAT.exactAllowed(); batt = NAT.batteryIgnored(); notif = NAT.notificationsAllowed(); full = NAT.fullScreenAllowed(); ver = NAT.version(); } catch (e) {}
+  const row = (ok, title, sub, act, label) => `<div class="tog"><div>${title}<small>${sub}</small></div>${ok ? `<span class="pill">On</span>` : `<button class="btn" data-act="${act}" style="padding:8px 12px;font-size:13px">${label}</button>`}</div>`;
+  const h = `<div class="instok">✓ Alarms and timers ring even when Hora is closed or the phone is locked.</div>
+    ${row(exact, "Exact alarms", "Lets alarms ring at the exact minute", "exact", "Allow")}
+    ${row(batt, "No battery limits", "Stops the phone from putting Hora to sleep", "battery", "Allow")}
+    ${row(notif, "Notifications", "Needed for alarms to appear and ring", "notif", "Allow")}
+    ${row(full, "Full-screen alarms", "Lets an alarm open over the lock screen", "fullscreen", "Allow")}
+    <div class="honest" style="margin:10px 0 0"><b>On Oppo phones:</b> also open <b>App settings → Battery</b> and allow <b>background activity</b> and <b>auto launch</b>. Otherwise ColorOS may stop Hora overnight.<br><button class="btn ghost" data-act="app" style="margin-top:8px;padding:8px 12px;font-size:13px">Open app settings</button></div>
+    <div style="font-size:11px;color:var(--fg2);margin-top:10px">Hora for Android ${esc(ver)}</div>`;
+  if ($("#defBody").innerHTML !== h) {
+    $("#defBody").innerHTML = h;
+    $$("#defBody [data-act]").forEach(b => b.onclick = () => { try { NAT.openSettings(b.dataset.act); } catch (e) {} });
+  }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && NATIVE && VIEW === "vProfile") renderNativeCard(); });
+
 function openFromShortcut() {
   const q = new URLSearchParams(location.search).get("tab");
   const map = { alarm: "vAlarm", timer: "vTimer", stopwatch: "vWatch", clock: "vClock" };
@@ -1136,7 +1214,7 @@ function openFromShortcut() {
 }
 
 function renderToggles() {
-  $("#toggles").innerHTML = TOGS.map(([k, t, s]) => `<div class="tog"><div>${t}<small>${s}</small></div><div class="sw-t ${S[k] ? "on" : ""}" data-k="${k}"></div></div>`).join("");
+  $("#toggles").innerHTML = TOGS.filter(([k]) => !(NATIVE && (k === "wake" || k === "notify"))).map(([k, t, s]) => `<div class="tog"><div>${t}<small>${s}</small></div><div class="sw-t ${S[k] ? "on" : ""}" data-k="${k}"></div></div>`).join("");
   $$("#toggles .sw-t").forEach(el => el.onclick = async () => {
     const k = el.dataset.k; S[k] = !S[k];
     if (k === "notify" && S.notify && "Notification" in window && Notification.permission !== "granted") {
@@ -1157,24 +1235,41 @@ async function wake() {
 }
 
 /* ---------- loop ---------- */
+/* Each ring has a key like "a3@1729411200000" (alarm 3 due at that moment). The Android app wakes Hora
+   with the same key, so whichever notices first rings it and the other is ignored. */
+const FIRED = new Set();
+const alarmRing = (a, extra = {}) => ring(Object.assign({ kind: "alarm", title: a.label || "Alarm", sub: new Date(now()).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }), sound: a.sound, key: "snd" + a.id, gentle: a.gentle, a }, extra));
+function fireAlarm(a, at) {
+  const k = "a" + a.id + "@" + at; if (FIRED.has(k)) return; FIRED.add(k);
+  if (!a.days.some(Boolean)) a.on = false;
+  NEXT[a.id] = a.on ? nextAt(a, Math.max(now(), at) + 1000) : null; save();
+  if (now() - at < 15 * 60000) alarmRing(a);
+}
+function fireSnooze(s) {
+  const k = "s" + s.a.id + "@" + s.at; SNOOZES = SNOOZES.filter(x => x !== s); saveSnoozes();
+  if (FIRED.has(k)) return; FIRED.add(k);
+  if (now() - s.at < 15 * 60000) alarmRing(s.a, { sub: s.auto ? "Snoozed automatically" : "After snoozing", gentle: false, auto: s.auto || 0 });
+}
+function fireTimer(t) {
+  if (t.done) return;
+  t.done = true; t.run = false; t.left = 0; save();
+  ring({ kind: "timer", title: t.label + " is done", sub: "Set for " + dur(t.total) + " · finished " + hmA(new Date(t.endAt)), sound: S.timerSound, key: "sndtimer", gentle: false, tid: t.id });
+}
 function check() {
   const n = now();
-  S.alarms.forEach(a => {
-    if (a.on && NEXT[a.id] && n >= NEXT[a.id]) {
-      const late = n - NEXT[a.id];
-      if (!a.days.some(Boolean)) a.on = false;
-      NEXT[a.id] = a.on ? nextAt(a, n + 1000) : null; save();
-      if (late < 15 * 60000) ring({ kind: "alarm", title: a.label || "Alarm", sub: new Date(n).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }), sound: a.sound, key: "snd" + a.id, gentle: a.gentle, a });
-    }
-  });
-  SNOOZES = SNOOZES.filter(s => { if (n >= s.at) { ring({ kind: "alarm", title: s.a.label || "Alarm", sub: s.auto ? "Snoozed automatically" : "After snoozing", sound: s.a.sound, key: "snd" + s.a.id, gentle: false, a: s.a, auto: s.auto || 0 }); return false; } return true; });
-  S.timers.forEach(t => {
-    if (t.run && !t.done && n >= t.endAt) {
-      t.done = true; t.run = false; t.left = 0; save();
-      ring({ kind: "timer", title: t.label + " is done", sub: "Set for " + dur(t.total) + " · finished " + hmA(new Date(t.endAt)), sound: S.timerSound, key: "sndtimer", gentle: false, tid: t.id });
-    }
-  });
+  S.alarms.forEach(a => { if (a.on && NEXT[a.id] && n >= NEXT[a.id]) fireAlarm(a, NEXT[a.id]); });
+  SNOOZES.filter(s => n >= s.at).forEach(fireSnooze);
+  S.timers.forEach(t => { if (t.run && !t.done && n >= t.endAt) fireTimer(t); });
 }
+/* called by the Android app when it wakes Hora for a scheduled ring */
+window.horaFire = key => {
+  const m = /^([ast])(\d+)@(\d+)$/.exec(key || ""); if (!m) return;
+  const [, kind, id, at] = [m[0], m[1], +m[2], +m[3]];
+  if (kind === "a") { const a = S.alarms.find(x => x.id === id); if (a && !FIRED.has(key)) fireAlarm(a, at); }
+  else if (kind === "s") { const s = SNOOZES.find(x => x.a.id === id && x.at === at); if (s) fireSnooze(s); else { const a = S.alarms.find(x => x.id === id); if (a && !FIRED.has(key) && now() - at < 15 * 60000) { FIRED.add(key); alarmRing(a, { sub: "After snoozing", gentle: false }); } } }
+  else { const t = S.timers.find(x => x.id === id); if (t) fireTimer(t); }
+  renderAll();
+};
 let lastMin = -1;
 function renderAll() {
   renderFace(); renderNow();

@@ -550,6 +550,15 @@ background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);opacity:
 .digi[data-f="crust"]{font-family:"Crust Cream",var(--display);font-weight:400;letter-spacing:-.01em;font-size:120px}
 .digi[data-f="crust"] .ss{font-family:"Crust Cream",var(--display);font-weight:400}
 .fp.yb .pv b{font-family:"Crust Cream",var(--display);font-weight:400;letter-spacing:-.02em;font-size:38px}
+/* inside the Android app: real system bar sizes come from --sat / --sab */
+.native .view{padding-top:calc(var(--sat,24px) + 20px) !important}
+.native .toast{top:calc(var(--sat,24px) + 64px)}
+.native .island{top:calc(var(--sat,24px) + 8px)}
+.native .island:not(.act):not(.open){opacity:0;pointer-events:none}
+.native .hero{margin-top:calc(-1 * (var(--sat,24px) + 20px));padding-top:calc(var(--sat,24px) + 24px)}
+.native .tabs{height:calc(54px + var(--sab,30px));padding-bottom:var(--sab,30px)}
+.native .nowbar{bottom:calc(62px + var(--sab,30px))}
+.native .ring{padding-top:calc(var(--sat,24px) + 70px);padding-bottom:calc(var(--sab,0px) + 36px)}
 @media print{body{overflow:visible}.phone{box-shadow:none}.side{display:block}}
 </style>
 </head>
@@ -623,7 +632,7 @@ background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);opacity:
       <div class="cycles" id="cycles"></div>
       <div style="font-size:11.5px;color:var(--fg2);margin-top:10px;line-height:1.45">Fall asleep by one of these to wake between sleep cycles. A cycle is about 90 minutes on average, and it includes 15 minutes to drift off. Yours may differ.</div>
     </div>
-    <div class="honest" id="webNote"><b>Honest note:</b> as a web app, Hora can only ring while it's open on screen. Turn on <b>Keep screen awake</b> in Profile and leave it on the nightstand, or keep your phone's own alarm as a backup.</div>
+    <div class="honest" id="webNote" data-native="<b>Alarms ring even when Hora is closed</b> or the phone is locked. If one is ever late, check Profile → Make Hora your clock."><b>Honest note:</b> as a web app, Hora can only ring while it's open on screen. Turn on <b>Keep screen awake</b> in Profile and leave it on the nightstand, or keep your phone's own alarm as a backup.</div>
   </section>
 
   <!-- Timer -->

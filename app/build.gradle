@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.hora.clock'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.hora.clock"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+        debug {
+            // debug builds are signed with the auto-generated debug key,
+            // which is all that's needed to sideload onto a personal phone.
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // The web app at the repo root is the app's interface. It's copied into the APK at build time,
+    // so GitHub Pages and the APK always run the same files.
+    sourceSets {
+        main {
+            assets.srcDirs += ["$buildDir/generated/hora-web"]
+        }
+    }
+}
+
+tasks.register('copyWebApp', Copy) {
+    from(rootProject.projectDir) {
+        include 'index.html', 'app.js', 'scenes.js', 'icons/**', 'fonts/**'
+        exclude 'icons/*.png'
+    }
+    into "$buildDir/generated/hora-web/www"
+}
+preBuild.dependsOn copyWebApp
+
+dependencies {
+    // serves the bundled web app from a secure https origin inside the WebView
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
