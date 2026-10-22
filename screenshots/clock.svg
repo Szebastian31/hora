@@ -1,67 +1,120 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 900" width="430" height="900" font-family="ui-rounded, 'SF Pro Rounded', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c69cc"/><stop offset=".55" stop-color="#5f8fd8"/><stop offset="1" stop-color="#a8cbec"/></linearGradient>
-    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".24"/><stop offset=".55" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#fff" stop-opacity=".13"/></linearGradient>
-    <radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff6df"/><stop offset="1" stop-color="#ffc98a" stop-opacity="0"/></radialGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a60ba"/><stop offset=".6" stop-color="#5a8ccc"/><stop offset="1" stop-color="#8cbbe4"/></linearGradient>
+    <linearGradient id="veil" x1="0" y1="0" x2="0" y2="1"><stop offset=".3" stop-color="#040820" stop-opacity="0"/><stop offset="1" stop-color="#040820" stop-opacity=".32"/></linearGradient>
+    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset=".6" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#fff" stop-opacity=".1"/></linearGradient>
+    <linearGradient id="lon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3467b8"/><stop offset="1" stop-color="#94b9de"/></linearGradient>
+    <linearGradient id="ny" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a60ba"/><stop offset="1" stop-color="#8cbbe4"/></linearGradient>
+    <linearGradient id="tok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1231"/><stop offset="1" stop-color="#1f2d68"/></linearGradient>
+    <radialGradient id="sunglow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd696" stop-opacity=".28"/><stop offset="1" stop-color="#ffd696" stop-opacity="0"/></radialGradient>
+    <pattern id="dots" width="4.5" height="4.5" patternUnits="userSpaceOnUse"><circle cx="2.25" cy="2.25" r="1.25" fill="#fff"/></pattern>
     <clipPath id="scr"><rect x="20" y="20" width="390" height="860" rx="46"/></clipPath>
+    <clipPath id="day"><polygon points="-95,-58 95,-58 98,0 82,40 56,70 0,80 -56,70 -82,40 -98,0"/></clipPath>
+    <g id="land">
+      <polygon points="-168,66 -162,70 -156,71.3 -140,69.6 -128,70 -115,68.5 -95,72 -82,73 -75,68 -64,60 -60,55 -56,52 -66,45 -70,43 -76,38 -76,35 -81,31 -80,25.5 -82,29 -84,30 -90,29 -97,26 -97.5,21 -95,18.5 -91,18.5 -87,21.5 -88,16 -83,15 -83,10 -79,9 -77.5,8 -80,7.5 -86,11 -92,14.5 -96,15.8 -105,19.5 -109,23 -112,27 -114,30 -117,32.5 -120.5,34.5 -124,40 -124,46 -123,49 -128,51 -133,55 -138,59 -147,61 -153,59 -158,57 -164,55 -160,58.5 -165,61 -166,64.5"/>
+      <polygon points="-120,72 -100,76 -80,76 -62,82 -90,82 -118,77"/>
+      <polygon points="-55,60 -43,60 -37,65 -22,70 -20,77 -17,81 -30,83.5 -60,82 -70,78 -58,75 -53,69 -50,64"/>
+      <polygon points="-80,9 -75,11 -71,12 -62,10.7 -58,6.5 -52,5 -50,1.5 -44,-2.5 -35,-5.5 -35,-9 -39,-13.5 -39,-18 -41,-22 -48,-25.5 -48.5,-28 -53,-33.5 -57,-35 -57,-38.5 -62,-39 -65,-41 -64,-43 -67.5,-46 -66,-48 -69,-51 -68.5,-53 -71,-54 -74,-52 -75,-47 -73.5,-42 -73.5,-37 -71.5,-30 -70,-18 -75,-15 -77,-12 -79.5,-7.5 -81,-4.5 -80,-1 -80,1 -78,3 -77.5,7"/>
+      <polygon points="-9,37 -9.5,39 -8.8,42.5 -1.8,43.4 -1.2,46 -4.5,48 -1.5,48.7 1.5,50.2 4,51.5 5,53.3 8.5,53.8 8.5,55.5 8,57 10.5,57.7 10.5,56 12.5,55.5 12,54.2 14,54 18.5,54.8 21,55.5 21,57 24,57 24,58.5 28,59.5 30,60 28,60.5 22.5,60 21.5,61 21.5,63 25,65 24,65.8 21.5,65.5 19,63.5 17.5,61 18.8,59.5 16.5,57 14,55.5 13,55.5 11,58.5 8,58 5.5,59 5,62 10,64 14,67.5 18,69.8 23,70.5 28,71 33,69.5 41,67 44,66.5 53,68.5 60,69 60,50 52,46.5 47,44 41.5,41.5 37.5,44.8 33.5,44.5 30,46 29.5,45 28.5,43.5 28,41.5 26,40.5 23,40 24,38 22,36.5 21,38.5 19.5,41.8 16,43.5 13.5,45.5 12.3,45.3 13.5,43.5 16,41.5 18.5,40.2 16,38 15.6,40 12,42 10,44 7.5,43.8 3,43.2 3.2,41.8 0,39.5 -0.5,38 -2,36.7 -5.5,36"/>
+      <polygon points="-5.7,50 1.5,51 1.7,52.7 0,53.5 -1.5,55 -2,57 -1.8,57.6 -4,57.7 -3,58.6 -5,58.6 -6.2,57.5 -5.5,56 -4.8,54.8 -3,54.4 -3.3,53.4 -4.6,53.2 -4.2,52.3 -5.3,51.8 -3.5,51.4"/>
+      <polygon points="-6,52 -6,54 -7.5,55.2 -10,54.2 -10,51.6 -8,51.6"/>
+      <polygon points="-24,65.5 -22,66.4 -16,66.5 -13.5,65 -18,63.4 -22.5,63.8"/>
+      <polygon points="-17,21 -16,24 -13,27.6 -9.8,30 -9.5,33 -6,35.8 -2,35.1 3,36.8 10,37.3 11,35.2 10,34 11,33 15.2,32.3 20,30.8 20,32.5 23,32.6 29,30.9 32.3,31.3 34.2,31.2 34,27.8 33,28.5 32.5,29.9 35.7,23.9 37.3,21 38.5,18 43.2,12.7 44,10.5 51.3,11.8 51,10.4 48,4.5 41.5,-1.8 39.5,-5 39.5,-10 40.5,-15 35,-22 35.5,-24 32.6,-26 30,-31.3 26,-33.8 20,-34.8 18.3,-33.5 17,-29 14.5,-22.5 11.8,-17 13.5,-11 13,-6 12,-5 9,-1 9.6,3.5 8.5,4.5 5.5,4.2 2,6.3 -2,4.8 -7.5,4.4 -12.5,7.5 -15,10.5 -17,14.7 -16.5,19.5"/>
+      <polygon points="49.3,-12 50.5,-15.5 47.2,-25 45,-25.5 43.5,-22 44.4,-16.5 47,-15"/>
+      <polygon points="26.2,40 26.5,41.7 29,41.2 31.5,41.2 35,42 38,41 41.5,41.5 47,44 52,46.5 60,50 60,69 66,69.5 69,73 73,72.5 80,73.5 87,75 100,78 113,73.5 128,73 140,72.5 150,71.5 160,70 170,70 180,69 180,65 178,64.5 172,61 163,60 162,58 156,51 156,57.5 160,61.5 154,59.2 143,59.3 137,54 141,52.5 140.5,48 135,43.5 131,42.7 129.5,41 127.5,39.5 129.4,36 126.5,34.5 126.2,37.6 124.5,39.8 121.5,39 121.5,40.8 118,39 119,37.2 122.5,37 120,34.5 121.8,31 122,29.8 119.5,25.5 116,22.9 113.5,22.2 110.5,21 108.5,21.6 106.5,20 105.6,18.5 108.8,15.5 109.2,12 107,10.4 104.8,8.6 105,10 103,10.5 101,12.7 100,13.5 99.2,10 100.5,7 103.4,4 104.2,1.4 101.3,2.8 100.3,5.5 98.3,8 98.5,13 97.6,16.5 94.3,16 94,19.5 92.3,21 91.8,22.6 90,21.9 86.9,21.3 85,19.5 82.3,16.6 80.3,15.5 80.2,13 79.8,10.3 77.5,8 76.5,9.5 74.8,12.8 73.4,16 72.8,19 72.6,21.5 70,22.5 68.5,23.7 66.6,25.4 61.6,25.2 57.5,25.7 56.4,27.1 54.5,26.6 51.5,27.9 50.1,30 48,30 48.5,28.5 50.8,24.8 51.6,25.9 52.6,24.2 56.4,24.9 56.3,26.3 57,24 59.8,22.4 58.8,20.4 55.5,17.5 52.2,15.6 45,12.8 43.3,12.6 42.7,15.7 40.8,19.5 39,21.8 37,25.5 35,28 34.6,29.5 34.2,31.3 35.5,33.9 36,35.8 36,36.8 32.5,36.1 30,36.2 28,36.7 27.3,37.6 26.3,38.5"/>
+      <polygon points="130,31 131.5,31.5 132,33.8 135,33.5 136.9,34.3 139.8,35 140.9,36.9 141,38.3 142,39.6 141.4,41.4 140,40.6 139.8,38.3 136.7,37 135.5,35.6 132.6,35.5 130.9,34 129.7,33.2"/>
+      <polygon points="109,1.8 111,2.5 113,3.2 116,6.9 119.2,5.2 118,2.3 118.8,1 117.5,-0.5 116.5,-2.5 116.3,-3.8 114.5,-3.7 111.5,-3 110,-1.8"/>
+      <polygon points="95.3,5.6 97.5,5.2 100.4,2.2 103.7,-1 106,-3 105.8,-5.8 104.5,-5.8 101.5,-3 99,0 96,3"/>
+      <polygon points="131,-1.5 134,-1 138,-1.7 141,-2.6 145.8,-4.8 147.5,-6 147.8,-8.1 150,-10.4 146.5,-8.8 143.5,-9 142.5,-9.4 140.5,-8.5 138,-8.3 138.7,-6.5 135,-4.4 132.5,-4 131.9,-2.5"/>
+      <polygon points="113.5,-22 114,-26.5 115,-30 115,-34 118,-35 123.5,-33.9 126,-32.3 131,-31.5 134,-32.8 135.8,-34.8 138,-34.5 137.8,-33 138.5,-35.5 140,-37.8 143.5,-38.8 146.3,-39.1 149.9,-37.5 150.8,-34.5 153.1,-30.5 153.2,-25.2 150.8,-22.6 148.8,-20.3 146.3,-18.8 145.4,-14.9 143.8,-14.3 142.5,-10.7 141.6,-12.6 141.6,-16.5 140.8,-17.5 139.2,-17.3 135.8,-15 136.8,-12.2 133,-11.3 130.3,-12.4 129.5,-14.9 127.3,-14 125,-14.6 122.2,-17.5 121.6,-19 118.5,-20.3 114.6,-21.8"/>
+      <polygon points="172.7,-34.4 174.3,-35.8 175.9,-37.5 178.5,-37.7 177,-39.3 176,-41.3 174.6,-41.3 175,-39.8 173.8,-39.2 174.6,-37 173,-35.2"/>
+      <polygon points="172.7,-40.5 174.2,-41.6 173.3,-43.2 171.2,-44.4 169,-46.6 166.5,-46 168.3,-44 170.8,-42.5"/>
+    </g>
   </defs>
   <rect width="430" height="900" rx="62" fill="#111"/>
   <g clip-path="url(#scr)">
     <rect x="20" y="20" width="390" height="860" fill="url(#sky)"/>
+    <rect x="20" y="20" width="390" height="860" fill="url(#veil)"/>
     <!-- hero -->
-    <path d="M20 20 H410 V392 A44 44 0 0 1 366 436 H64 A44 44 0 0 1 20 392 Z" fill="url(#hero)" stroke="#fff" stroke-opacity=".22"/>
+    <path d="M20 20 H410 V376 A44 44 0 0 1 366 420 H64 A44 44 0 0 1 20 376 Z" fill="url(#hero)"/>
     <rect x="164" y="30" width="102" height="30" rx="15" fill="#000"/>
-    <rect x="42" y="78" width="168" height="26" rx="13" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-opacity=".2"/>
-    <circle cx="57" cy="91" r="4" fill="#5fe3a1"/>
-    <text x="68" y="95" font-size="10.5" font-weight="700" fill="#eef3ff" letter-spacing=".3">LIVE · ON TIME ±0.2 S</text>
-    <text x="388" y="96" font-size="12.5" font-weight="700" fill="#eef3ff" fill-opacity=".65" text-anchor="end">Gliwice, Poland</text>
-    <text x="215" y="236" font-size="124" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="-5">14:17</text>
-    <text x="215" y="276" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">Tuesday 20 October</text>
-    <text x="215" y="304" font-size="13" fill="#eef3ff" fill-opacity=".7" text-anchor="middle"><tspan fill="#ffc061">▲</tspan> Sunrise <tspan font-weight="700" fill="#fff">07:01</tspan>     <tspan fill="#8fd6ff">▼</tspan> Sunset <tspan font-weight="700" fill="#fff">17:13</tspan></text>
-    <g font-size="17" font-weight="800" fill="#fff" text-anchor="middle">
-      <rect x="42" y="324" width="346" height="58" rx="18" fill="#fff" fill-opacity=".1"/>
-      <line x1="157" y1="330" x2="157" y2="376" stroke="#fff" stroke-opacity=".14"/><line x1="273" y1="330" x2="273" y2="376" stroke="#fff" stroke-opacity=".14"/>
-      <text x="100" y="352">10 h 12 m</text><text x="215" y="352">07:00</text><text x="331" y="352">12%</text>
-      <g font-size="10.5" font-weight="500" fill="#eef3ff" fill-opacity=".62"><text x="100" y="370">Day length</text><text x="215" y="370">Next alarm · in 16 h</text><text x="331" y="370">Waxing crescent</text></g>
+    <rect x="42" y="76" width="166" height="26" rx="13" fill="#fff" fill-opacity=".14"/>
+    <circle cx="57" cy="89" r="3.5" fill="#4fdcab"/>
+    <text x="67" y="93" font-size="10.5" font-weight="700" fill="#fff" letter-spacing=".4"><tspan fill-opacity=".7">LIVE · </tspan>ON TIME ±0.2 S</text>
+    <path d="M371 81a5 5 0 0 0-5 5c0 3.7 5 9.3 5 9.3s5-5.6 5-9.3a5 5 0 0 0-5-5zm0 6.8a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z" fill="#fff" fill-opacity=".68"/>
+    <text x="388" y="94" font-size="13" font-weight="700" fill="#fff" fill-opacity=".68" text-anchor="end">Gliwice</text>
+    <text x="200" y="224" font-size="112" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="-6">14:17</text>
+    <text x="338" y="148" font-size="22" font-weight="600" fill="#fff" fill-opacity=".68">36</text>
+    <text x="215" y="264" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">Thursday 22 October</text>
+    <!-- weather chip -->
+    <rect x="102" y="278" width="226" height="34" rx="17" fill="#fff" fill-opacity=".14"/>
+    <g transform="translate(112 283)">
+      <circle cx="8.5" cy="8.5" r="3.4" fill="#ffcc5c"/>
+      <g stroke="#ffcc5c" stroke-width="1.6" stroke-linecap="round"><line x1="8.5" y1="2.6" x2="8.5" y2="1"/><line x1="2.6" y1="8.5" x2="1" y2="8.5"/><line x1="4.3" y1="4.3" x2="3.2" y2="3.2"/><line x1="12.7" y1="4.3" x2="13.8" y2="3.2"/></g>
+      <path d="M7.5 19h9.2a4.1 4.1 0 0 0 .6-8.15A5.6 5.6 0 0 0 6.6 11.2 3.95 3.95 0 0 0 7.5 19z" fill="#fff" fill-opacity=".92"/>
     </g>
-    <text x="215" y="412" font-size="11" fill="#eef3ff" fill-opacity=".55" text-anchor="middle">Tap the time for analog</text>
-    <!-- daylight card -->
-    <rect x="38" y="452" width="354" height="148" rx="24" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-opacity=".2"/>
-    <text x="56" y="480" font-size="10.5" font-weight="700" fill="#eef3ff" fill-opacity=".62" letter-spacing="1.4">DAYLIGHT</text>
-    <text x="374" y="480" font-size="11" fill="#eef3ff" fill-opacity=".62" text-anchor="end">Golden hour 16:24</text>
-    <text x="56" y="508" font-size="19" font-weight="700" fill="#fff">2 h 56 m of daylight left</text>
-    <path d="M60 572 Q215 498 370 572" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.4" stroke-dasharray="2 5"/>
-    <path d="M60 572 Q155 526 268 538" fill="none" stroke="#fff" stroke-width="2.2"/>
-    <line x1="48" y1="572" x2="382" y2="572" stroke="#fff" stroke-opacity=".22"/>
-    <circle cx="268" cy="538" r="22" fill="url(#sun)"/><circle cx="268" cy="538" r="7" fill="#fff6df"/>
-    <text x="56" y="592" font-size="12" fill="#eef3ff" fill-opacity=".62">Sunrise <tspan fill="#fff" font-weight="600">07:01</tspan></text>
-    <text x="374" y="592" font-size="12" fill="#eef3ff" fill-opacity=".62" text-anchor="end">Sunset <tspan fill="#fff" font-weight="600">17:13</tspan></text>
+    <text x="142" y="300" font-size="14" font-weight="700" fill="#fff">12° <tspan font-weight="500" fill-opacity=".68">Partly cloudy · H 15° L 6°</tspan> <tspan fill-opacity=".42">›</tspan></text>
+    <!-- stats -->
+    <rect x="42" y="328" width="346" height="62" rx="20" fill="#000" fill-opacity=".12"/>
+    <line x1="157" y1="338" x2="157" y2="380" stroke="#fff" stroke-opacity=".12"/><line x1="273" y1="338" x2="273" y2="380" stroke="#fff" stroke-opacity=".12"/>
+    <g text-anchor="middle" font-size="17" font-weight="750" fill="#fff"><text x="100" y="357">07:01</text><text x="215" y="357">17:13</text><text x="331" y="357">07:00</text></g>
+    <g text-anchor="middle" font-size="11" fill="#fff" fill-opacity=".68"><text x="100" y="376"><tspan fill="#ffb547" font-size="9">▲ </tspan>Sunrise</text><text x="215" y="376"><tspan fill="#8fd6ff" font-size="9">▼ </tspan>Sunset</text><text x="331" y="376">Alarm · in 16 h 43 m</text></g>
     <!-- world card -->
-    <rect x="38" y="614" width="354" height="196" rx="24" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-opacity=".2"/>
-    <text x="56" y="642" font-size="10.5" font-weight="700" fill="#eef3ff" fill-opacity=".62" letter-spacing="1.4">WORLD</text>
-    <text x="374" y="642" font-size="11" font-weight="700" fill="#8fd6ff" text-anchor="end">Edit</text>
-    <text x="215" y="664" font-size="12" fill="#eef3ff" fill-opacity=".62" text-anchor="middle"><tspan fill="#fff" font-weight="700">Now</tspan>  drag to plan across time zones</text>
-    <rect x="66" y="674" width="298" height="22" rx="11" fill="#fff" fill-opacity=".06"/>
-    <g stroke="#fff" stroke-opacity=".45"><line x1="90" y1="678" x2="90" y2="686"/><line x1="124" y1="678" x2="124" y2="686"/><line x1="158" y1="678" x2="158" y2="686"/><line x1="192" y1="678" x2="192" y2="686"/><line x1="238" y1="678" x2="238" y2="686"/><line x1="272" y1="678" x2="272" y2="686"/><line x1="306" y1="678" x2="306" y2="686"/><line x1="340" y1="678" x2="340" y2="686"/></g>
-    <line x1="215" y1="676" x2="215" y2="694" stroke="#8fd6ff" stroke-width="2"/>
-    <g font-size="14.5" font-weight="600" fill="#fff">
-      <circle cx="70" cy="726" r="15" fill="#3a72c6"/><text x="96" y="723">London</text>
-      <circle cx="70" cy="768" r="15" fill="#3b57a3"/><text x="96" y="765">New York</text>
+    <rect x="30" y="436" width="370" height="440" rx="26" fill="#fff" fill-opacity=".085" stroke="#fff" stroke-opacity=".13" stroke-width=".5"/>
+    <text x="48" y="466" font-size="16" font-weight="700" fill="#fff">World</text>
+    <text x="382" y="466" font-size="14" font-weight="650" fill="#ff6f91" text-anchor="end">Edit</text>
+    <!-- dot map with day and night -->
+    <g transform="translate(38 486) scale(.9833 -1.007) translate(180 -80)">
+      <circle cx="0" cy="-11" r="70" fill="url(#sunglow)"/>
+      <use href="#land" fill="url(#dots)" opacity=".18"/>
+      <g clip-path="url(#day)"><use href="#land" fill="url(#dots)" opacity=".85"/></g>
     </g>
-    <g font-size="11.5" fill="#eef3ff" fill-opacity=".62"><text x="96" y="739">Today · −1 h</text><text x="96" y="781">Today · −6 h</text></g>
-    <g font-size="10" font-weight="700"><rect x="170" y="729" width="72" height="15" rx="7.5" fill="#5fe3a1" fill-opacity=".18"/><text x="206" y="740" fill="#5fe3a1" text-anchor="middle">Work hours</text>
-      <rect x="178" y="771" width="72" height="15" rx="7.5" fill="#5fe3a1" fill-opacity=".18"/><text x="214" y="782" fill="#5fe3a1" text-anchor="middle">Work hours</text></g>
-    <g font-size="24" font-weight="700" fill="#fff" text-anchor="end"><text x="374" y="734">13:17</text><text x="374" y="776">08:17</text></g>
-    <!-- tabs -->
-    <rect x="20" y="796" width="390" height="84" fill="#2c69cc" fill-opacity=".72"/>
-    <line x1="20" y1="796" x2="410" y2="796" stroke="#fff" stroke-opacity=".2"/>
-    <rect x="47" y="804" width="52" height="34" rx="12" fill="#fff" fill-opacity=".12"/>
-    <g font-size="10.5" font-weight="600" text-anchor="middle" fill="#eef3ff">
-      <text x="73" y="853">Clock</text><text x="149" y="853" fill-opacity=".62">Alarms</text><text x="225" y="853" fill-opacity=".62">Timer</text><text x="301" y="853" fill-opacity=".62">Stopwatch</text><text x="371" y="853" fill-opacity=".62">Profile</text>
+    <g font-size="9" font-weight="650" fill="#fff">
+      <circle cx="214.8" cy="514.8" r="2.6" fill="#fff" stroke="#000" stroke-opacity=".35"/><text x="182" y="511" text-anchor="end" fill-opacity=".75">London</text>
+      <circle cx="141.3" cy="525.9" r="2.6" fill="#fff" stroke="#000" stroke-opacity=".35"/><text x="135" y="529" text-anchor="end" fill-opacity=".75">New York</text>
+      <circle cx="352.4" cy="530.6" r="2.6" fill="#fff" stroke="#000" stroke-opacity=".35"/><text x="346" y="541" text-anchor="end" fill-opacity=".75">Tokyo</text>
+      <circle cx="233.4" cy="516.4" r="7" fill="none" stroke="#ff6f91" stroke-opacity=".45" stroke-width="1.5"/><circle cx="233.4" cy="516.4" r="3.4" fill="#ff6f91"/>
     </g>
-    <g fill="none" stroke="#eef3ff" stroke-width="1.6" stroke-linecap="round">
-      <circle cx="73" cy="822" r="9"/><path d="M73 817v5l3 2"/>
-      <g stroke-opacity=".62"><circle cx="149" cy="823" r="7.5"/><path d="M142 815l3-2.5M156 815l-3-2.5"/><path d="M219 813h12M219 832h12M220 813c0 6 10 5 10 10s-10 4-10 9M230 813c0 6-10 5-10 10s10 4 10 9"/><circle cx="301" cy="824" r="8"/><path d="M299 813h4"/><circle cx="371" cy="818" r="4"/><path d="M363 831c1.3-4 4.3-6 8-6s6.7 2 8 6"/></g>
+    <!-- ruler -->
+    <text x="215" y="646" font-size="12.5" fill="#fff" fill-opacity=".68" text-anchor="middle"><tspan font-weight="700" fill="#fff" fill-opacity="1">Now</tspan>  drag to plan across time zones</text>
+    <rect x="48" y="656" width="334" height="30" rx="15" fill="#fff" fill-opacity=".06"/>
+    <g stroke="#fff" stroke-linecap="round">
+      <g stroke-opacity=".8"><line x1="80" y1="661" x2="80" y2="669"/><line x1="114" y1="661" x2="114" y2="669"/><line x1="148" y1="661" x2="148" y2="669"/><line x1="182" y1="661" x2="182" y2="669"/><line x1="250" y1="661" x2="250" y2="669"/><line x1="284" y1="661" x2="284" y2="669"/><line x1="318" y1="661" x2="318" y2="669"/><line x1="352" y1="661" x2="352" y2="669"/></g>
+    </g>
+    <g font-size="9.5" font-weight="600" fill="#fff" fill-opacity=".6" text-anchor="middle"><text x="114" y="682">12</text><text x="216" y="682">15</text><text x="318" y="682">18</text></g>
+    <line x1="215" y1="659" x2="215" y2="683" stroke="#ff6f91" stroke-width="2" stroke-linecap="round"/>
+    <!-- city rows with mini analog clocks -->
+    <g>
+      <circle cx="68" cy="726" r="20" fill="url(#lon)"/>
+      <g stroke="#fff" stroke-linecap="round"><line x1="68" y1="726" x2="68" y2="717.5" stroke-width="2.6" transform="rotate(39 68 726)"/><line x1="68" y1="726" x2="68" y2="713" stroke-width="1.8" transform="rotate(102 68 726)"/></g>
+      <text x="100" y="722" font-size="15" font-weight="600" fill="#fff">London</text>
+      <text x="100" y="740" font-size="12.5" fill="#fff" fill-opacity=".68">Today, −1 h</text>
+      <rect x="176" y="729" width="70" height="16" rx="8" fill="#4fdcab" fill-opacity=".18"/><text x="211" y="741" font-size="10.5" font-weight="650" fill="#4fdcab" text-anchor="middle">Work hours</text>
+      <text x="382" y="735" font-size="26" font-weight="500" fill="#fff" text-anchor="end" letter-spacing="-.6">13:17</text>
+    </g>
+    <line x1="48" y1="756" x2="382" y2="756" stroke="#fff" stroke-opacity=".09"/>
+    <g>
+      <circle cx="68" cy="786" r="20" fill="url(#tok)"/>
+      <g stroke="#fff" stroke-opacity=".85" stroke-linecap="round"><line x1="68" y1="786" x2="68" y2="777.5" stroke-width="2.6" transform="rotate(278 68 786)"/><line x1="68" y1="786" x2="68" y2="773" stroke-width="1.8" transform="rotate(102 68 786)"/></g>
+      <text x="100" y="782" font-size="15" font-weight="600" fill="#fff">Tokyo</text>
+      <text x="100" y="800" font-size="12.5" fill="#fff" fill-opacity=".68">Today, +7 h</text>
+      <rect x="170" y="789" width="50" height="16" rx="8" fill="#ffb547" fill-opacity=".18"/><text x="195" y="801" font-size="10.5" font-weight="650" fill="#ffb547" text-anchor="middle">Asleep</text>
+      <text x="382" y="795" font-size="26" font-weight="500" fill="#fff" text-anchor="end" letter-spacing="-.6">21:17</text>
+    </g>
+    <!-- floating tab bar -->
+    <rect x="34" y="798" width="362" height="64" rx="32" fill="#1a2c5c" fill-opacity=".86" stroke="#fff" stroke-opacity=".13" stroke-width=".5"/>
+    <rect x="42" y="804" width="64" height="52" rx="26" fill="#ff6f91" fill-opacity=".16"/>
+    <g fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <g stroke="#ff6f91"><circle cx="74" cy="823" r="8.5"/><path d="M74 818.5V823l3 2"/></g>
+      <g stroke="#fff" stroke-opacity=".68">
+        <circle cx="146" cy="824" r="7"/><path d="M146 821v3l2 1.5M138.5 816.5l3-2.5M153.5 816.5l-3-2.5"/>
+        <path d="M208 812h10M208 834h10M209 812c0 5 8 5 8 9s-8 4-8 9M217 812c0 5-8 5-8 9s8 4 8 9" transform="translate(2 0)"/>
+        <circle cx="285" cy="825" r="7.5"/><path d="M285 825v-4M283 813.5h4M285 813.5v4"/>
+        <circle cx="357" cy="819.5" r="3.8"/><path d="M349.5 831c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/>
+      </g>
+    </g>
+    <g font-size="10.5" font-weight="650" text-anchor="middle" fill="#fff" fill-opacity=".68">
+      <text x="74" y="847" fill="#ff6f91" fill-opacity="1">Clock</text><text x="146" y="847">Alarms</text><text x="215" y="847">Timers</text><text x="285" y="847">Stopwatch</text><text x="357" y="847">Profile</text>
     </g>
   </g>
 </svg>
