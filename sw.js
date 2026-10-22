@@ -1,5 +1,5 @@
-const VERSION = "hora-v15";
-const FILES = ["./", "index.html", "app.js", "scenes.js", "manifest.webmanifest", "icons/icon.svg"];
+const VERSION = "hora-v16";
+const FILES = ["./", "index.html", "style.css", "app.js", "scenes.js", "manifest.webmanifest", "icons/icon.svg"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

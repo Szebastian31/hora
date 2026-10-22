@@ -26,6 +26,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         String key = in.getStringExtra("key");
         if (key == null) return;
         String label = in.getStringExtra("label");
+        if (key.startsWith("b")) { bedtime(c, key, label); return; }
 
         Intent open = new Intent(c, MainActivity.class)
                 .setAction(Scheduler.ACTION_FIRE)
@@ -60,6 +61,34 @@ public class AlarmReceiver extends BroadcastReceiver {
         } catch (Exception ignored) {
             // Android may block this while another app is open; the notification covers that case
         }
+    }
+
+    /** Bedtime reminders are a quiet notification: no full screen, no looping sound. */
+    static final String BED_CHANNEL = "hora_bedtime_v1";
+    static final int BED_ID = 8;
+
+    private static void bedtime(Context c, String key, String label) {
+        NotificationManager nm = c.getSystemService(NotificationManager.class);
+        if (nm.getNotificationChannel(BED_CHANNEL) == null) {
+            NotificationChannel ch = new NotificationChannel(BED_CHANNEL, "Bedtime reminders", NotificationManager.IMPORTANCE_DEFAULT);
+            ch.setDescription("A gentle nudge before your sleep schedule's bedtime");
+            ch.enableVibration(true);
+            ch.setVibrationPattern(new long[]{0, 120, 1100});
+            nm.createNotificationChannel(ch);
+        }
+        // opens Hora normally (not over the lock screen like an alarm)
+        Intent open = new Intent(c, MainActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pi = PendingIntent.getActivity(c, 3, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        Notification n = new Notification.Builder(c, BED_CHANNEL)
+                .setSmallIcon(R.drawable.ic_stat_hora)
+                .setContentTitle("Time to wind down")
+                .setContentText(label != null ? label : "Bedtime soon")
+                .setCategory(Notification.CATEGORY_REMINDER)
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .build();
+        try { nm.notify(BED_ID, n); } catch (SecurityException ignored) { }
     }
 
     static void ensureChannel(Context c) {
