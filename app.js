@@ -287,80 +287,160 @@ function tick(f = 1) {
   g.gain.setValueAtTime(.045, t); g.gain.exponentialRampToValueAtTime(.0001, t + .05);
   o.connect(g).connect(a.destination); o.start(t); o.stop(t + .06);
 }
-/* Each voice is a small synth patch; sounds are short phrases of notes that repeat while ringing. */
+/* Sound engine. Every note goes through one shared chain: a gentle high-pass, a generated room reverb and a soft
+   compressor, so the built-in sounds feel like real instruments in a space rather than bare beeps. */
+let BUS = null;
+function impulse(a, sec, decay) {
+  const len = Math.floor(a.sampleRate * sec), b = a.createBuffer(2, len, a.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = b.getChannelData(ch); let y = 0;
+    for (let i = 0; i < len; i++) {
+      const t = i / len, k = .5 - t * .42;   // the tail gets darker as it fades, like a real room
+      y += ((Math.random() * 2 - 1) - y) * k;
+      d[i] = y * Math.pow(1 - t, decay) * (i < a.sampleRate * .012 ? i / (a.sampleRate * .012) : 1);
+    }
+  }
+  return b;
+}
+function bus(a) {
+  if (BUS && BUS.ctx === a) return BUS.in;
+  const inp = a.createGain(), hp = a.createBiquadFilter(), dry = a.createGain(), wet = a.createGain(), rev = a.createConvolver(), pre = a.createDelay(.1), comp = a.createDynamicsCompressor(), out = a.createGain();
+  hp.type = "highpass"; hp.frequency.value = 80;
+  rev.buffer = impulse(a, 2.6, 2.4); pre.delayTime.value = .022;
+  dry.gain.value = .82; wet.gain.value = .34;
+  comp.threshold.value = -20; comp.knee.value = 14; comp.ratio.value = 3; comp.attack.value = .004; comp.release.value = .3;
+  out.gain.value = 1.15;
+  inp.connect(hp); hp.connect(dry).connect(comp); hp.connect(pre).connect(rev).connect(wet).connect(comp); comp.connect(out).connect(a.destination);
+  BUS = { ctx: a, in: inp }; return inp;
+}
+/* attack, then an exponential fall; never quite reaching zero avoids clicks */
 function env(g, t, peak, att, len) { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + att); g.gain.exponentialRampToValueAtTime(.0001, t + len); }
+function osc(a, type, f, t, end, dest, detune = 0) { const o = a.createOscillator(); o.type = type; o.frequency.value = f; o.detune.value = detune; o.connect(dest); o.start(t); o.stop(end); return o; }
+/* a short filtered noise tick: the "strike" of a mallet or hammer */
+let NOISE = null;
+function strike(a, out, f, t, v, len = .018) {
+  if (!NOISE || NOISE.sampleRate !== a.sampleRate) { NOISE = a.createBuffer(1, a.sampleRate * .1, a.sampleRate); const d = NOISE.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const s = a.createBufferSource(), bp = a.createBiquadFilter(), g = a.createGain();
+  s.buffer = NOISE; bp.type = "bandpass"; bp.frequency.value = Math.min(f, 9000); bp.Q.value = 1.4;
+  env(g, t, v, .001, len); s.connect(bp).connect(g).connect(out); s.start(t); s.stop(t + len + .02);
+}
+/* plucked string by Karplus-Strong, rendered once per pitch and reused */
+const KS = {};
+function ksBuffer(a, f, len) {
+  const key = Math.round(f) + "@" + a.sampleRate; if (KS[key]) return KS[key];
+  const sr = a.sampleRate, n = Math.floor(sr * len), p = Math.max(2, Math.round(sr / f)), b = a.createBuffer(1, n, sr), d = b.getChannelData(0), ring = new Float32Array(p);
+  for (let i = 0; i < p; i++) ring[i] = (Math.random() * 2 - 1) * (.6 + .4 * Math.sin(i / p * Math.PI));
+  let idx = 0;
+  for (let i = 0; i < n; i++) { const nx = (idx + 1) % p, v = ring[idx]; d[i] = v; ring[idx] = (v + ring[nx]) * .4985; idx = nx; }
+  return KS[key] = b;
+}
 const VOICES = {
+  /* a tuned bell: hum, prime, minor-third tierce, fifth and octave partials, each fading at its own rate */
   bell(a, out, f, t, v, len) {
-    [1, 2.01, 2.76, 5.4].forEach((p, i) => {
-      const o = a.createOscillator(), g = a.createGain(); o.type = "sine"; o.frequency.value = f * p;
-      env(g, t, v * [1, .45, .28, .1][i], .01, len / (1 + i * .6)); o.connect(g).connect(out); o.start(t); o.stop(t + len);
+    [[.5, .35, 1.3], [1, 1, 1], [1.19, .32, .7], [1.5, .22, .55], [2, .38, .5], [2.52, .12, .35], [3.01, .1, .25], [4.17, .06, .18]].forEach(([p, m, dk], i) => {
+      const g = a.createGain(); g.connect(out); env(g, t, v * m * .55, .002, len * dk);
+      osc(a, "sine", f * p, t, t + len * dk + .05, g, i % 2 ? 3 : -3);
     });
+    strike(a, out, f * 6, t, v * .08, .01);
   },
+  /* marimba: wooden bar modes at 1, ~4 and ~10x, plus the mallet's soft knock */
   mallet(a, out, f, t, v, len) {
-    [[1, 1], [3.93, .28], [9.2, .06]].forEach(([p, m], i) => {
-      const o = a.createOscillator(), g = a.createGain(); o.type = "sine"; o.frequency.value = f * p;
-      env(g, t, v * m * 1.3, .004, len / (1 + i * 2)); o.connect(g).connect(out); o.start(t); o.stop(t + len);
+    const lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = f * 9; lp.connect(out);
+    [[1, 1, 1], [3.99, .22, .22], [10.65, .05, .07], [2, .06, .5]].forEach(([p, m, dk]) => {
+      const g = a.createGain(); g.connect(lp); env(g, t, v * m * .9, .003, len * dk); osc(a, "sine", f * p, t, t + len * dk + .05, g);
     });
+    strike(a, out, f * 2.5, t, v * .22, .02);
   },
+  /* kalimba: a bright tine with a quick metallic overtone */
+  tine(a, out, f, t, v, len) {
+    [[1, 1, 1], [5.95, .3, .1], [2, .1, .35]].forEach(([p, m, dk]) => {
+      const g = a.createGain(); g.connect(out); env(g, t, v * m * .8, .002, len * dk); osc(a, "sine", f * p, t, t + len * dk + .05, g);
+    });
+    strike(a, out, f * 4, t, v * .12, .012);
+  },
+  /* electric piano by FM: the brightness fades faster than the note, like a Rhodes */
+  keys(a, out, f, t, v, len) {
+    const g = a.createGain(), car = a.createOscillator(), mod = a.createOscillator(), mg = a.createGain();
+    car.type = "sine"; car.frequency.value = f; mod.type = "sine"; mod.frequency.value = f;
+    mg.gain.setValueAtTime(f * 2.2 * v, t); mg.gain.exponentialRampToValueAtTime(f * .15, t + len * .5);
+    mod.connect(mg).connect(car.frequency); car.connect(g).connect(out); env(g, t, v * .5, .004, len);
+    car.start(t); mod.start(t); car.stop(t + len + .05); mod.stop(t + len + .05);
+    const bark = a.createGain(); bark.connect(out); env(bark, t, v * .06, .001, .15); osc(a, "sine", f * 7.02, t, t + .2, bark);
+  },
+  /* music box comb: pure and high, with a soft shimmer */
+  comb(a, out, f, t, v, len) {
+    [[1, 1, 1], [2, .28, .45], [3.03, .1, .25], [4.98, .04, .12]].forEach(([p, m, dk], i) => {
+      const g = a.createGain(); g.connect(out); env(g, t, v * m * .6, .0015, len * dk); osc(a, "sine", f * p, t, t + len * dk + .05, g, i ? 2 : 0);
+    });
+    strike(a, out, f * 3, t, v * .05, .008);
+  },
+  /* harp: a real plucked string */
   pluck(a, out, f, t, v, len) {
-    const lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.setValueAtTime(f * 8, t); lp.frequency.exponentialRampToValueAtTime(f * 1.5, t + len * .6); lp.connect(out);
-    [[1, "triangle", 0], [2, "sine", .4], [1, "sawtooth", .12]].forEach(([p, ty, m], i) => {
-      const o = a.createOscillator(), g = a.createGain(); o.type = ty; o.frequency.value = f * p * (i === 2 ? 1.003 : 1);
-      env(g, t, v * (m || 1) * .9, .003, len); o.connect(g).connect(lp); o.start(t); o.stop(t + len);
-    });
+    const s = a.createBufferSource(), g = a.createGain(), lp = a.createBiquadFilter();
+    s.buffer = ksBuffer(a, f, Math.min(len, 3)); lp.type = "lowpass"; lp.frequency.value = Math.min(f * 10, 12000);
+    g.gain.value = v * .9; s.connect(lp).connect(g).connect(out); s.start(t);
   },
+  /* warm pad: three detuned saws per note through a slowly opening filter */
   pad(a, out, f, t, v, len) {
-    const lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1400; lp.Q.value = .4; lp.connect(out);
-    [-6, 6].forEach(dt => {
-      const o = a.createOscillator(), g = a.createGain(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = dt;
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .35, t + len * .35); g.gain.linearRampToValueAtTime(0, t + len);
-      o.connect(g).connect(lp); o.start(t); o.stop(t + len + .05);
-    });
+    const lp = a.createBiquadFilter(), g = a.createGain(); lp.type = "lowpass"; lp.Q.value = .7;
+    lp.frequency.setValueAtTime(380, t); lp.frequency.linearRampToValueAtTime(1600, t + len * .45); lp.frequency.linearRampToValueAtTime(700, t + len);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .16, t + len * .38); g.gain.linearRampToValueAtTime(0, t + len);
+    lp.connect(g).connect(out);
+    [-9, 0, 8].forEach(dt => osc(a, "sawtooth", f, t, t + len + .05, lp, dt));
+    const sub = a.createGain(); sub.gain.value = v * .05; sub.connect(g); osc(a, "sine", f / 2, t, t + len + .05, sub);
   },
+  /* songbird: a quick rising whistle with a fast warble */
   chirp(a, out, f, t, v, len) {
-    const o = a.createOscillator(), g = a.createGain(); o.type = "sine";
-    o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 1.5, t + len * .5); o.frequency.exponentialRampToValueAtTime(f * 1.1, t + len);
-    env(g, t, v * .8, .01, len); o.connect(g).connect(out); o.start(t); o.stop(t + len + .02);
+    const o = a.createOscillator(), g = a.createGain(), lfo = a.createOscillator(), lg = a.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(f * .82, t); o.frequency.exponentialRampToValueAtTime(f * 1.3, t + len * .45); o.frequency.exponentialRampToValueAtTime(f * 1.02, t + len);
+    lfo.frequency.value = 34 + Math.random() * 12; lg.gain.value = f * .035; lfo.connect(lg).connect(o.frequency);
+    env(g, t, v * .45, .008, len); o.connect(g).connect(out); o.start(t); lfo.start(t); o.stop(t + len + .02); lfo.stop(t + len + .02);
   },
+  /* classic digital alarm, rounded off so it isn't harsh */
   beep(a, out, f, t, v, len) {
-    const o = a.createOscillator(), g = a.createGain(), lp = a.createBiquadFilter(); o.type = "square"; o.frequency.value = f; lp.type = "lowpass"; lp.frequency.value = f * 3;
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .35, t + .005); g.gain.setValueAtTime(v * .35, t + len - .01); g.gain.linearRampToValueAtTime(0, t + len);
-    o.connect(lp).connect(g).connect(out); o.start(t); o.stop(t + len + .02);
+    const g = a.createGain(), lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = f * 2.4; lp.Q.value = .5;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .22, t + .006); g.gain.setValueAtTime(v * .22, t + len - .012); g.gain.linearRampToValueAtTime(0, t + len);
+    lp.connect(g).connect(out); osc(a, "square", f, t, t + len + .02, lp); osc(a, "sine", f, t, t + len + .02, g);
   },
+  /* singing bowl: slowly beating pairs of partials that bloom and fade */
   bowl(a, out, f, t, v, len) {
-    [[1, 1], [1.004, .8], [2.71, .3], [5.1, .08]].forEach(([p, m]) => {
-      const o = a.createOscillator(), g = a.createGain(); o.type = "sine"; o.frequency.value = f * p;
-      env(g, t, v * m, .06, len); o.connect(g).connect(out); o.start(t); o.stop(t + len);
-    });
+    [[1, 1], [2.71, .38], [5.15, .12], [8.43, .04]].forEach(([p, m]) => [0, .7].forEach(beat => {
+      const g = a.createGain(); g.connect(out); env(g, t, v * m * .35, .04, len * (1.1 - p / 12)); osc(a, "sine", f * p + beat, t, t + len + .05, g);
+    }));
+    strike(a, out, f * 3, t, v * .1, .03);
   }
 };
 const N = n => 440 * Math.pow(2, n / 12);   // semitones from A4
+/* notes are [semitones from A4, start in seconds, length?, velocity?] */
 const SOUNDS = {
-  glass:   { name: "Glass",        voice: "bell",   notes: [[3, 0], [7, .16], [10, .32], [15, .48]], len: 2.2 },
-  dawn:    { name: "Dawn",         voice: "bell",   notes: [[-9, 0], [-5, .45], [-2, .9], [3, 1.35]], len: 3.6 },
-  rise:    { name: "Rise",         voice: "bell",   notes: [[3, 0], [5, .13], [7, .26], [10, .39], [12, .52], [15, .65]], len: 2 },
-  marimba: { name: "Marimba",      voice: "mallet", notes: [[3, 0], [7, .14], [10, .28], [15, .42], [10, .7], [15, .84]], len: .9 },
-  harp:    { name: "Harp",         voice: "pluck",  notes: [[-7, 0], [0, .11], [5, .22], [9, .33], [12, .44], [17, .55]], len: 2.2 },
-  lumen:   { name: "Lumen",        voice: "pad",    notes: [[-16, 0], [-12, 0], [-9, 0], [-5, 0], [-2, .2]], len: 3.4 },
-  bowl:    { name: "Singing bowl", voice: "bowl",   notes: [[-14, 0], [-7, 2.4]], len: 5 },
-  birds:   { name: "Birdsong",     voice: "chirp",  notes: [[31, 0, .09], [33, .12, .07], [31, .22, .09], [36, .7, .12], [34, .9, .06], [36, 1.0, .06], [29, 1.6, .14]], len: .1 },
-  crystal: { name: "Crystal",      voice: "bell",   notes: [[15, 0], [19, .08], [22, .16], [27, .24]], len: 1.6 },
-  ding:    { name: "Ding",         voice: "bell",   notes: [[7, 0], [3, .35]], len: 2.4 },
-  pulse:   { name: "Pulse",        voice: "beep",   notes: [[12, 0], [12, .15], [12, .3], [12, .45]], len: .09 },
-  kitchen: { name: "Kitchen",      voice: "beep",   notes: [[27, 0], [27, .07], [27, .14], [27, .21], [27, .28], [27, .35], [27, .42], [27, .49]], len: .045 }
+  glass:   { name: "Glass",        voice: "bell",  notes: [[3, 0, 0, 1], [7, .2, 0, .8], [10, .4, 0, .85], [15, .6, 0, .9]], len: 3 },
+  dawn:    { name: "Dawn",         voice: "keys",  notes: [[-16, 0, 0, .7], [-9, .02, 0, .55], [-5, .4, 0, .7], [-2, .8, 0, .7], [3, 1.2, 0, .8], [7, 1.6, 0, .75]], len: 3.2 },
+  keys:    { name: "Soft keys",    voice: "keys",  notes: [[-14, 0, 0, .6], [-7, 0, 0, .5], [-2, .01, 0, .5], [2, .02, 0, .45], [-12, 1.6, 0, .6], [-5, 1.6, 0, .5], [0, 1.61, 0, .5], [4, 1.62, 0, .45]], len: 2.8 },
+  kalimba: { name: "Kalimba",      voice: "tine",  notes: [[3, 0, 0, .9], [10, .22, 0, .7], [7, .44, 0, .8], [15, .66, 0, .75], [12, 1.0, 0, .8], [10, 1.22, 0, .6]], len: 1.8 },
+  rise:    { name: "Rise",         voice: "comb",  notes: [[15, 0, 0, .7], [17, .17, 0, .65], [19, .34, 0, .7], [22, .51, 0, .75], [24, .68, 0, .8], [27, .85, 0, .9]], len: 2.2 },
+  marimba: { name: "Marimba",      voice: "mallet", notes: [[3, 0, 0, 1], [7, .15, 0, .75], [10, .3, 0, .85], [15, .45, 0, .9], [10, .75, 0, .7], [15, .9, 0, .85]], len: 1.3 },
+  harp:    { name: "Harp",         voice: "pluck", notes: [[-7, 0, 0, .8], [0, .12, 0, .7], [5, .24, 0, .75], [9, .36, 0, .7], [12, .48, 0, .8], [17, .6, 0, .85]], len: 2.6 },
+  lumen:   { name: "Lumen",        voice: "pad",   notes: [[-16, 0], [-12, 0], [-9, 0], [-5, 0], [-2, .25]], len: 3.8 },
+  bowl:    { name: "Singing bowl", voice: "bowl",  notes: [[-14, 0], [-7, 2.6, 0, .7]], len: 6 },
+  birds:   { name: "Birdsong",     voice: "chirp", notes: [[31, 0, .11], [33, .14, .08], [31, .26, .1], [36, .75, .14], [34, .96, .07], [36, 1.07, .07], [29, 1.7, .16]], len: .1 },
+  crystal: { name: "Crystal",      voice: "comb",  notes: [[15, 0, 0, .8], [19, .1, 0, .7], [22, .2, 0, .75], [27, .3, 0, .85], [31, .5, 0, .6]], len: 2 },
+  ding:    { name: "Ding",         voice: "bell",  notes: [[7, 0, 0, 1], [3, .4, 0, .85]], len: 2.8 },
+  pulse:   { name: "Classic",      voice: "beep",  notes: [[12, 0], [12, .16], [12, .32], [12, .48]], len: .1 },
+  kitchen: { name: "Kitchen",      voice: "beep",  notes: [[27, 0], [27, .08], [27, .16], [27, .24], [27, .32], [27, .4], [27, .48], [27, .56]], len: .05 }
 };
-const ALARM_SOUNDS = ["glass", "dawn", "rise", "marimba", "harp", "lumen", "bowl", "birds", "crystal", "pulse"];
-const TIMER_SOUNDS = ["ding", "glass", "marimba", "crystal", "harp", "bowl", "pulse", "kitchen"];
+const ALARM_SOUNDS = ["glass", "dawn", "keys", "kalimba", "rise", "marimba", "harp", "lumen", "bowl", "birds", "crystal", "pulse"];
+const TIMER_SOUNDS = ["ding", "kalimba", "marimba", "glass", "crystal", "harp", "bowl", "pulse", "kitchen"];
 function playSound(name, vol = .8, at) {
   const a = ac(); if (!a) return;
   const s = SOUNDS[name] || SOUNDS.glass, t = at || a.currentTime + .03, out = a.createGain();
-  out.gain.value = vol * .22; out.connect(a.destination);
-  s.notes.forEach(([n, d, l]) => VOICES[s.voice](a, out, N(n), t + d, 1, l || s.len));
+  out.gain.value = vol * .3; out.connect(bus(a));
+  // a little human looseness in timing and touch
+  s.notes.forEach(([n, d, l, vel]) => VOICES[s.voice](a, out, N(n), t + d + Math.random() * .008, (vel || 1) * (.92 + Math.random() * .08), l || s.len));
 }
 /* one phrase plus a short breath, so a ringing sound repeats like a real ringtone */
 function loopPeriod(name) {
   const s = SOUNDS[name] || SOUNDS.glass, last = Math.max(...s.notes.map(n => n[1]));
-  const tail = s.voice === "pad" ? s.len : s.voice === "bowl" ? 2.6 : s.voice === "beep" ? .45 : s.voice === "chirp" ? .9 : .7;
+  const tail = { pad: s.len, bowl: 2.8, beep: .5, chirp: 1, pluck: 1, keys: 1.1, tine: .9, comb: .9, mallet: .8, bell: 1 }[s.voice] || .8;
   return last + tail;
 }
 /* vibration patterns (on, off, on, off… in ms); repeated while ringing */
