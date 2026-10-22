@@ -60,6 +60,9 @@ if (!ACCENTS[S.accent]) S.accent = "rose";
 if (!SKINS[S.skin]) S.skin = "live";
 S.sleep = Object.assign(JSON.parse(JSON.stringify(DEF.sleep)), S.sleep || {});
 if (!Array.isArray(S.presets)) S.presets = PRESETS0;
+/* world cities used to be saved as time zone names; now each is { name, sub, tz, lat, lon } so any place can be added */
+S.cities = (S.cities || []).map(c => typeof c === "string" ? CITIES.find(x => x.tz === c) : c).filter(c => c && c.tz && validTz(c.tz));
+function validTz(tz) { try { new Intl.DateTimeFormat("en-US", { timeZone: tz }); return true; } catch (e) { return false; } }
 const save = () => { try { localStorage.setItem("hora", JSON.stringify(S)); } catch (e) {} schedNative(); };
 
 /* ---------- Android app bridge (window.HoraNative exists only inside the APK) ---------- */
@@ -734,7 +737,7 @@ function drawMap() {
     else { x.strokeStyle = "rgba(0,0,0,.35)"; x.lineWidth = 1; x.stroke(); }
     if (label) { x.font = "650 9px -apple-system,system-ui,sans-serif"; x.fillStyle = fg; x.globalAlpha = .75; x.textAlign = px > w - 60 ? "right" : "left"; x.fillText(label, px + (px > w - 60 ? -6 : 6), py + 3); x.globalAlpha = 1; }
   };
-  S.cities.forEach(tz => { const ci = CITIES.find(z => z.tz === tz); if (ci) pin(ci.lon, ci.lat, false, ci.name); });
+  S.cities.forEach(ci => pin(ci.lon, ci.lat, false, ci.name));
   pin(HOME.lon, HOME.lat, true, "");
 }
 addEventListener("resize", () => { MAP.dots = null; drawMap(); });
@@ -786,34 +789,70 @@ function renderWorld() {
   else { $("#tLabel").textContent = (sh > 0 ? "+" : "−") + dur(Math.abs(sh) * 60000).replace("under a minute", "0 m"); $("#tDelta").textContent = hmA(new Date(at)) + " in Gliwice"; $("#tNow").style.display = "inline-block"; }
   const lkey = localKey(at), loff = -new Date(at).getTimezoneOffset();
   let h = "";
-  S.cities.forEach(tz => {
-    const c = CITIES.find(x => x.tz === tz); if (!c) return;
+  S.cities.forEach(c => {
+    const tz = c.tz;
     const p = tzParts(tz, at), hr = +p.hour % 24, mi = +p.minute, key = p.year + p.month + p.day;
     const diff = (tzOffsetMin(tz, at) - loff) / 60;
     const day = key === lkey ? "Today" : (key > lkey ? "Tomorrow" : "Yesterday");
     const ds = diff === 0 ? "same time" : (diff > 0 ? "+" : "−") + Math.abs(diff) + " h";
     const alt = sunAlt(at, c.lat, c.lon), [tp, bt] = skyFor(alt);
     const awake = hr >= 8 && hr < 22 ? (hr >= 9 && hr < 18 ? `<span class="pill">Work hours</span>` : `<span class="pill dim">Awake</span>`) : `<span class="pill amber">Asleep</span>`;
-    h += `<div class="row">${miniClock(hr, mi, tp, bt, alt < 0)}<div class="tx"><b>${c.name}</b><span>${day}, ${ds} &nbsp;${awake}</span></div><div class="rt">${fmtHM(hr, mi)}${S.h24 ? "" : `<small>${apOf(hr)}</small>`}</div></div>`;
+    h += `<div class="row">${miniClock(hr, mi, tp, bt, alt < 0)}<div class="tx"><b>${esc(c.name)}</b><span>${day}, ${ds} &nbsp;${awake}</span></div><div class="rt">${fmtHM(hr, mi)}${S.h24 ? "" : `<small>${apOf(hr)}</small>`}</div></div>`;
   });
-  if (!S.cities.length) h = `<div class="empty">No cities yet. Tap Edit to add some.</div>`;
+  if (!S.cities.length) h = `<div class="empty">No cities yet. Tap Edit to add any city or town.</div>`;
   if ($("#world").innerHTML !== h) $("#world").innerHTML = h;
 }
+/* Search any city or town in the world (Open-Meteo geocoding: free, no account). Offline, it falls back to the built-in list. */
+const cityKey = c => c.name + "|" + c.tz + "|" + Math.round(c.lat * 10) + "," + Math.round(c.lon * 10);
+const cityTime = (tz, n) => { const p = tzParts(tz, n), hr = +p.hour % 24; return fmtHM(hr, +p.minute) + (S.h24 ? "" : `<small>${apOf(hr)}</small>`); };
+async function findCities(q) {
+  try {
+    const r = await fetch("https://geocoding-api.open-meteo.com/v1/search?count=20&language=en&format=json&name=" + encodeURIComponent(q), { cache: "no-store" });
+    const d = await r.json();
+    return (d.results || []).filter(x => x.timezone && validTz(x.timezone))
+      .map(x => ({ name: x.name, sub: [x.admin1, x.country].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i && v !== x.name).join(", "), tz: x.timezone, lat: x.latitude, lon: x.longitude }));
+  } catch (e) {
+    const s = q.toLowerCase();
+    return CITIES.filter(c => c.name.toLowerCase().includes(s)).map(c => Object.assign({ sub: c.tz.split("/").pop().replace(/_/g, " ") }, c));
+  }
+}
 $("#editCities").onclick = () => {
-  openSheet(nav("World clocks", "", "Done") + `<input class="field" id="cq" placeholder="Search cities" autocomplete="off"><div class="cityl" id="cl" style="margin-top:8px"></div>`, () => {
-    const list = () => {
-      const q = $("#cq").value.trim().toLowerCase(), n = now();
-      $("#cl").innerHTML = CITIES.filter(c => !q || c.name.toLowerCase().includes(q)).map(c => {
-        const on = S.cities.includes(c.tz), p = tzParts(c.tz, n), hr = +p.hour % 24;
-        return `<div class="row" data-tz="${c.tz}"><div class="check ${on ? "on" : ""}">${on ? "✓" : ""}</div><div class="tx"><b>${c.name}</b><span>${c.tz.split("/").pop().replace(/_/g, " ")}</span></div><div class="rt" style="font-size:18px">${fmtHM(hr, +p.minute)}${S.h24 ? "" : `<small>${apOf(hr)}</small>`}</div></div>`;
-      }).join("");
-      $$("#cl .row").forEach(r => r.onclick = () => {
-        const tz = r.dataset.tz, i = S.cities.indexOf(tz);
-        if (i >= 0) S.cities.splice(i, 1); else S.cities.push(tz);
-        save(); tick(); list(); renderWorld(); drawMap();
+  openSheet(nav("World clocks", "", "Done") + `<input class="field" id="cq" placeholder="Search any city or town" autocomplete="off" enterkeyhint="search">
+    <div class="lab" id="clLab">Your cities</div><div class="cityl" id="cl"></div>`, () => {
+    let seq = 0, timer = null;
+    const mine = () => {
+      const n = now();
+      $("#clLab").textContent = "Your cities";
+      $("#cl").innerHTML = S.cities.map((c, i) => `<div class="row" data-i="${i}"><div class="tx"><b>${esc(c.name)}</b><span>${esc(c.sub || c.tz.split("/").pop().replace(/_/g, " "))}</span></div><div class="rt" style="font-size:18px">${cityTime(c.tz, n)}</div>
+        ${i ? `<button class="tpp" data-up title="Move up">↑</button>` : ""}<button class="xdel" data-x title="Remove">✕</button></div>`).join("")
+        || `<div class="empty">Search above to add a city, town or village anywhere in the world.</div>`;
+      $$("#cl .row").forEach(r => {
+        const i = +r.dataset.i;
+        r.querySelector("[data-x]").onclick = () => { S.cities.splice(i, 1); save(); tick(.8); mine(); renderWorld(); drawMap(); };
+        const up = r.querySelector("[data-up]"); if (up) up.onclick = () => { const [c] = S.cities.splice(i, 1); S.cities.splice(i - 1, 0, c); save(); tick(); mine(); renderWorld(); };
       });
     };
-    $("#cq").oninput = list; list();
+    const results = list => {
+      const n = now();
+      $("#clLab").textContent = list.length ? "Results" : "No places found";
+      $("#cl").innerHTML = list.map((c, i) => {
+        const on = S.cities.some(x => cityKey(x) === cityKey(c));
+        return `<div class="row" data-i="${i}"><div class="check ${on ? "on" : ""}">${on ? "✓" : ""}</div><div class="tx"><b>${esc(c.name)}</b><span>${esc(c.sub || "")}</span></div><div class="rt" style="font-size:18px">${cityTime(c.tz, n)}</div></div>`;
+      }).join("");
+      $$("#cl .row").forEach(r => r.onclick = () => {
+        const c = list[r.dataset.i], k = S.cities.findIndex(x => cityKey(x) === cityKey(c));
+        if (k >= 0) S.cities.splice(k, 1);
+        else { if (S.cities.length >= 20) return toast("Up to 20 cities"); S.cities.push(c); toast(c.name + " added"); }
+        save(); tick(); results(list); renderWorld(); drawMap();
+      });
+    };
+    $("#cq").oninput = () => {
+      clearTimeout(timer); const q = $("#cq").value.trim();
+      if (q.length < 2) { seq++; mine(); return; }
+      $("#clLab").textContent = "Searching…";
+      timer = setTimeout(async () => { const my = ++seq, list = await findCities(q); if (my === seq) results(list); }, 280);
+    };
+    mine();
   });
 };
 
