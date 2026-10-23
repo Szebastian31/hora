@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#120a2e"/><stop offset=".62" stop-color="#2b1a5c"/><stop offset="1" stop-color="#5b2f7a"/></linearGradient>
+  <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffbe8c" stop-opacity=".34"/><stop offset="1" stop-color="#ffbe8c" stop-opacity="0"/></radialGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".24"/><stop offset=".55" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#fff" stop-opacity=".13"/></linearGradient>
+  <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b9a8ff"/><stop offset="1" stop-color="#ffcf9e"/></linearGradient>
+  <filter id="shine" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ffcf9e" flood-opacity=".8"/></filter>
+  <clipPath id="scr"><rect x="12" y="12" width="366" height="820" rx="43"/></clipPath>
+  <style>
+    text{font-family:ui-rounded,"SF Pro Rounded","SF Pro Display",-apple-system,"Segoe UI",Roboto,sans-serif;fill:#eef3ff}
+    .s{font-family:"New York","Iowan Old Style",Georgia,serif}
+    .k{font-size:9.5px;font-weight:700;letter-spacing:1.3px;fill:#eef3ff;fill-opacity:.5}
+    .d{fill-opacity:.74} .f{fill-opacity:.5} .g{fill:#ffcf9e} .g2{fill:#ffe2c4}
+    .card{fill:#fff;fill-opacity:.09;stroke:#fff;stroke-opacity:.16}
+    .ic{fill:none;stroke:#eef3ff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  </style>
+</defs>
+<rect width="390" height="844" rx="54" fill="#111"/>
+<g clip-path="url(#scr)">
+  <rect x="12" y="12" width="366" height="820" fill="url(#sky)"/>
+  <ellipse cx="195" cy="860" rx="320" ry="280" fill="url(#glow)"/>
+  <g fill="#fff"><circle cx="48" cy="96" r="1.2" opacity=".7"/><circle cx="330" cy="70" r="1" opacity=".6"/><circle cx="300" cy="150" r="1.3" opacity=".5"/><circle cx="70" cy="210" r=".9" opacity=".6"/><circle cx="350" cy="260" r="1" opacity=".5"/><circle cx="40" cy="330" r="1.1" opacity=".4"/><circle cx="252" cy="60" r=".8" opacity=".6"/></g>
+  <path d="M12 770 Q195 745 378 770 V832 H12Z" fill="#170f33" opacity=".55"/><path d="M12 795 Q195 778 378 795 V832 H12Z" fill="#0d0a22" opacity=".7"/>
+
+  <text x="30" y="86" class="k">WEDNESDAY, 21 OCTOBER</text>
+  <text x="30" y="118" font-size="28" font-weight="800" letter-spacing="-1">Good morning, Ada</text>
+
+  <!-- agreement ring -->
+  <circle cx="195" cy="236" r="78" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="12"/>
+  <g fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="153.4 336.7">
+    <circle cx="195" cy="236" r="78" stroke="#ffcf9e" filter="url(#shine)" transform="rotate(-86.3 195 236)"/>
+    <circle cx="195" cy="236" r="78" stroke="#ffcf9e" filter="url(#shine)" transform="rotate(33.7 195 236)"/>
+    <circle cx="195" cy="236" r="78" stroke="#fff" stroke-opacity=".14" transform="rotate(153.7 195 236)"/>
+  </g>
+  <circle cx="195" cy="236" r="64" fill="url(#glass)" stroke="#fff" stroke-opacity=".3"/>
+  <text x="195" y="250" text-anchor="middle" font-size="50" font-weight="800" letter-spacing="-2">2<tspan font-size="21" fill-opacity=".5" letter-spacing="0">/3</tspan></text>
+  <text x="195" y="272" text-anchor="middle" class="k">AGREE</text>
+
+  <text x="195" y="344" text-anchor="middle" class="k">WHERE THE SYSTEMS AGREE TODAY</text>
+  <text x="195" y="384" text-anchor="middle" font-size="36" font-weight="800" letter-spacing="-1.3" class="g2">Reach out</text>
+  <text x="195" y="410" text-anchor="middle" font-size="15" class="s d">People matter most today. Talk, team up,</text>
+  <text x="195" y="429" text-anchor="middle" font-size="15" class="s d">make peace.</text>
+  <text x="195" y="452" text-anchor="middle" font-size="11" class="f">2 of 3 systems agree. Tap to see each vote.</text>
+
+  <!-- reading -->
+  <rect x="24" y="472" width="342" height="226" rx="24" class="card"/>
+  <text x="40" y="498" class="k">YOUR DAY</text><text x="350" y="498" text-anchor="end" class="k">♊&#xFE0E; GEMINI</text>
+  <g font-size="15" class="s">
+    <text x="40" y="526"><tspan font-family="ui-rounded,-apple-system,sans-serif" font-weight="700" class="g2">Reach out.</tspan> People matter most today.</text>
+    <text x="40" y="548">The Moon is in Libra today, so the mood is</text>
+    <text x="40" y="570">sociable and fair-minded. It’s passing</text>
+    <text x="40" y="592">through your 1st house, which puts the</text>
+    <text x="40" y="614">focus on your image and new beginnings.</text>
+    <text x="40" y="640">Venus flows easily with your natal Sun:</text>
+    <text x="40" y="662">there’s warmth and a little luck in …</text>
+  </g>
+
+  <rect x="24" y="710" width="167" height="120" rx="24" class="card"/>
+  <rect x="199" y="710" width="167" height="120" rx="24" class="card"/>
+  <text x="40" y="734" class="k">TODAY’S STARS</text><text x="215" y="734" class="k">FOR LUCK</text>
+  <text x="40" y="756" font-size="11.5" class="d">Love</text><rect x="80" y="750" width="80" height="6" rx="3" fill="#fff" fill-opacity=".14"/><rect x="80" y="750" width="64" height="6" rx="3" fill="url(#bar)"/>
+  <text x="215" y="772" font-size="44" font-weight="800" letter-spacing="-2" class="g">7</text>
+
+  <!-- tab bar -->
+  <rect x="12" y="748" width="366" height="84" fill="#120a2e" fill-opacity=".78"/><path d="M12 748.5H378" stroke="#fff" stroke-opacity=".16"/>
+  <rect x="31.75" y="760" width="52" height="34" rx="12" class="card"/>
+  <g class="ic"><circle cx="57.75" cy="777" r="4"/><path d="M57.75 767.5v2M57.75 784.5v2M48.25 777h2M65.25 777h2M51 770.3l1.4 1.4M63.1 782.4l1.4 1.4M51 783.8l1.4-1.4M63.1 771.6l1.4-1.4"/></g>
+  <g class="ic" stroke-opacity=".5"><path d="M149.25 767l1.9 5.6h6.1l-4.9 3.6 1.9 5.8-5-3.6-5 3.6 1.9-5.8-4.9-3.6h6.1z"/>
+    <circle cx="240.75" cy="777" r="9"/><circle cx="240.75" cy="777" r="4.5"/><circle cx="332.25" cy="773" r="4"/><path d="M324.25 786c1.5-4 4.5-6 8-6s6.5 2 8 6"/></g>
+  <g font-size="10.5" font-weight="600" text-anchor="middle"><text x="57.75" y="807">Today</text><text x="149.25" y="807" class="f">Me</text><text x="240.75" y="807" class="f">Systems</text><text x="332.25" y="807" class="f">Profile</text></g>
+  <circle cx="57.75" cy="815" r="2" fill="#ffcf9e"/>
+</g>
+<rect x="136" y="22" width="118" height="34" rx="17" fill="#000"/>
+</svg>

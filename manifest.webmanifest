@@ -1,25 +1,16 @@
 {
-  "name": "Hora",
-  "short_name": "Hora",
-  "description": "A clock, alarm, timer and stopwatch that tells you how right it is.",
-  "id": "./",
+  "name": "Augur",
+  "short_name": "Augur",
+  "description": "Your birth chart, Native American Medicine Wheel, Chinese pillars and numerology, and where they agree.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b1433",
-  "theme_color": "#0b1433",
-  "categories": ["utilities", "productivity"],
+  "background_color": "#120a2e",
+  "theme_color": "#120a2e",
   "icons": [
-    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" },
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
     { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ],
-  "shortcuts": [
-    { "name": "New alarm", "short_name": "New alarm", "url": "./?tab=newalarm", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Timer", "short_name": "Timer", "url": "./?tab=timer", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Stopwatch", "short_name": "Stopwatch", "url": "./?tab=stopwatch", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Alarms", "short_name": "Alarms", "url": "./?tab=alarm", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

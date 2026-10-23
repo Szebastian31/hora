@@ -3,15 +3,15 @@ plugins {
 }
 
 android {
-    namespace 'com.hora.clock'
+    namespace 'com.augur.stars'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.hora.clock"
-        minSdk 26
+        applicationId "com.augur.stars"
+        minSdk 29
         targetSdk 34
-        versionCode 3
-        versionName "1.2.0"
+        versionCode 5
+        versionName "1.4.0"
     }
 
     buildTypes {
@@ -33,17 +33,17 @@ android {
     // so GitHub Pages and the APK always run the same files.
     sourceSets {
         main {
-            assets.srcDirs += ["$buildDir/generated/hora-web"]
+            assets.srcDirs += ["$buildDir/generated/augur-web"]
         }
     }
 }
 
 tasks.register('copyWebApp', Copy) {
     from(rootProject.projectDir) {
-        include 'index.html', 'style.css', 'app.js', 'scenes.js', 'icons/**', 'fonts/**'
-        exclude 'icons/*.png'
+        include 'index.html', 'i18n.js', 'i18n/*.js', 'astro.js', 'chart.js', 'native.js', 'chinese.js', 'numerology.js', 'egyptian.js', 'mayan.js',
+                'texts.js', 'quotes.js', 'consensus.js', 'daily.js', 'week.js', 'ui.js', 'draw.js', 'systems.js', 'app.js', 'icons/icon-192.png'
     }
-    into "$buildDir/generated/hora-web/www"
+    into "$buildDir/generated/augur-web/www"
 }
 preBuild.dependsOn copyWebApp
 

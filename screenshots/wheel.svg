@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#120a2e"/><stop offset=".62" stop-color="#2b1a5c"/><stop offset="1" stop-color="#5b2f7a"/></linearGradient>
+  <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffbe8c" stop-opacity=".34"/><stop offset="1" stop-color="#ffbe8c" stop-opacity="0"/></radialGradient>
+  <clipPath id="scr"><rect x="12" y="12" width="366" height="820" rx="43"/></clipPath>
+  <style>
+    text{font-family:ui-rounded,"SF Pro Rounded","SF Pro Display",-apple-system,"Segoe UI",Roboto,sans-serif;fill:#eef3ff}
+    .s{font-family:"New York","Iowan Old Style",Georgia,serif}
+    .k{font-size:9.5px;font-weight:700;letter-spacing:1.3px;fill:#eef3ff;fill-opacity:.5}
+    .d{fill-opacity:.74} .f{fill-opacity:.5} .g{fill:#ffcf9e} .g2{fill:#ffe2c4}
+    .card{fill:#fff;fill-opacity:.09;stroke:#fff;stroke-opacity:.16}
+    .line{stroke:#fff;stroke-opacity:.16;fill:none}
+    .ic{fill:none;stroke:#eef3ff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+    .t{font-size:9.2px;font-weight:600}
+  </style>
+</defs>
+<rect width="390" height="844" rx="54" fill="#111"/>
+<g clip-path="url(#scr)">
+  <rect x="12" y="12" width="366" height="820" fill="url(#sky)"/>
+  <ellipse cx="195" cy="860" rx="320" ry="280" fill="url(#glow)"/>
+  <g fill="#fff"><circle cx="48" cy="96" r="1.2" opacity=".7"/><circle cx="330" cy="70" r="1" opacity=".6"/><circle cx="252" cy="60" r=".8" opacity=".6"/></g>
+  <path d="M12 770 Q195 745 378 770 V832 H12Z" fill="#170f33" opacity=".55"/>
+
+  <text x="30" y="86" class="k">FOUR WAYS TO READ YOU</text>
+  <text x="30" y="118" font-size="30" font-weight="800" letter-spacing="-1">Systems</text>
+  <rect x="24" y="134" width="70" height="32" rx="12" class="card"/><text x="59" y="154" text-anchor="middle" font-size="12.5" font-weight="600">Western</text>
+  <rect x="100" y="134" width="118" height="32" rx="12" fill="#eef3ff"/><text x="159" y="154" text-anchor="middle" font-size="12.5" font-weight="600" style="fill:#120a2e">Native American</text>
+  <rect x="224" y="134" width="70" height="32" rx="12" class="card"/><text x="259" y="154" text-anchor="middle" font-size="12.5" font-weight="600">Chinese</text>
+  <rect x="300" y="134" width="96" height="32" rx="12" class="card"/><text x="312" y="154" font-size="12.5" font-weight="600">Numerology</text>
+
+  <!-- medicine wheel -->
+  <rect x="24" y="178" width="342" height="316" rx="24" class="card"/>
+  <circle cx="195" cy="335" r="142.5" fill="#fff" fill-opacity=".05" class="line"/>
+  <path d="M266.25 458.4A142.5 142.5 0 0 1 195 477.5L195 422.4A87.4 87.4 0 0 0 238.7 410.7Z" fill="#ffcf9e" fill-opacity=".24" stroke="#ffcf9e" stroke-opacity=".6"/>
+  <circle cx="195" cy="335" r="87.4" class="line"/>
+  <path class="line" d="M195 192.5V247.6M266.25 211.6L238.7 259.3M318.4 263.75L270.7 291.3M337.5 335H282.4M318.4 406.25L270.7 378.7M266.25 458.4L238.7 410.7M195 477.5V422.4M123.75 458.4L151.3 410.7M71.6 406.25L119.3 378.7M52.5 335H107.6M71.6 263.75L119.3 291.3M123.75 211.6L151.3 259.3"/>
+  <!-- clan ring: earth, air, water, fire from Snow Goose round -->
+  <g fill="none" stroke-width="11" stroke-dasharray="42.78 470.5">
+    <circle cx="195" cy="335" r="81.7" stroke="#e9c46a" stroke-opacity=".6" transform="rotate(-90 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#b9a8ff" stroke-opacity=".6" transform="rotate(-60 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#a99bff" stroke-opacity=".6" transform="rotate(-30 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#ff9a78" stroke-opacity=".6" transform="rotate(0 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#e9c46a" stroke-opacity=".6" transform="rotate(30 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#b9a8ff" transform="rotate(60 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#a99bff" stroke-opacity=".6" transform="rotate(90 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#ff9a78" stroke-opacity=".6" transform="rotate(120 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#e9c46a" stroke-opacity=".6" transform="rotate(150 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#b9a8ff" stroke-opacity=".6" transform="rotate(180 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#a99bff" stroke-opacity=".6" transform="rotate(210 195 335)"/>
+    <circle cx="195" cy="335" r="81.7" stroke="#ff9a78" stroke-opacity=".6" transform="rotate(240 195 335)"/>
+  </g>
+  <g text-anchor="middle" dominant-baseline="central" class="t">
+    <text x="226.5" y="217.5">Snow Goose</text><text x="281" y="249">Otter</text><text x="312.5" y="303.5">Cougar</text>
+    <text x="312.5" y="366.5">Red Hawk</text><text x="281" y="421">Beaver</text><text x="226.5" y="452.5" font-size="10.5" font-weight="800" class="g2">Deer</text>
+    <text x="163.5" y="452.5">Flicker</text><text x="109" y="421">Sturgeon</text><text x="77.5" y="366.5">Brown Bear</text>
+    <text x="77.5" y="303.5">Raven</text><text x="109" y="249">Snake</text><text x="163.5" y="217.5">Elk</text>
+  </g>
+  <path class="line" d="M195 268V402M128 335H262"/><circle cx="195" cy="335" r="21" class="line"/>
+  <g text-anchor="middle" font-weight="700" font-size="14">
+    <text x="195" y="286" class="f">N</text><text x="244" y="335" class="g">E</text><text x="195" y="384" class="f">S</text><text x="146" y="335" class="f">W</text>
+  </g>
+  <g text-anchor="middle" font-size="6.5" class="f"><text x="195" y="297">Waboose</text><text x="244" y="346">Wabun</text><text x="195" y="395">Shawnodese</text><text x="146" y="346">Mudjekeewis</text></g>
+  <text x="195" y="484" text-anchor="middle" font-size="10" class="f">Your moon of the wheel glows</text>
+
+  <!-- totem card -->
+  <rect x="24" y="506" width="342" height="230" rx="24" class="card"/>
+  <text x="40" y="532" class="k">YOUR BIRTH TOTEM</text>
+  <text x="40" y="562" font-size="24" font-weight="800" letter-spacing="-.6">Deer</text>
+  <text x="40" y="582" font-size="12" class="d">Cornplanting Moon · 21 May – 20 Jun</text>
+  <g font-size="15" class="s">
+    <text x="40" y="608">Gentle, quick and sociable. You sense</text>
+    <text x="40" y="628">danger and opportunity early, love good</text>
+    <text x="40" y="648">conversation and move gracefully</text>
+    <text x="40" y="668">between people.</text>
+  </g>
+  <rect x="40" y="682" width="98" height="44" rx="14" fill="#fff" fill-opacity=".14"/>
+  <rect x="146" y="682" width="98" height="44" rx="14" fill="#fff" fill-opacity=".14"/>
+  <rect x="252" y="682" width="98" height="44" rx="14" fill="#fff" fill-opacity=".14"/>
+  <g text-anchor="middle"><text x="89" y="698" font-size="8.5" font-weight="700" letter-spacing="1" class="f">PLANT</text><text x="89" y="715" font-size="12.5" font-weight="700">Yarrow</text>
+    <text x="195" y="698" font-size="8.5" font-weight="700" letter-spacing="1" class="f">MINERAL</text><text x="195" y="715" font-size="12.5" font-weight="700">Moss agate</text>
+    <text x="301" y="698" font-size="8.5" font-weight="700" letter-spacing="1" class="f">COLOUR</text><text x="307" y="715" font-size="12.5" font-weight="700">White, green</text></g>
+  <circle cx="262" cy="711" r="4.5" fill="#9fd3a5"/>
+
+  <!-- tab bar -->
+  <rect x="12" y="748" width="366" height="84" fill="#120a2e" fill-opacity=".78"/><path d="M12 748.5H378" class="line"/>
+  <rect x="214.75" y="760" width="52" height="34" rx="12" class="card"/>
+  <g class="ic" stroke-opacity=".5"><circle cx="57.75" cy="777" r="4"/><path d="M57.75 767.5v2M57.75 784.5v2M48.25 777h2M65.25 777h2"/>
+    <path d="M149.25 767l1.9 5.6h6.1l-4.9 3.6 1.9 5.8-5-3.6-5 3.6 1.9-5.8-4.9-3.6h6.1z"/><circle cx="332.25" cy="773" r="4"/><path d="M324.25 786c1.5-4 4.5-6 8-6s6.5 2 8 6"/></g>
+  <g class="ic"><circle cx="240.75" cy="777" r="9"/><circle cx="240.75" cy="777" r="4.5"/></g>
+  <g font-size="10.5" font-weight="600" text-anchor="middle"><text x="57.75" y="807" class="f">Today</text><text x="149.25" y="807" class="f">Me</text><text x="240.75" y="807">Systems</text><text x="332.25" y="807" class="f">Profile</text></g>
+  <circle cx="240.75" cy="815" r="2" fill="#ffcf9e"/>
+</g>
+<rect x="136" y="22" width="118" height="34" rx="17" fill="#000"/>
+</svg>
