@@ -45,22 +45,21 @@ jobs:
         run: gradle assembleDebug --no-daemon --stacktrace
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk "Augur_v${{ steps.ver.outputs.name }}.apk"
+        run: cp app/build/outputs/apk/debug/app-debug.apk "Hora_v${{ steps.ver.outputs.name }}.apk"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Augur-v${{ steps.ver.outputs.name }}-apk
-          path: Augur_v${{ steps.ver.outputs.name }}.apk
+          name: Hora-v${{ steps.ver.outputs.name }}-apk
+          path: Hora_v${{ steps.ver.outputs.name }}.apk
 
       - name: Publish release with APK
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.ver.outputs.name }}
-          name: Augur v${{ steps.ver.outputs.name }}
-          files: Augur_v${{ steps.ver.outputs.name }}.apk
+          name: Hora v${{ steps.ver.outputs.name }}
+          files: Hora_v${{ steps.ver.outputs.name }}.apk
           make_latest: true
           body: |
-            Download **Augur_v${{ steps.ver.outputs.name }}.apk** below and open it on your phone to install.
-
-            Your birth details are stored only on your phone. The only thing Augur sends anywhere is the city name you type when searching for your birthplace.
+            Download **Hora_v${{ steps.ver.outputs.name }}.apk** below and open it on your phone to install.
+            Alarms and timers ring even when Hora is closed or the phone is locked.

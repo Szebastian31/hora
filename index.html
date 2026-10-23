@@ -1,488 +1,155 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#120a2e">
-<meta name="description" content="Your stars, four ways, and where they agree: Western, Native American and Chinese astrology and numerology.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Hora</title>
+<meta name="description" content="A clock, alarm, timer and stopwatch that tells you how right it is.">
+<meta name="theme-color" content="#0b1433">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Augur">
-<title>Augur</title>
+<meta name="apple-mobile-web-app-title" content="Hora">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<style>
-:root{
-  --page:#efe8da; --ink:#1d2230; --muted:#6c6a66;
-  --sky-top:#120a2e; --sky-mid:#2b1a5c; --sky-bot:#5b2f7a; --glow:rgba(255,170,150,.32);
-  --text:#f4f0ff; --dim:rgba(244,240,255,.74); --faint:rgba(244,240,255,.5);
-  --card:rgba(255,255,255,.09); --card2:rgba(255,255,255,.12); --line:rgba(255,255,255,.14);
-  --gold:#ffcf9e; --gold2:#ffe6c8; --rose:#ff9fb4; --accent:#b9a8ff; --good:#5fe3a1; --bad:#ff8a80; --bg:#120a2e;
-  /* the gold-to-rose of the icon's orbit: numbers, the agreement ring, the main button */
-  --grad:linear-gradient(115deg,#ffe6b4 0%,#ffbf96 45%,#ff93ac 100%); --btn-ink:#2a1236;
-  /* frosted glass: a soft fill and a lit edge, brighter at the top left like the icon's cards */
-  --glass:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.05) 55%,rgba(255,255,255,.09));
-  --edge:linear-gradient(160deg,rgba(255,255,255,.42),rgba(255,255,255,.07) 45%,rgba(255,255,255,.16));
-  --lift:0 22px 44px -22px rgba(6,3,28,.7);
-  --aurora1:rgba(255,140,170,.42); --aurora2:rgba(150,120,255,.40); --aurora3:rgba(255,205,150,.30);
-  --fire:#ff9a78; --earth:#e9c46a; --air:#8fd6ff; --water:#a99bff;
-  --wood:#6fd38e; --metal:#e6e2d8; --wateri:#7fa8ff;
-  --display:ui-rounded,"SF Pro Rounded","SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,sans-serif;
-  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Roboto,sans-serif;
-  --serif:"New York","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-  color-scheme:dark;
-}
-/* skins */
-.dawn{--sky-top:#2a1b6a; --sky-mid:#77479a; --sky-bot:#e0828e; --glow:rgba(255,205,150,.55); --bg:#2a1b6a; --gold:#ffe2bc; --gold2:#fff2de;
-  --aurora1:rgba(255,170,150,.45); --aurora2:rgba(190,140,255,.35); --aurora3:rgba(255,225,170,.40)}
-.paper{--sky-top:#f7f1e6; --sky-mid:#f1e7d8; --sky-bot:#ecdcca; --glow:rgba(255,180,150,.35); --bg:#f7f1e6;
-  --text:#22182e; --dim:rgba(34,24,46,.72); --faint:rgba(34,24,46,.5); --card:rgba(255,255,255,.6); --card2:rgba(60,30,40,.06); --line:rgba(60,30,40,.11);
-  --gold:#b4532a; --gold2:#8a3d1c; --rose:#c2416b; --accent:#6a52c7; --good:#2f9d68; --bad:#c0392b;
-  --grad:linear-gradient(115deg,#c0662e 0%,#c24a54 55%,#a8376e 100%); --btn-ink:#fff;
-  --glass:linear-gradient(160deg,rgba(255,255,255,.86),rgba(255,255,255,.58));
-  --edge:linear-gradient(160deg,#fff,rgba(60,30,40,.1) 60%,rgba(60,30,40,.06));
-  --lift:0 20px 40px -24px rgba(80,40,30,.35);
-  --aurora1:rgba(255,160,150,.30); --aurora2:rgba(170,140,255,.18); --aurora3:rgba(255,210,150,.30);
-  --fire:#d9603b; --earth:#b08a2a; --air:#2f8fc7; --water:#5b5fc7; --metal:#8a8070; color-scheme:light}
-
-*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{background:var(--page); color:var(--ink); font:15px/1.5 var(--sans); display:flex; align-items:center; justify-content:center; gap:56px; padding:32px 32px 60px; overflow:hidden}
-body::before{content:""; position:fixed; inset:0; pointer-events:none;
-  background:radial-gradient(1200px 700px at 70% 20%,rgba(255,255,255,.7),transparent 60%),radial-gradient(900px 600px at 10% 90%,rgba(196,170,120,.25),transparent 60%)}
-button,input,select{font-family:inherit}
-
-/* desktop side panel, like Hora */
-.side{position:relative; max-width:340px}
-.brand{display:flex; align-items:center; gap:14px; margin-bottom:26px}
-.brand img{width:56px; height:56px; border-radius:14px; box-shadow:0 10px 30px rgba(20,30,70,.25)}
-.brand h1{font-family:var(--display); font-weight:800; font-size:40px; letter-spacing:-1.2px}
-.side .lede{font-family:var(--display); font-weight:500; font-size:20px; line-height:1.35; letter-spacing:-.3px; margin-bottom:22px}
-.side .how{font-size:13.5px; line-height:1.55; color:var(--muted)}
-.side .how b{color:var(--ink); font-weight:600}
-.side .how li{list-style:none; padding-left:18px; position:relative; margin-bottom:7px}
-.side .how li::before{content:"✦"; position:absolute; left:0; top:3px; font-size:10px; color:#b4532a}
-.side .fam{margin-top:22px; font-size:12px; color:var(--muted); letter-spacing:.3px}
-
-/* phone */
-.phone{position:relative; width:390px; height:844px; max-height:calc(100vh - 70px); aspect-ratio:390/844; border-radius:54px; padding:12px; background:#111;
-  box-shadow:0 40px 90px rgba(25,30,60,.35),0 0 0 2px #2a2a2a inset; flex:none}
-.screen{position:relative; width:100%; height:100%; border-radius:43px; overflow:hidden; isolation:isolate; color:var(--text);
-  background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 62%,var(--sky-bot) 100%)}
-.notch{position:absolute; top:10px; left:50%; transform:translateX(-50%); width:118px; height:34px; border-radius:20px; background:#000; z-index:50}
-#stars{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0}
-.paper #stars{opacity:0}
-.glow{position:absolute; left:-30%; right:-30%; bottom:-34%; height:62%; pointer-events:none; z-index:0; background:radial-gradient(closest-side,var(--glow),transparent)}
-.hills{position:absolute; left:0; right:0; bottom:0; height:140px; pointer-events:none; z-index:0; opacity:.55}
-.paper .hills{opacity:.18}
-/* slow aurora behind everything, and a fine film grain on top of the sky */
-.aurora{position:absolute; inset:-25%; z-index:0; pointer-events:none; filter:blur(48px)}
-.aurora i{position:absolute; border-radius:50%; animation:drift 28s ease-in-out infinite alternate}
-.aurora i:nth-child(1){width:70%; height:46%; left:2%; top:14%; background:radial-gradient(closest-side,var(--aurora2),transparent)}
-.aurora i:nth-child(2){width:62%; height:42%; right:0; top:34%; background:radial-gradient(closest-side,var(--aurora1),transparent); animation-duration:34s; animation-delay:-12s}
-.aurora i:nth-child(3){width:56%; height:34%; left:22%; bottom:6%; background:radial-gradient(closest-side,var(--aurora3),transparent); animation-duration:40s; animation-delay:-20s}
-@keyframes drift{from{transform:translate3d(-6%,-3%,0) scale(1)} to{transform:translate3d(7%,5%,0) scale(1.14)}}
-.screen::after{content:""; position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.09; mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
-.paper .screen::after{opacity:.05; mix-blend-mode:multiply}
-@media (max-width:560px){
-  body{padding:0; gap:0; background:var(--sky-top)} body::before,.side{display:none}
-  html,body{overscroll-behavior:none}
-  .phone{width:100vw; height:100vh; height:100dvh; max-height:none; border-radius:0; padding:0; box-shadow:none; aspect-ratio:auto}
-  .screen{border-radius:0} .notch{display:none}
-  main{padding-top:calc(env(safe-area-inset-top) + 18px) !important}
-}
-
-/* scroll area */
-main{position:absolute; inset:0; z-index:2; overflow-y:auto; overflow-x:hidden; padding:58px 18px 130px; scrollbar-width:none; overscroll-behavior:contain}
-main::-webkit-scrollbar{display:none}
-.view{display:none} .view.on{display:block}
-/* each block rises in, one after another */
-.view.on > *{animation:rise .6s cubic-bezier(.2,.8,.2,1) backwards}
-.view.on > *:nth-child(2){animation-delay:.05s} .view.on > *:nth-child(3){animation-delay:.1s} .view.on > *:nth-child(4){animation-delay:.15s}
-.view.on > *:nth-child(5){animation-delay:.2s} .view.on > *:nth-child(6){animation-delay:.25s} .view.on > *:nth-child(n+7){animation-delay:.3s}
-@keyframes rise{from{opacity:0; transform:translateY(14px) scale(.985)} to{opacity:1; transform:none}}
-
-/* type */
-h1,h2,h3{font-family:var(--display); font-weight:800; letter-spacing:-.6px; line-height:1.1}
-h1{font-size:32px; letter-spacing:-1.1px} h2{font-size:24px; margin-bottom:4px} h3{font-size:17px; letter-spacing:-.3px; margin:4px 0 6px}
-p{margin:.35em 0}
-.dim{color:var(--dim)} .faint{color:var(--faint)} .gold{color:var(--gold)} .small{font-size:13px} .tiny{font-size:11.5px}
-.mini-h{font-family:var(--display); font-weight:700; font-size:17px; letter-spacing:-.3px; margin-bottom:2px}
-.serif-p,.reading p{font-family:var(--serif); font-size:16.5px; line-height:1.58}
-.reading p b{font-family:var(--display); font-weight:700; color:var(--gold2); letter-spacing:-.2px}
-.paper .reading p b{color:var(--gold)}
-
-.top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin:2px 2px 16px}
-.top .date{font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:var(--faint); margin-bottom:4px}
-.badge{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; padding:6px 10px; border-radius:20px; background:var(--card); border:1px solid var(--line);
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); white-space:nowrap; color:var(--text); margin-top:2px}
-.badge i{width:7px; height:7px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px var(--gold)}
-
-/* cards */
-.card,.big3 .cell,.numbers .nb{background:var(--glass) padding-box,var(--edge) border-box; border:1px solid transparent;
-  backdrop-filter:blur(16px) saturate(1.2); -webkit-backdrop-filter:blur(16px) saturate(1.2); box-shadow:var(--lift)}
-.card{border-radius:26px; padding:18px; margin:0 0 12px}
-.card .label{font-size:10.5px; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; color:var(--faint); margin-bottom:12px; display:flex; justify-content:space-between; gap:8px}
-/* numbers and the day's word in the gold-to-rose of the icon */
-.ring-n,.tone,.lucky,.numbers .v,.trait .n,.quote::before{background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
-.tap{cursor:pointer} .card.tap{transition:transform .2s ease} .card.tap:active{transform:scale(.985)}
-.row{display:flex; gap:10px; align-items:center} .wrap{flex-wrap:wrap} .between{justify-content:space-between} .grow{flex:1; min-width:0}
-.grid2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:12px} .grid3{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
-.chev::after{content:"›"; color:var(--faint); font-size:18px; line-height:1}
-.sw{display:inline-block; width:16px; height:16px; border-radius:50%; vertical-align:-3px; margin-right:6px; box-shadow:0 0 0 1px var(--line)}
-
-/* today hero: the agreement ring */
-.hero{text-align:center; padding:6px 6px 20px}
-.ringwrap{position:relative; width:196px; height:196px; margin:0 auto 14px; isolation:isolate}
-.ringwrap::before{content:""; position:absolute; inset:6px; border-radius:50%; z-index:-1; filter:blur(22px); opacity:.75;
-  background:conic-gradient(from 210deg,transparent,var(--aurora3),var(--aurora1),transparent 70%)}
-.ring{width:100%; height:100%; display:block}
-.ring-track{fill:none; stroke:var(--line); stroke-width:10}
-.ring-seg{fill:none; stroke:var(--card2); stroke-width:10; stroke-linecap:round}
-.ring-seg.on{stroke:url(#ring-grad); filter:drop-shadow(0 0 7px rgba(255,170,160,.7))}
-.paper .ring-seg.on{filter:none}
-.paper #ring-grad stop:nth-child(1){stop-color:#c0662e} .paper #ring-grad stop:nth-child(2){stop-color:#c24a54} .paper #ring-grad stop:nth-child(3){stop-color:#a8376e}
-.ring-in{position:absolute; inset:28px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  background:var(--glass) padding-box,var(--edge) border-box; border:1px solid transparent;
-  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); box-shadow:0 22px 44px -16px rgba(6,3,28,.65)}
-.paper .ring-in{box-shadow:0 18px 40px -18px rgba(80,40,30,.3)}
-.ring-n{font-family:var(--display); font-weight:800; font-size:56px; letter-spacing:-2.4px; line-height:1}
-.ring-n small{font-size:22px; letter-spacing:0; margin-left:2px; opacity:.6}
-.ring-l{font-size:10.5px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--faint); margin-top:5px}
-.kicker{font-size:10.5px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--faint)}
-.tone{font-family:var(--serif); font-style:italic; font-weight:500; font-size:42px; letter-spacing:-1px; line-height:1.08; margin:6px 0 4px; padding:0 4px}
-.tone-t{font-family:var(--serif); font-size:16px; color:var(--dim); margin-bottom:6px}
-
-.vote{display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line)} .vote:first-child{border-top:0}
-.vote .sys{width:86px; flex:none; font-size:10.5px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:1px; padding-top:3px}
-.vote .t{font-family:var(--display); font-weight:700} .vote .t.match{color:var(--gold)}
-.trait{display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid var(--line)} .trait:first-of-type{border-top:0}
-.trait .n{font-family:var(--display); font-weight:800; font-size:20px; letter-spacing:-.5px; width:44px; flex:none; text-align:center}
-.trait b{font-family:var(--display); font-weight:700}
-.dots{display:inline-flex; gap:3px; vertical-align:1px; margin-left:4px} .dots i{width:6px; height:6px; border-radius:50%; background:var(--card2)} .dots i.on{background:var(--gold)}
-
-.ratings .r{display:flex; align-items:center; gap:8px; margin:7px 0} .ratings .r span:first-child{width:50px; color:var(--dim); font-size:12.5px}
-.ratings .r span:last-child{width:10px; text-align:right; font-family:var(--display); font-weight:700}
-.bar{flex:1; height:6px; border-radius:3px; background:var(--card2); overflow:hidden} .bar i{display:block; height:100%; border-radius:3px; background:var(--grad); box-shadow:0 0 10px rgba(255,160,160,.45)}
-.lucky{font-family:var(--display); font-weight:800; font-size:52px; letter-spacing:-2px; line-height:1}
-.quote-card{text-align:center; padding:20px 18px}
-.quote{font-family:var(--serif); font-style:italic; font-size:20px; line-height:1.42}
-.quote::before{content:"“"; display:block; font-size:44px; line-height:.6; margin:6px 0 8px; font-style:normal}
-.by{margin-top:10px; color:var(--faint); font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase}
-
-/* me */
-.big3 .cell{border-radius:22px; padding:14px 8px 12px; text-align:center}
-.big3 .glyph{font-family:var(--serif); font-size:30px; color:var(--gold); line-height:1.15}
-.big3 .what{font-size:10px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:1.3px}
-.big3 .sign{font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:-.3px}
-.big3{margin-bottom:12px}
-.warn{font-size:12.5px; line-height:1.5; color:var(--dim); padding:10px 12px; border-radius:14px; border:1px dashed var(--line); margin:0 0 12px}
-.warn b{color:var(--text)}
-
-/* systems */
-.tabs{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; margin:0 -18px 14px; padding:0 18px} .tabs::-webkit-scrollbar{display:none}
-.tabs button{flex:none; border:1px solid var(--line); background:var(--card); color:var(--text); padding:8px 13px; border-radius:14px; font-size:12.5px; font-weight:600; cursor:pointer;
-  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px)}
-.tabs button.on{background:var(--text); color:var(--sky-top); border-color:transparent}
-table.list{width:100%; border-collapse:collapse; font-size:14px} table.list td{padding:9px 4px; border-top:1px solid var(--line); vertical-align:top}
-table.list tr:first-child td{border-top:0} table.list td.g{width:30px; color:var(--gold); font-family:var(--serif); font-size:17px; text-align:center}
-table.list td.r{text-align:right; color:var(--dim); white-space:nowrap}
-.wheel{display:block; width:100%; max-width:330px; margin:0 auto 6px}
-.facts{margin-top:12px} .facts div{background:var(--card2); border-radius:14px; padding:9px 8px; text-align:center}
-.facts span{display:block; font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--faint)}
-.facts b{font-family:var(--display); font-size:13.5px; font-weight:700}
-.facts .sw{width:11px; height:11px; vertical-align:-1px; margin-right:4px}
-.pillars{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; text-align:center}
-.pillars .p{background:var(--card2); border-radius:16px; padding:10px 4px}
-.pillars .han{font-size:28px; line-height:1.15; font-family:"Songti SC","Noto Serif SC","PingFang SC",serif}
-.pillars .lab{font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--faint)}
-.el-wood{color:var(--wood)} .el-fire{color:var(--fire)} .el-earth{color:var(--earth)} .el-metal{color:var(--metal)} .el-water{color:var(--wateri)}
-.numbers{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:12px}
-.numbers .nb{border-radius:20px; padding:12px 6px; text-align:center; color:inherit; font:inherit; cursor:pointer}
-.numbers .v{font-family:var(--display); font-weight:800; font-size:30px; letter-spacing:-1px; line-height:1.1}
-.numbers .k{font-size:10px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:1px}
-.pill{display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:10px; background:var(--card2); font-size:12px; color:var(--dim); font-weight:600}
-
-/* buttons & forms */
-.btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:15px; border-radius:16px; border:0; cursor:pointer;
-  background:var(--grad); color:var(--btn-ink); font-weight:700; font-size:15.5px; letter-spacing:-.1px; transition:transform .12s,box-shadow .2s;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 14px 30px -12px rgba(255,140,165,.75)}
-.paper .btn{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 14px 28px -14px rgba(168,55,110,.6)}
-.btn:active{transform:scale(.97)} .btn:disabled{opacity:.4}
-.btn.ghost{background:var(--glass) padding-box,var(--edge) border-box; color:var(--text); border:1px solid transparent; box-shadow:none}
-.btn.danger{background:rgba(255,138,128,.14); color:var(--bad); border:1px solid rgba(255,138,128,.3); box-shadow:none}
-.btn.small{width:auto; padding:9px 14px; font-size:13px; border-radius:12px}
-.link{background:none; border:0; color:var(--gold); font:inherit; font-weight:600; padding:0; cursor:pointer}
-.field{margin:14px 0} .field label{display:block; font-size:10.5px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--faint); margin-bottom:7px}
-.field .hint{font-size:12px; color:var(--faint); margin-top:6px; line-height:1.45}
-input,select{width:100%; font-size:16px; color:var(--text); background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 14px; outline:none}
-input::placeholder{color:var(--faint)} input:focus,select:focus{border-color:var(--gold)}
-select option{background:var(--bg); color:var(--text)}
-.seg{display:flex; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:4px; gap:4px}
-.seg button{flex:1; border:0; background:none; color:var(--dim); font-size:13.5px; font-weight:600; padding:9px 4px; border-radius:10px; cursor:pointer}
-.seg button.on{background:var(--text); color:var(--sky-top)}
-.results{margin-top:6px; border-radius:14px; overflow:hidden; border:1px solid var(--line)} .results:empty{display:none}
-.results button{display:block; width:100%; text-align:left; border:0; border-top:1px solid var(--line); background:var(--card2); color:var(--text); padding:11px 14px; font-size:14px; cursor:pointer}
-.results button:first-child{border-top:0} .results button small{color:var(--faint); display:block}
-.chosen{display:flex; align-items:center; gap:10px; background:var(--card2); border:1px solid var(--gold); border-radius:14px; padding:10px 12px; margin-top:8px}
-.welcome{text-align:center; padding:20px 0 8px}
-.welcome img{width:104px; height:104px; border-radius:26px; box-shadow:0 0 0 1px rgba(255,255,255,.18),0 24px 60px -10px rgba(6,3,28,.7),0 0 80px -10px rgba(255,150,170,.45); animation:float 7s ease-in-out infinite}
-@keyframes float{50%{transform:translateY(-6px)}}
-.welcome h1{font-family:var(--serif); font-weight:500; font-size:50px; letter-spacing:-1px; margin-top:18px}
-.welcome p{font-family:var(--serif); font-size:17px; color:var(--dim); margin-top:6px}
-.privacy{display:flex; gap:12px; align-items:flex-start; font-size:13px; line-height:1.5}
-.privacy .lock{width:30px; height:30px; border-radius:50%; flex:none; display:grid; place-items:center; background:var(--card2); border:1px solid var(--line)}
-.privacy .lock svg{width:15px; height:15px; stroke:var(--gold); fill:none; stroke-width:1.8; stroke-linecap:round}
-.privacy a{color:var(--gold)}
-
-/* ---- system pages: a headline card, fact chips, side-by-side pairs and sections that fold open */
-.sys-hero{text-align:center; padding:24px 20px 20px; position:relative; overflow:hidden}
-.sys-hero::before{content:""; position:absolute; inset:-40% -20% auto; height:80%; background:radial-gradient(closest-side,var(--aurora3),transparent); opacity:.6; pointer-events:none}
-.sys-hero > *{position:relative}
-.sys-art{display:flex; justify-content:center; margin-bottom:10px; min-height:64px; align-items:center}
-.sys-art .emoji{font-size:52px; line-height:1; filter:drop-shadow(0 8px 18px rgba(6,3,28,.4))}
-.sys-art .han-big{font-family:"Songti SC","Noto Serif SC","PingFang SC",serif; font-size:60px; line-height:1; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
-.sys-art .num-big{font-family:var(--display); font-weight:800; font-size:76px; letter-spacing:-3px; line-height:1; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
-.sys-art .maya-art{display:inline-flex; filter:drop-shadow(0 0 14px currentColor)}
-.sys-title{font-family:var(--serif); font-weight:500; font-style:italic; font-size:36px; letter-spacing:-.6px; margin:6px 0 4px}
-.sys-sub{font-size:13px; color:var(--dim); margin-bottom:12px}
-.sys-hero .serif-p{text-align:left}
-.chips{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin:0 0 12px}
-.chip{border-radius:16px; padding:10px 12px; background:var(--glass) padding-box,var(--edge) border-box; border:1px solid transparent}
-.chip span{display:block; font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--faint); margin-bottom:3px}
-.chip b{font-family:var(--display); font-weight:700; font-size:13.5px; line-height:1.35}
-.chip .sw{width:11px; height:11px; vertical-align:-1px; margin-right:5px}
-.pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px}
-.pair > div + div{border-left:1px solid var(--line); padding-left:16px}
-html[dir=rtl] .pair > div + div{border-left:0; border-right:1px solid var(--line); padding-left:0; padding-right:16px}
-@media (max-width:360px){ .pair{grid-template-columns:1fr} .pair > div + div{border-left:0; padding-left:0; border-top:1px solid var(--line); padding-top:12px} }
-details.fold{padding:0}
-details.fold summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; padding:16px 18px; font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:-.2px}
-details.fold summary::-webkit-details-marker{display:none}
-details.fold summary .hint{margin-left:auto; font-family:inherit; font-weight:500; font-size:11.5px; color:var(--faint); text-align:right; max-width:55%}
-details.fold summary::after{content:""; width:8px; height:8px; flex:none; border-right:1.6px solid var(--faint); border-bottom:1.6px solid var(--faint); transform:rotate(45deg) translateY(-3px); transition:transform .25s}
-details.fold[open] summary::after{transform:rotate(-135deg) translateX(-2px)}
-details.fold:not(:has(.hint)) summary::after{margin-left:auto}
-.fold-in{padding:0 18px 16px; animation:rise .4s cubic-bezier(.2,.8,.2,1)}
-.elbar{display:flex; height:10px; border-radius:6px; overflow:hidden; gap:2px}
-.elbar i{display:block; min-width:4px}
-.ellegend{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-size:12px; color:var(--dim)}
-.ellegend i{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:0}
-.egypt-hero{display:flex; align-items:center; gap:18px; text-align:left} .egypt-hero .grow{min-width:0; overflow-wrap:break-word}
-.cart-wrap{width:92px; flex:none} .cart-wrap svg{width:100%; height:auto; display:block}
-.maya-n{display:block}
-
-/* ---- Me: one tile per system */
-.sysgrid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:12px}
-.sys-tile{display:flex; flex-direction:column; align-items:flex-start; text-align:left; gap:2px; padding:14px; border-radius:22px; color:var(--text); font:inherit; cursor:pointer;
-  background:var(--glass) padding-box,var(--edge) border-box; border:1px solid transparent; box-shadow:var(--lift); min-width:0}
-.sys-tile .sys-mark{height:30px; display:flex; align-items:center; font-size:24px; color:var(--gold); margin-bottom:6px; font-family:"Songti SC","Noto Serif SC",var(--display); font-weight:800}
-.sys-tile .sys-name{font-size:10px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--faint)}
-.sys-tile .mini-h{margin-top:2px}
-
-/* ---- the week */
-.wstrip{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin-top:6px}
-.wday{display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 0 6px; border:0; border-radius:14px; background:none; color:var(--dim); font:inherit; cursor:pointer}
-.wday .wd{font-size:10.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase}
-.wday .wn{font-family:var(--display); font-weight:700; font-size:13px; color:var(--text)}
-.wday .wbar{display:flex; align-items:flex-end; width:10px; height:64px; border-radius:6px; background:var(--card2); overflow:hidden}
-.wday .wbar i{display:block; width:100%; border-radius:6px; background:var(--grad); opacity:.55}
-.wday.peak .wbar i{opacity:1; box-shadow:0 0 12px rgba(255,160,160,.6)}
-.wday.now{background:var(--card2)}
-.wday.now .wd{color:var(--text)}
-.week-teaser .wday{cursor:inherit; padding:4px 0}
-.week-teaser .wday .wbar{height:40px}
-.week-hero{text-align:center; padding:22px 16px 16px}
-.moments{list-style:none; margin:0; padding:0}
-.moments li{position:relative; padding:9px 0 9px 20px; border-top:1px solid var(--line); font-size:14px; line-height:1.45}
-.moments li:first-child{border-top:0}
-.moments li::before{content:""; position:absolute; left:2px; top:16px; width:7px; height:7px; border-radius:50%; background:var(--grad); box-shadow:0 0 8px var(--rose)}
-html[dir=rtl] .moments li{padding:9px 20px 9px 0} html[dir=rtl] .moments li::before{left:auto; right:2px}
-.area{padding:12px 0; border-top:1px solid var(--line)} .area:first-of-type{border-top:0; padding-top:2px}
-.area-h{display:flex; align-items:center; justify-content:space-between; margin-bottom:4px}
-.area-h b{font-family:var(--display); font-weight:700; font-size:15px}
-/* tab bar: a floating glass pill, like Hora's bar lifted off the edge */
-nav.bar{position:absolute; left:14px; right:14px; bottom:16px; height:66px; padding:8px 6px; display:flex; justify-content:space-around; align-items:center; z-index:20; border-radius:26px;
-  background:color-mix(in srgb,var(--sky-top) 58%,transparent) padding-box,var(--edge) border-box; border:1px solid transparent;
-  backdrop-filter:blur(24px) saturate(1.4); -webkit-backdrop-filter:blur(24px) saturate(1.4); box-shadow:0 18px 40px -14px rgba(6,3,28,.7)}
-.paper nav.bar{background:rgba(255,255,255,.72) padding-box,var(--edge) border-box; box-shadow:0 16px 36px -18px rgba(80,40,30,.35)}
-nav.bar .in{display:contents}
-nav.bar button{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; height:50px; font-size:10.5px; font-weight:600; color:var(--faint); cursor:pointer; position:relative; flex:1; max-width:76px; border:0; background:none; z-index:0; transition:color .2s}
-nav.bar svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; transition:transform .25s}
-nav.bar button.on{color:var(--text)}
-nav.bar button.on svg{transform:scale(1.06)}
-nav.bar button.on::before{content:""; position:absolute; inset:0 4px; border-radius:18px; background:var(--card2); z-index:-1}
-nav.bar button.on::after{content:""; position:absolute; top:5px; right:16px; width:5px; height:5px; border-radius:50%; background:var(--grad); box-shadow:0 0 8px var(--rose)}
-@media (max-width:560px){ nav.bar{bottom:calc(10px + env(safe-area-inset-bottom))} }
-
-/* sheet */
-#sheet{position:absolute; inset:0; z-index:30; display:none; background:rgba(8,4,24,.42); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px)}
-#sheet.on{display:block}
-#sheet .panel{position:absolute; left:0; right:0; bottom:0; max-height:88%; overflow-y:auto; scrollbar-width:none; padding:10px 20px 34px; border-radius:30px 30px 0 0;
-  background:linear-gradient(color-mix(in srgb,var(--sky-mid) 86%,#fff 6%),color-mix(in srgb,var(--sky-top) 96%,transparent)) padding-box,var(--edge) border-box; border:1px solid transparent; border-bottom:0;
-  box-shadow:0 -20px 50px -20px rgba(6,3,28,.6); animation:up .42s cubic-bezier(.2,.9,.25,1)}
-#sheet .panel::-webkit-scrollbar{display:none}
-@keyframes up{from{transform:translateY(105%)} to{transform:none}}
-#sheet .grab{width:38px; height:5px; border-radius:3px; background:var(--faint); opacity:.6; margin:0 auto 14px}
-#sheet h2{font-size:28px} #sheet h3{margin-top:14px}
-#toast{position:absolute; left:50%; top:60px; transform:translateX(-50%); z-index:70; padding:9px 14px; border-radius:16px; font-size:13px; font-weight:600; background:var(--text); color:var(--sky-top); display:none; white-space:nowrap}
-@media (prefers-reduced-motion:reduce){ .view.on > *,#sheet .panel,.aurora i,.welcome img{animation:none} }
-@media print{ body{display:block; overflow:visible; padding:0} .side,nav.bar,.notch{display:none} .phone{width:auto; height:auto; max-height:none; padding:0; box-shadow:none; background:none}
-  .screen,main{position:static; overflow:visible; height:auto; border-radius:0} }
-/* language */
-.langpill-row{display:flex; justify-content:flex-end; margin:-4px 0 -6px}
-.langpill{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--card); color:var(--text); font-size:12.5px; font-weight:600;
-  padding:7px 12px; border-radius:14px; cursor:pointer; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px)}
-.langpill::before{content:""; width:14px; height:14px; background:currentColor; opacity:.8;
-  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'/%3E%3C/svg%3E") center/contain no-repeat}
-.langrow{display:flex; justify-content:space-between; align-items:center; width:100%; border:0; background:none; color:var(--text); font-size:15px; font-weight:600;
-  padding:11px 10px; border-radius:12px; cursor:pointer; text-align:start}
-.langrow + .langrow{border-top:1px solid var(--line)}
-.langrow.on{background:var(--card2); color:var(--gold)}
-.langbtn{display:flex; justify-content:space-between; align-items:center; width:100%; font-size:16px; color:var(--text); background:var(--card); border:1px solid var(--line);
-  border-radius:14px; padding:13px 14px; cursor:pointer; text-align:start}
-/* right-to-left (Arabic, Persian) */
-[dir="rtl"] .chev::after{content:"‹"}
-[dir="rtl"] .langpill-row{justify-content:flex-start}
-[dir="rtl"] table.list td.r{text-align:left}
-[dir="rtl"] .side .how li{padding-left:0; padding-right:18px} [dir="rtl"] .side .how li::before{left:auto; right:0}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <aside class="side">
-  <div class="brand"><img src="icons/icon-192.png" alt=""><h1>Augur</h1></div>
-  <p class="lede" data-i18n="tagline"></p>
+  <div class="brand"><img src="icons/icon.svg" alt=""><h1>Hora</h1></div>
+  <p class="lede">A clock, alarm, timer and stopwatch that tells you how right it is. The background is the real sky over Gliwice right now.</p>
   <ul class="how">
-    <li data-i18n-html="sideWestern"></li>
-    <li data-i18n-html="sideNative"></li>
-    <li data-i18n-html="sideChinese"></li>
-    <li data-i18n-html="sideNumerology"></li>
-    <li data-i18n-html="sideEgyptian"></li>
-    <li data-i18n-html="sideMayan"></li>
-    <li data-i18n-html="sideAgree"></li>
+    <li><b>Tap the clock</b> for the analog face. Tap the weather for the next hours.</li>
+    <li><b>Drag the time ruler</b> under World: the map's day and night move with it, so you can plan a call.</li>
+    <li><b>Sleep</b> sets a bedtime reminder and a wake-up alarm from one dial.</li>
+    <li><b>Swipe an alarm left</b> to skip its next ring or delete it.</li>
+    <li><b>Timers:</b> drag the ring, tap the time for a wheel, or tap a preset. Edit presets to make them yours.</li>
+    <li><b>Stopwatch:</b> tap the face to switch between analog and digital.</li>
   </ul>
-  <p class="fam" data-i18n="sideFamily"></p>
+  <p class="keys"><kbd>Space</kbd> start / stop · <kbd>L</kbd> lap · <kbd>R</kbd> reset · <kbd>1</kbd>–<kbd>5</kbd> tabs</p>
+  <p class="fam">A sibling to Consensus Weather, Fidelis, Vestis and Caelum</p>
 </aside>
 
-<div class="phone"><div class="screen" id="screen">
-  <div class="notch"></div>
-  <canvas id="stars"></canvas>
-  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-  <div class="glow"></div>
-  <svg class="hills" viewBox="0 0 390 140" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0 70 Q195 40 390 70 V140 H0Z" fill="#170f33" opacity=".55"/><path d="M0 100 Q195 74 390 100 V140 H0Z" fill="#0d0a22" opacity=".7"/>
-  </svg>
+<div class="phone">
+<div class="screen" id="screen">
+  <div class="island" id="island">
+    <div class="isl-c"><svg class="iring" viewBox="0 0 24 24"><circle class="bg" cx="12" cy="12" r="9"/><circle class="fgc" id="iArc" cx="12" cy="12" r="9" transform="rotate(-90 12 12)"/></svg><span class="itl" id="iL"></span><span class="itm" id="iT"></span></div>
+    <div class="isl-x">
+      <div class="xtop"><svg class="iring" viewBox="0 0 24 24"><circle class="bg" cx="12" cy="12" r="9"/><circle class="fgc" id="xArc" cx="12" cy="12" r="9" transform="rotate(-90 12 12)"/></svg>
+        <div class="xmeta"><b id="xL">—</b><span id="xS">—</span></div><div class="xbig" id="xT">0:00</div></div>
+      <div class="xbar"><i id="xP"></i></div>
+      <div class="xbtns" id="xB"></div>
+    </div>
+  </div>
+  <div class="stars" id="stars"></div>
+  <div class="glow" id="glow"></div>
+  <div class="veil"></div>
 
-  <main id="main">
-    <!-- first open -->
-    <section id="onboard" class="view">
-      <div class="langpill-row"><button type="button" class="langpill" id="f-lang" dir="auto"></button></div>
-      <div class="welcome">
-        <img src="icons/icon-192.png" alt="">
-        <h1>Augur</h1>
-        <p data-i18n-html="welcomeSub"></p>
+  <!-- Clock -->
+  <section class="view show" id="vClock">
+    <div class="hero" id="hero">
+      <div class="htop"><span class="badge idle" id="sync"><i></i><span id="syncTxt">Checking clock…</span></span><span class="hcity"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Gliwice</span></div>
+      <div class="face" id="face">
+        <div class="digi" id="digi"></div>
+        <svg id="analog" viewBox="0 0 240 240" aria-label="Analog clock"></svg>
       </div>
-      <div class="card privacy">
-        <div class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-        <div data-i18n-html="privacyCard"></div>
+      <div class="hdate" id="dateLine">—</div>
+      <div class="wxrow"><button class="wx" id="wx" hidden></button></div>
+      <div class="hgrid" id="hGrid"></div>
+    </div>
+    <div class="card" id="sunCard">
+      <div class="card-h"><h3>Daylight</h3><span class="cmeta" id="moonTxt"></span></div>
+      <div class="sunbig" id="sunBig">—</div>
+      <svg class="sunsvg" viewBox="0 0 320 86" id="sunSvg"></svg>
+      <div class="sunrow"><span><b id="rise">—</b></span><span id="goldTxt"></span><span><b id="set">—</b></span></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>World</h3><a id="editCities">Edit</a></div>
+      <div class="map"><canvas id="mapC"></canvas></div>
+      <div class="time">
+        <div class="label"><b id="tLabel">Now</b><span id="tDelta"></span><button class="chip" id="tNow">Back to now</button></div>
+        <div class="ruler" id="ruler"><canvas id="rulerC"></canvas></div>
       </div>
-      <form id="form" class="card" autocomplete="off">
-        <div class="field" style="margin-top:2px">
-          <label for="f-birthname" data-i18n="fBirthName"></label>
-          <input id="f-birthname" required data-i18n-ph="fBirthNamePh" autocapitalize="words" dir="auto">
-          <div class="hint" data-i18n="fBirthNameHint"></div>
-        </div>
-        <div class="field">
-          <label for="f-name"><span data-i18n="fName"></span> <span style="text-transform:none; letter-spacing:0; font-weight:500" data-i18n="optional"></span></label>
-          <input id="f-name" data-i18n-ph="fNamePh" autocapitalize="words" dir="auto">
-        </div>
-        <div class="field">
-          <label for="f-date" data-i18n="fDate"></label>
-          <input id="f-date" type="date" required min="1900-01-01">
-        </div>
-        <div class="field">
-          <label data-i18n="fTime"></label>
-          <div class="seg" id="f-timemode">
-            <button type="button" data-v="exact" class="on" data-i18n="tExact"></button>
-            <button type="button" data-v="approx" data-i18n="tApprox"></button>
-            <button type="button" data-v="unknown" data-i18n="tUnknown"></button>
-          </div>
-          <div class="row" id="f-timerow" style="margin-top:8px">
-            <input id="f-time" type="time" class="grow" value="12:00">
-            <select id="f-spread" style="width:auto; display:none">
-              <option value="15"></option><option value="30" selected></option><option value="60"></option><option value="120"></option>
-            </select>
-          </div>
-          <div class="hint" id="f-timehint"></div>
-        </div>
-        <div class="field">
-          <label for="f-place" data-i18n="fPlace"></label>
-          <input id="f-place" data-i18n-ph="fPlacePh" autocapitalize="words" dir="auto">
-          <div class="results" id="f-results"></div>
-          <div id="f-chosen"></div>
-          <div class="hint"><span data-i18n="noNet"></span> <button type="button" class="link" id="f-manual" data-i18n="manual"></button></div>
-          <div id="f-manualbox" style="display:none">
-            <div class="grid2" style="margin:8px 0 0">
-              <input id="f-lat" inputmode="decimal" data-i18n-ph="latPh">
-              <input id="f-lon" inputmode="decimal" data-i18n-ph="lonPh">
-            </div>
-            <select id="f-tz" style="margin-top:8px"></select>
-          </div>
-        </div>
-        <button class="btn" id="f-go" type="submit" data-i18n="go"></button>
-        <p class="tiny faint" style="text-align:center; margin-top:10px" data-i18n="changeLater"></p>
-      </form>
-    </section>
+      <div id="world"></div>
+    </div>
+  </section>
 
-    <section id="v-today" class="view"></section>
-    <section id="v-week" class="view"></section>
-    <section id="v-me" class="view"></section>
-    <section id="v-systems" class="view"></section>
-    <section id="v-profile" class="view"></section>
-  </main>
+  <!-- Alarms -->
+  <section class="view" id="vAlarm">
+    <div class="head">
+      <div class="ttl">Alarms</div>
+      <div class="hbtns"><button class="ibtn acc" id="addAlarm" title="New alarm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    </div>
+    <div class="anext" id="aNext"></div>
+    <div class="card" id="sleepCard"></div>
+    <div id="alarmList"></div>
+    <div class="honest" id="webNote" data-native="<b>Alarms ring even when Hora is closed</b> or the phone is locked. If one is ever late, check Profile → Alarms on this phone."><b>Honest note:</b> as a web app, Hora can only ring while it's open on screen. Turn on <b>Keep screen awake</b> in Profile and leave it on the nightstand, or keep your phone's own alarm as a backup.</div>
+  </section>
 
-  <nav class="bar" id="nav" style="display:none"><div class="in">
-    <button data-v="today" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span data-i18n="navToday"></span></button>
-    <button data-v="week"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 15.5l2.5-2 2.5 1.5 3-3"/></svg><span data-i18n="navWeek"></span></button>
-    <button data-v="me"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.6H20l-4.9 3.6 1.9 5.8L12 14.4 7 18l1.9-5.8L4 8.6h6.1z"/></svg><span data-i18n="navMe"></span></button>
-    <button data-v="systems"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 3v4.5M12 16.5V21M3 12h4.5M16.5 12H21"/></svg><span data-i18n="navSystems"></span></button>
-    <button data-v="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span data-i18n="navProfile"></span></button>
-  </div></nav>
+  <!-- Timer -->
+  <section class="view" id="vTimer">
+    <div class="head">
+      <div><div class="ttl">Timers</div><div class="sub" id="timerSub">Drag the ring, or pick a preset</div></div>
+      <div class="hbtns"><button class="ibtn acc" id="newTimer" title="New timer" style="display:none"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    </div>
+    <div class="dialwrap" id="dialWrap">
+      <svg viewBox="0 0 300 300" id="dial"><g id="dTicks"></g><circle class="track" cx="150" cy="150" r="124"/><circle class="arc" id="dArc" cx="150" cy="150" r="124" transform="rotate(-90 150 150)"/><circle class="knob" id="dKnob" r="13" cx="150" cy="26"/></svg>
+      <div class="dcenter"><div class="big" id="dBig">05:00</div><div class="lbl" id="dLbl">—</div><div class="edit" id="dEdit">Set exact time</div></div>
+    </div>
+    <div class="cbar" id="tCtrls"></div>
+    <div class="setrow" id="tName"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg><span>Name</span><b id="tNameV">Timer</b><i>›</i></div>
+    <div class="setrow" id="tSnd"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>When it ends</span><b id="tSndN">Ding</b><i>›</i></div>
+    <div class="card" id="tListCard" style="display:none"><div class="card-h"><h3>Running</h3><a id="tAll">Pause all</a></div><div id="tList"></div></div>
+    <div class="card"><div class="card-h"><h3>Presets</h3><a id="editPresets">Edit</a></div><div class="pgrid" id="presets"></div></div>
+  </section>
 
-  <div id="sheet"><div class="panel"><div class="grab"></div><div id="sheet-body"></div></div></div>
-  <div id="toast"></div>
-</div></div>
+  <!-- Stopwatch -->
+  <section class="view" id="vWatch">
+    <div class="head"><div><div class="ttl">Stopwatch</div><div class="sub" id="watchSub">Space to start, L for a lap</div></div></div>
+    <div class="swface" id="swFace"><svg viewBox="0 0 300 300" id="swSvg"></svg></div>
+    <div class="swdig" id="swDig"><div class="swbig" id="swBig">0:00<small>.00</small></div><div class="swlap" id="swLapD"></div></div>
+    <div class="cbar"><button class="cbtn" id="swL">Lap</button><span class="pill dim" id="swPace" style="visibility:hidden">—</span><button class="cbtn acc" id="swS">Start</button></div>
+    <div class="card" id="lapCard" style="display:none"><div class="card-h"><h3>Laps</h3><a id="copyLaps">Copy</a></div><div id="laps"></div></div>
+  </section>
 
-<!-- languages first: every module reads its words from them -->
-<script src="i18n.js"></script>
-<script src="i18n/en.js"></script>
-<script src="i18n/pl.js"></script><script src="i18n/de.js"></script><script src="i18n/uk.js"></script><script src="i18n/es.js"></script>
-<script src="i18n/fr.js"></script><script src="i18n/ru.js"></script><script src="i18n/zh.js"></script><script src="i18n/ja.js"></script>
-<script src="i18n/pt.js"></script><script src="i18n/nl.js"></script><script src="i18n/it.js"></script><script src="i18n/hi.js"></script>
-<script src="i18n/ar.js"></script><script src="i18n/el.js"></script><script src="i18n/cs.js"></script><script src="i18n/sv.js"></script>
-<script src="i18n/ko.js"></script><script src="i18n/id.js"></script><script src="i18n/bn.js"></script><script src="i18n/tr.js"></script>
-<script src="i18n/te.js"></script><script src="i18n/ro.js"></script><script src="i18n/hu.js"></script><script src="i18n/fi.js"></script>
-<script src="i18n/no.js"></script><script src="i18n/sk.js"></script><script src="i18n/sw.js"></script><script src="i18n/fa.js"></script>
-<script src="i18n/da.js"></script><script src="i18n/th.js"></script><script src="i18n/vi.js"></script><script src="i18n/bg.js"></script>
-<script src="astro.js"></script>
-<script src="chart.js"></script>
-<script src="native.js"></script>
-<script src="chinese.js"></script>
-<script src="numerology.js"></script>
-<script src="egyptian.js"></script>
-<script src="mayan.js"></script>
-<script src="texts.js"></script>
-<script src="quotes.js"></script>
-<script src="consensus.js"></script>
-<script src="daily.js"></script>
-<script src="week.js"></script>
-<script src="ui.js"></script>
-<script src="draw.js"></script>
-<script src="systems.js"></script>
+  <!-- Profile -->
+  <section class="view" id="vProfile">
+    <div class="head"><div><div class="ttl">Profile</div><div class="sub">Look, clock settings and how accurate Hora is</div></div></div>
+    <div class="card"><div class="card-h"><h3>Look</h3></div>
+      <div class="lab2">Background</div><div class="swatches" id="skins"></div>
+      <div class="lab2">Accent colour</div><div class="swatches" id="accents"></div>
+    </div>
+    <div class="card"><div class="card-h"><h3>Clock digits</h3></div><div class="fontpick" id="fontPick"></div></div>
+    <div class="card"><div class="card-h"><h3>Settings</h3></div><div id="toggles"></div></div>
+    <div class="card" id="defCard"><div class="card-h"><h3 id="defTitle">Make Hora your clock</h3></div><div id="defBody"></div></div>
+    <div class="card"><div class="card-h"><h3>How accurate is this?</h3></div>
+      <div class="honest" style="margin:0" id="accText">—</div>
+      <button class="btn ghost sm" id="resync" style="margin-top:10px">Check again</button>
+    </div>
+  </section>
+
+  <nav class="tabs" id="tabs">
+    <div class="tab on" data-v="vClock"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Clock</div>
+    <div class="tab" data-v="vAlarm"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7"/><path d="M12 10v3l2 1.5M4.5 5.5l3-2.5M19.5 5.5l-3-2.5M7 19.5l-1.5 2M17 19.5l1.5 2"/></svg>Alarms</div>
+    <div class="tab" data-v="vTimer"><i class="live"></i><svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/></svg>Timers</div>
+    <div class="tab" data-v="vWatch"><i class="live"></i><svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="7.5"/><path d="M12 14V10M10 2.5h4M12 2.5v4M18.5 7.5l1.5-1.5"/></svg>Stopwatch</div>
+    <div class="tab" data-v="vProfile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg>Profile</div>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet"><div class="grab"></div><div id="sheetBody"></div></div>
+
+  <div class="ring" id="ring">
+    <div class="rvis" id="rVis"></div><div class="rshade"></div>
+    <div class="rtop"><div class="rk" id="rK">Alarm</div><div class="rt" id="rT">07:00</div><div class="rl" id="rL">Work</div><div class="rs" id="rS"></div><div class="rw" id="rW"></div></div>
+    <div class="rb" id="rB"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="scenes.js"></script>
 <script src="app.js"></script>
+<script>if("serviceWorker" in navigator && location.protocol==="https:") addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
 </body>
 </html>
