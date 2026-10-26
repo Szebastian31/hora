@@ -535,9 +535,26 @@ background:rgba(255,255,255,.16);border:0;box-shadow:inset 0 0 0 .5px rgba(255,2
 .native .view{padding-top:calc(var(--sat,24px) + 20px)!important}
 .native .toast{top:calc(var(--sat,24px) + 60px)}
 .native .island{top:calc(var(--sat,24px) + 8px)}
-.native .island:not(.act):not(.open){opacity:0;pointer-events:none}
+/* in the Android app the countdown pill is in the status bar; the in-app one only appears when a timer is done */
+.native .island:not(.alert){opacity:0;pointer-events:none}
 .native .hero{margin-top:calc(-1 * (var(--sat,24px) + 20px))!important;padding-top:calc(var(--sat,24px) + 24px)!important}
 .native .tabs{bottom:calc(var(--sab,16px) + 8px)!important}
 .native .view{padding-bottom:calc(var(--sab,16px) + 100px)}
 .native .ring{padding-top:calc(var(--sat,24px) + 60px);padding-bottom:calc(var(--sab,0px) + 36px)}
 .native .sheet{padding-bottom:calc(var(--sab,0px) + 30px)}
+
+/* screenshot mode (?demo=…): freeze effects that would be caught half-way in a still picture */
+.demo .ring.show,.demo .view.show{animation:none}
+.demo .rvis::after{animation:none;opacity:.05}
+.demo .rvis canvas,.demo .rvis img,.demo .rvis video{animation:none}
+.demo .slide span{animation:none;background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#fff}
+.demo .chev i{animation:none;opacity:.9}
+.demo .chev i:nth-child(1){opacity:.35} .demo .chev i:nth-child(2){opacity:.65}
+.demo .toast{display:none}
+/* screenshots: one real cutout on every screen, never caught mid-animation; the live activity fills it on Timers and Stopwatch */
+.demo .island{transition:none!important;animation:none!important;z-index:61;top:10px!important}
+.demo .island:not(.act):not(.open){opacity:1!important;width:118px!important}
+.demo .island.act:not(.open) .isl-c{opacity:1;transition:none}
+.demo .island.open{width:226px;height:34px;border-radius:20px}
+.demo .island.open .isl-x{display:none}
+.demo .island.open .isl-c{opacity:1}

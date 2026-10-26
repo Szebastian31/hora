@@ -72,7 +72,7 @@ function band(x, key, w, h, d, top, hgt, t, sp, paint) {
 function mist(x, key, w, h, d, top, hgt, t, sp, rgb, a, n = 16) {
   band(x, key, w, h, d, top, hgt, t, sp, (m, P, H, rep) => {
     const r = rng(key.length * 131 + n);
-    for (let i = 0; i < n; i++) { const cx = r() * P, cy = H * (.3 + r() * .4), rx = P * (.12 + r() * .16), ry = H * (.2 + r() * .22), aa = a * (.5 + r() * .5); rep(o => blob(m, cx + o, cy, rx, ry, rgb, aa, .55)); }
+    for (let i = 0; i < n; i++) { const cx = r() * P, cy = H * (.45 + r() * .1), rx = P * (.12 + r() * .16), ry = H * (.26 + r() * .16), aa = a * (.5 + r() * .5); rep(o => blob(m, cx + o, cy, rx, ry, rgb, aa, .55)); }
   });
 }
 function sun(x, cx, cy, core, glow, k, warm = "255,228,190") {
@@ -95,7 +95,10 @@ const SCENES = {
     put(x, layer("sr-hills", w, h, d, c => {
       [[.70, .05, "#c88596", 2], [.75, .07, "#956285", 3], [.81, .08, "#62416f", 5], [.88, .07, "#352650", 8], [.95, .05, "#170f2a", 13]].forEach(([b, a, col, seed], i) => {
         ridge(c, w, h, b, a, seed, 1 + i * .2); c.fillStyle = lin(c, h * (b - a), h, [[0, col], [1, shade(col, -.3)]]); c.fill();
-        c.fillStyle = lin(c, h * (b - a * 1.2), h * (b + .06), [[0, "rgba(255,206,180,0)"], [.6, `rgba(255,206,180,${.24 - i * .045})`], [1, "rgba(255,206,180,0)"]]); c.fillRect(0, h * (b - a * 1.2), w, h * (a * 1.2 + .06));
+        // warm light on the top of this ridge only, fading down into it (never across the sky above)
+        c.save(); ridge(c, w, h, b, a, seed, 1 + i * .2); c.clip();
+        c.fillStyle = lin(c, h * (b - a * 1.1), h * (b + .05), [[0, `rgba(255,206,180,${.26 - i * .045})`], [1, "rgba(255,206,180,0)"]]); c.fillRect(0, h * (b - a * 1.2), w, h * (a * 1.2 + .06));
+        c.restore();
       });
       vignette(c, w, h, .3);
     }), w, h);
@@ -124,7 +127,8 @@ const SCENES = {
     const deck = (key, top, hgt, sp, lit, dark, sc, n) => band(x, key, w, h, d, top, hgt, t, sp, (m, P, H, rep) => {
       const r = rng(key.length * 97 + n);
       for (let i = 0; i < n; i++) {
-        const cx = r() * P, cy = H * (.35 + r() * .5), rx = P * (.05 + r() * .09) * sc, ry = rx * (.5 + r() * .25);
+        // kept small enough to fade out fully inside the strip, so no cloud gets a straight cut edge
+        const ry = Math.min(H * .28, P * (.05 + r() * .09) * sc * (.5 + r() * .25)), rx = ry * (1.5 + r() * .5), cx = r() * P, cy = H * (.4 + r() * .18);
         rep(o => { blob(m, cx + o, cy + ry * .35, rx * 1.05, ry, dark, .55, .7); blob(m, cx + o - rx * .1, cy - ry * .1, rx * .9, ry * .8, lit, .9, .75); });
       }
     });
@@ -234,7 +238,6 @@ const SCENES = {
         // the lit crest of each dune
         c.save(); ridge(c, w, h, b, a, seed, .35); c.clip();
         c.fillStyle = lin(c, h * (b - a * 1.5), h * (b + .03), [[0, "rgba(255,230,196,.5)"], [1, "rgba(255,230,196,0)"]]); c.fillRect(0, 0, w, h); c.restore();
-        c.fillStyle = lin(c, h * (b - .03), h * (b + .03), [[0, "rgba(255,220,190,0)"], [.5, `rgba(255,220,190,${.22 - i * .04})`], [1, "rgba(255,220,190,0)"]]); c.fillRect(0, h * (b - .03), w, h * .06);
       });
       const s = w / 390; c.strokeStyle = "rgba(255,224,186,.09)"; c.lineWidth = s;
       for (let k2 = 0; k2 < 12; k2++) { const y = h * (.88 + k2 * .011); c.beginPath(); for (let xx = 0; xx <= w; xx += 8 * s) c.lineTo(xx, y + Math.sin(xx / w * 9 + k2) * 3 * s); c.stroke(); }

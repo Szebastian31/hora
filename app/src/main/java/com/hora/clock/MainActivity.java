@@ -61,20 +61,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
 
-        // draw behind the status and navigation bars so the hero can reach the top edge
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
-        getWindow().setNavigationBarColor(Color.TRANSPARENT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) getWindow().setNavigationBarContrastEnforced(false);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            getWindow().setDecorFitsSystemWindows(false);
-        } else {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        }
-
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#0b1433"));
         setContentView(web);
+        // only now that the screen exists: ColorOS crashes if the bars are set up before it
+        applyBars();
+        registerBack();
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -210,6 +202,9 @@ public class MainActivity extends Activity {
                     js("window.horaIntent&&horaIntent(" + o + ")");
                     break;
                 }
+                case LiveNotifier.ACTION_OPEN:
+                    js("window.horaIntent&&horaIntent({type:" + JSONObject.quote("timer".equals(i.getStringExtra("tab")) ? "timers" : "stopwatch") + "})");
+                    break;
                 case AlarmClock.ACTION_SHOW_ALARMS:
                     js("window.horaIntent&&horaIntent({type:'alarms'})");
                     break;
@@ -269,12 +264,78 @@ public class MainActivity extends Activity {
         savedMusicVolume = -1;
     }
 
-    @Override
+    /** Draw behind the status and navigation bars so the hero reaches the top edge. Every step is guarded. */
     @SuppressWarnings("deprecation")
-    public void onBackPressed() {
+    private void applyBars() {
+        try {
+            if (Build.VERSION.SDK_INT < 35) {   // Android 15+ is always edge to edge and ignores bar colours
+                getWindow().setStatusBarColor(Color.TRANSPARENT);
+                getWindow().setNavigationBarColor(Color.TRANSPARENT);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) getWindow().setNavigationBarContrastEnforced(false);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                getWindow().setDecorFitsSystemWindows(false);
+            } else {
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+            }
+        } catch (Exception ignored) {
+            // a phone that won't let us draw under the bars still gets a working app
+        }
+    }
+
+    /** Light or dark status bar icons. Asks the view for the controller, never the window, and only once it's on screen. */
+    @SuppressWarnings("deprecation")
+    private void setBarIcons(boolean lightBackground) {
+        try {
+            if (web == null) return;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (!web.isAttachedToWindow()) { web.post(() -> setBarIcons(lightBackground)); return; }
+                WindowInsetsController c = web.getWindowInsetsController();
+                if (c == null) return;
+                int mask = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+                c.setSystemBarsAppearance(lightBackground ? mask : 0, mask);
+            } else {
+                View d = getWindow().peekDecorView();
+                if (d == null) return;
+                int f = d.getSystemUiVisibility();
+                int light = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                d.setSystemUiVisibility(lightBackground ? (f | light) : (f & ~light));
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Back. With targetSdk 36, Android 16 no longer calls onBackPressed, so on Android 13+ Hora
+     * registers a callback. Hora's own screens close first (sheet, then back to Clock); after that
+     * the app goes to the background instead of closing, so a ringing alarm or a timer isn't lost.
+     */
+    private Object backCallback;
+
+    private void registerBack() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            try {
+                android.window.OnBackInvokedCallback cb = this::handleBack;
+                getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, cb);
+                backCallback = cb;
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    private void handleBack() {
+        if (web == null || !loaded) { moveTaskToBack(true); return; }
         web.evaluateJavascript("window.horaBack?horaBack():false", v -> {
             if (!"true".equals(v)) moveTaskToBack(true);
         });
+    }
+
+    /** Android 12 and older still deliver Back here. */
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onBackPressed() {
+        handleBack();
     }
 
     @Override
@@ -289,6 +350,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         restoreVolume();
+        if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
+            try { getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback((android.window.OnBackInvokedCallback) backCallback); } catch (Exception ignored) {}
+        }
         web.destroy();
         super.onDestroy();
     }
@@ -306,8 +370,8 @@ public class MainActivity extends Activity {
                 if (on) {
                     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                     raiseVolume();
-                    // Hora's own sound is playing, so the backup system alarm sound can stop
-                    if (soundStarted) AlarmReceiver.cancel(MainActivity.this);
+                    // Hora's own sound is playing, so the backup system alarm sound isn't needed
+                    if (soundStarted) { AlarmReceiver.soundStarted(MainActivity.this); AlarmReceiver.cancel(MainActivity.this); }
                 } else {
                     getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                     showOverLockScreen(false);
@@ -369,19 +433,13 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void statusBar(boolean lightBackground) {
-            runOnUiThread(() -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    WindowInsetsController c = getWindow().getInsetsController();
-                    if (c == null) return;
-                    int mask = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
-                    c.setSystemBarsAppearance(lightBackground ? mask : 0, mask);
-                } else {
-                    View d = getWindow().getDecorView();
-                    int f = d.getSystemUiVisibility();
-                    int light = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                    d.setSystemUiVisibility(lightBackground ? (f | light) : (f & ~light));
-                }
-            });
+            runOnUiThread(() -> setBarIcons(lightBackground));
+        }
+
+        /** The running timer or stopwatch, shown as a live notification and status bar chip; "" clears it. */
+        @JavascriptInterface
+        public void live(String json) {
+            LiveNotifier.show(MainActivity.this, json);
         }
 
         @JavascriptInterface

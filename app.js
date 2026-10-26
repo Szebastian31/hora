@@ -63,7 +63,26 @@ if (!Array.isArray(S.presets)) S.presets = PRESETS0;
 /* world cities used to be saved as time zone names; now each is { name, sub, tz, lat, lon } so any place can be added */
 S.cities = (S.cities || []).map(c => typeof c === "string" ? CITIES.find(x => x.tz === c) : c).filter(c => c && c.tz && validTz(c.tz));
 function validTz(tz) { try { new Intl.DateTimeFormat("en-US", { timeZone: tz }); return true; } catch (e) { return false; } }
-const save = () => { try { localStorage.setItem("hora", JSON.stringify(S)); } catch (e) {} schedNative(); };
+/* Demo mode for the README screenshots (tools/screenshots.sh): index.html?demo=clock, alarms, timer, stopwatch or ring,
+   optionally &skin=dusk. A made-up set of alarms, timers and cities; nothing is read from or saved to this device. */
+const DEMO = new URLSearchParams(location.search).get("demo");
+const DEMO_AT = { clock: [14, 17], alarms: [21, 43], timer: [14, 22], stopwatch: [18, 6], ring: [7, 0] };
+if (DEMO) {
+  const skin = new URLSearchParams(location.search).get("skin");
+  S = Object.assign(JSON.parse(JSON.stringify(DEF)), {
+    skin: SKINS[skin] ? skin : "live", accent: "rose", font: "crust", fontChosen: true, secs: true, ticks: false, weather: true, analog: false, swAnalog: true,
+    cities: [{ name: "London", sub: "England, United Kingdom", tz: "Europe/London", lat: 51.51, lon: -0.13 },
+      { name: "New York", sub: "New York, United States", tz: "America/New_York", lat: 40.71, lon: -74.0 },
+      { name: "Tokyo", sub: "Japan", tz: "Asia/Tokyo", lat: 35.68, lon: 139.69 }],
+    alarms: [
+      { id: 1, h: 7, m: 0, label: "Work", days: [1,1,1,1,1,0,0], on: true, sound: "glass", gentle: true, snooze: 9, scene: "sunrise", vib: "pulse", ringFor: 10, after: "snooze" },
+      { id: 2, h: 8, m: 15, label: "Gym", days: [1,0,1,0,1,0,0], on: true, sound: "marimba", gentle: false, snooze: 5, scene: "mist", vib: "strong", ringFor: 5, after: "snooze" },
+      { id: 3, h: 9, m: 30, label: "Slow Sunday", days: [0,0,0,0,0,0,1], on: false, sound: "dawn", gentle: true, snooze: 9, scene: "lake", vib: "gentle", ringFor: 10, after: "stop" }
+    ],
+    sleep: Object.assign(JSON.parse(JSON.stringify(DEF.sleep)), { set: true, on: true, bed: 23 * 60, wake: 7 * 60, days: [1,1,1,1,1,0,0], remind: 30 })
+  });
+}
+const save = () => { if (DEMO) return; try { localStorage.setItem("hora", JSON.stringify(S)); } catch (e) {} schedNative(); };
 
 /* ---------- Android app bridge (window.HoraNative exists only inside the APK) ---------- */
 const NAT = window.HoraNative || null, NATIVE = !!NAT;
@@ -109,11 +128,13 @@ window.horaIntent = o => {
       S.setMs = o.seconds * 1000; S.setLabel = o.label || "Timer"; S.focus = null; go("vTimer"); startTimer();
     } else if (o.type === "alarms") go("vAlarm");
     else if (o.type === "timers") go("vTimer");
+    else if (o.type === "stopwatch") go("vWatch");
   } catch (e) {}
 };
 
 /* ---------- time & honesty ---------- */
 let OFF = 0, UNC = null, SYNC = "idle", SYNCED_AT = 0;
+const OFFSET = () => OFF;
 const now = () => Date.now() + (S.correct ? OFF : 0);
 function hm(d) {
   const h = d.getHours(), m = d.getMinutes();
@@ -167,6 +188,7 @@ const localKey = ms => { const d = new Date(ms); return d.getFullYear() + pad(d.
 /* Compare with the server's clock using the Date header. Each reply bounds the offset to a 1 s window;
    intersecting several replies narrows it. */
 async function sync() {
+  if (DEMO) return;
   SYNC = "idle"; paintBadge();
   if (NATIVE) { NAT.checkClock(); return; }   // Android does the same check and answers via horaClock
   let lo = -Infinity, hi = Infinity, n = 0;
@@ -196,7 +218,7 @@ function paintBadge() {
     b.classList.add("idle"); t.textContent = "Device clock";
     acc = "Hora couldn't reach a time source just now, so it's showing your device's own clock. Phones usually sync themselves and are within a fraction of a second, but Hora won't claim that without checking.";
   } else {
-    const a = Math.abs(OFF) / 1000, u = Math.max(UNC, 50) / 1000;
+    const OFF = DEMO ? 120 : OFFSET(), a = Math.abs(OFF) / 1000, u = Math.max(UNC, 50) / 1000;
     if (Math.abs(OFF) <= Math.max(UNC, 500)) t.textContent = "On time ±" + u.toFixed(1) + " s";
     else { b.classList.add("warn"); t.textContent = a.toFixed(1) + " s " + (OFF > 0 ? "slow" : "fast") + (S.correct ? " · fixed" : ""); }
     acc = "Hora compared your device with an internet clock several times. Your device is <b>" + a.toFixed(2) + " s " + (OFF >= 0 ? "slow" : "fast") +
@@ -642,6 +664,7 @@ function wxNow() {
     hi: d.daily ? deg(d.daily.temperature_2m_max[0]) : "", lo: d.daily ? deg(d.daily.temperature_2m_min[0]) : "" };
 }
 async function loadWeather(force) {
+  if (DEMO) return;
   if (!S.weather || WX.busy) return;
   if (!force && WX.data && Date.now() - WX.at < 30 * 60000) return;
   try { const c = JSON.parse(localStorage.getItem("hora-wx") || "null"); if (c && !force && Date.now() - c.at < 30 * 60000) { WX.data = c.data; WX.at = c.at; renderWx(); return; } } catch (e) {}
@@ -1317,7 +1340,7 @@ function ring(o) {
   if (RING) { QUEUE.push(o); return; }
   RING = o; ringStart = Date.now();
   if (o.kind === "timer") { soundLoop(o); ISL.open = true; renderIsland(); return; }
-  $("#rK").textContent = o.preview ? "Alarm preview" : o.auto ? "Alarm · snoozed " + o.auto + "×" : o.a.sleep ? "Good morning" : "Alarm";
+  $("#rK").textContent = o.preview && !DEMO ? "Alarm preview" : o.auto ? "Alarm · snoozed " + o.auto + "×" : o.a.sleep ? "Good morning" : "Alarm";
   ringTime(); renderWx();
   $("#rL").textContent = o.title; $("#rS").textContent = o.sub || "";
   $("#rB").innerHTML = `<div class="slide" id="rSlide"><div class="chev"><i></i><i></i><i></i></div><span>Slide up to stop</span></div>
@@ -1348,7 +1371,7 @@ function ring(o) {
 function paintAuto() {
   const o = RING, el = $("#rAuto"); if (!o || o.kind !== "alarm" || !el) return;
   const left = Math.max(0, o.endsAt - Date.now()), m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
-  const then = o.preview ? "stops" : (o.a.after || "snooze") === "snooze" && (o.auto || 0) < 3 ? "snoozes" : "stops";
+  const then = o.preview && !DEMO ? "stops" : (o.a.after || "snooze") === "snooze" && (o.auto || 0) < 3 ? "snoozes" : "stops";
   el.textContent = `Rings for ${m}:${pad(s)} more, then ${then} by itself`;
 }
 function stopRing() {
@@ -1375,8 +1398,33 @@ function islandData() {
   if (W.run) { const e = swEl(); return { k: "sw", label: "Stopwatch", full: "Stopwatch", sub: "Lap " + (W.laps.length + 1) + " · " + swStr(e - lapSum()), t: swFmt(e).main, p: (e / 1000 % 60) / 60 }; }
   return null;
 }
+/* In the Android app the live pill lives in the phone's status bar instead: Android counts the clock by
+   itself, so Hora only sends it something when a timer starts, pauses, changes or ends. */
+let LIVE_SIG = null;
+function syncLive() {
+  if (!NATIVE || !NAT.live) return;
+  const off = S.correct ? OFF : 0, list = S.timers.filter(t => !t.done), run = list.filter(t => t.run).sort((a, b) => a.endAt - b.endAt);
+  const t = run[0] || list[0];
+  let o = null;
+  if (RING) o = null;   // the alarm screen takes over
+  else if (t) {
+    const more = list.length > 1 ? ` · ${list.length} timers` : "";
+    o = { kind: "timer", title: t.label, running: t.run, left: Math.round(tRem(t)), total: t.total,
+      when: t.run ? Math.round(t.endAt - off) : 0, chip: t.run ? "" : "Paused",
+      text: (t.run ? "Ends " + hmA(new Date(t.endAt)) : "Paused · " + clk(t.left) + " left") + more };
+  } else if (W.run) {
+    o = { kind: "sw", title: "Stopwatch", running: true, when: Math.round(W.start - off - W.acc), left: 0, total: 1, chip: "",
+      text: W.laps.length ? "Lap " + (W.laps.length + 1) + " · last lap " + swStr(W.laps[W.laps.length - 1]) : "Running" };
+  }
+  // the remaining time only matters when it isn't counting by itself
+  const sig = o ? JSON.stringify(Object.assign({}, o, { left: o.running ? Math.round(o.when / 1000) : o.left })) : "";
+  if (sig === LIVE_SIG) return;
+  LIVE_SIG = sig;
+  try { NAT.live(o ? JSON.stringify(o) : ""); } catch (e) {}
+}
 function renderIsland() {
   const el = $("#island"), d = islandData();
+  syncLive();
   if (!d) { el.className = "island"; ISL.open = false; document.title = "Hora"; return; }
   if (ISL.open && d.k !== "alert" && d.k !== "bed" && Date.now() > ISL.until) ISL.open = false;
   el.className = "island act" + (ISL.open ? " open" : "") + (d.k === "alert" || d.k === "bed" ? " alert" : "") + (d.k === "sw" ? " sw" : "") + (d.k === "bed" ? " bed" : "");
@@ -1829,6 +1877,7 @@ function fireBed(b) {
   buzz("gentle"); renderIsland();
 }
 function check() {
+  if (DEMO) return;   // nothing rings in the screenshots
   const n = now();
   S.alarms.forEach(a => { if (a.on && NEXT[a.id] && n >= NEXT[a.id]) fireAlarm(a, NEXT[a.id]); });
   SNOOZES.filter(s => n >= s.at).forEach(fireSnooze);
@@ -1898,7 +1947,38 @@ addEventListener("resize", drawRuler);
 
 S.timers = S.timers.filter(t => !t.done || t.run);
 if (S.focus && !focused()) S.focus = null;
+if (DEMO) startDemo();
 syncSleep(); recalcAlarms(); paintSky(); renderAll(); drawRuler(); renderWatchStatic(); renderWatch(); wake(); openFromShortcut();
 requestAnimationFrame(drawMap);
-loadWeather(); sync();
+if (DEMO) runDemo(); else { loadWeather(); sync(); }
+
+/* the clock is set to a fixed time of day, the clock check reads "on time" and the weather is made up */
+function startDemo() {
+  document.documentElement.classList.add("demo");
+  const [hh, mm] = DEMO_AT[DEMO] || DEMO_AT.clock, d = new Date();
+  S.correct = true; OFF = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hh, mm, 8).getTime() - Date.now();
+  SYNC = "ok"; UNC = 180; SYNCED_AT = Date.now() + 864e5;
+  SNOOZES = [];
+  const n = now(), H = new Date(n).getHours();
+  WX.data = { current: { temperature_2m: hh < 9 ? 8 : 12.4, apparent_temperature: 10, weather_code: 2, is_day: hh >= 7 && hh < 17 ? 1 : 0 },
+    daily: { temperature_2m_max: [15.2], temperature_2m_min: [6.1] } };
+  WX.at = Date.now();
+  if (DEMO === "timer") {
+    S.timers = [
+      { id: 11, label: "Pasta", total: 600000, orig: 600000, left: 372000, endAt: n + 372000, run: true, done: false },
+      { id: 12, label: "Laundry", total: 2700000, orig: 2700000, left: 1300000, endAt: n + 1300000, run: true, done: false }
+    ];
+    S.focus = 11;
+  }
+  if (DEMO === "stopwatch") Object.assign(S.watch, { run: true, start: n - 126480, acc: 0, laps: [30950, 33070, 29840] });
+}
+function runDemo() {
+  const view = { clock: "vClock", alarms: "vAlarm", timer: "vTimer", stopwatch: "vWatch", ring: "vClock" }[DEMO] || "vClock";
+  go(view); renderAll(); renderWx();
+  if (DEMO === "alarms") {
+    // show the Gym alarm swiped open, with Skip next and Delete
+    setTimeout(() => { const w = $$("#alarmList .aw")[1]; if (w) { const el = w.querySelector(".alarm"); el.style.setProperty("--dx", (w.querySelectorAll(".acts button").length * -84) + "px"); } }, 300);
+  }
+  if (DEMO === "ring") setTimeout(() => alarmRing(S.alarms[0], { preview: true, sub: new Date(now()).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) }), 200);
+}
 })();

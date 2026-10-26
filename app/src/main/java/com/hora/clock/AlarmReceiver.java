@@ -1,5 +1,6 @@
 package com.hora.clock;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,19 +8,19 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioAttributes;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.provider.Settings;
 
 /**
- * Fires when an alarm, snooze or timer is due. It posts a full-screen alarm notification, which wakes
- * the screen and opens Hora over the lock screen. The notification also rings the phone's own alarm
- * sound on a loop, as a backup until Hora's own sound has started.
+ * Fires when an alarm, snooze or timer is due. It posts a silent full-screen alarm notification, which
+ * wakes the screen and opens Hora over the lock screen, where Hora plays the sound the user chose.
+ * The phone's own alarm sound is only a backup: BackupReceiver plays it if Hora's sound hasn't started
+ * a few seconds later (for example when Android didn't let Hora open).
  */
 public class AlarmReceiver extends BroadcastReceiver {
-    static final String CHANNEL = "hora_ring_v1";
+    // v1 played the system alarm sound the instant it was posted, before Hora's own sound could start
+    static final String OLD_CHANNEL = "hora_ring_v1";
+    static final String CHANNEL = "hora_ring_v2";
     static final int NOTIFICATION_ID = 7;
+    static final long BACKUP_AFTER_MS = 8_000;
 
     @Override
     public void onReceive(Context c, Intent in) {
@@ -28,15 +29,17 @@ public class AlarmReceiver extends BroadcastReceiver {
         String label = in.getStringExtra("label");
         if (key.startsWith("b")) { bedtime(c, key, label); return; }
 
-        Intent open = new Intent(c, MainActivity.class)
-                .setAction(Scheduler.ACTION_FIRE)
-                .putExtra("key", key)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        // a timer that has ended shouldn't keep counting in the status bar
+        if (key.startsWith("t")) LiveNotifier.clear(c);
+
+        Intent open = openIntent(c, key);
         PendingIntent full = PendingIntent.getActivity(c, 2, open,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // remembered so that opening Hora shortly afterwards still shows the ring
-        Scheduler.prefs(c).edit().putString("pending", key).putLong("pendingAt", System.currentTimeMillis()).apply();
+        // remembered so that opening Hora shortly afterwards still shows the ring;
+        // "soundOk" is set by Hora once its own sound is actually playing
+        Scheduler.prefs(c).edit().putString("pending", key).putLong("pendingAt", System.currentTimeMillis())
+                .putString("ringing", key).remove("soundOk").apply();
 
         ensureChannel(c);
         Notification n = new Notification.Builder(c, CHANNEL)
@@ -50,17 +53,49 @@ public class AlarmReceiver extends BroadcastReceiver {
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .build();
-        n.flags |= Notification.FLAG_INSISTENT;
         try {
             c.getSystemService(NotificationManager.class).notify(NOTIFICATION_ID, n);
         } catch (SecurityException ignored) {
             // notifications are switched off for Hora
         }
+        scheduleBackup(c, key, label);
         try {
             c.startActivity(open);
         } catch (Exception ignored) {
             // Android may block this while another app is open; the notification covers that case
         }
+    }
+
+    static Intent openIntent(Context c, String key) {
+        return new Intent(c, MainActivity.class)
+                .setAction(Scheduler.ACTION_FIRE)
+                .putExtra("key", key)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    }
+
+    private static PendingIntent backupPi(Context c, String key, String label, int flags) {
+        Intent i = new Intent(c, BackupReceiver.class).putExtra("key", key).putExtra("label", label);
+        return PendingIntent.getBroadcast(c, 4, i, flags | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    private static void scheduleBackup(Context c, String key, String label) {
+        AlarmManager am = c.getSystemService(AlarmManager.class);
+        long at = System.currentTimeMillis() + BACKUP_AFTER_MS;
+        PendingIntent pi = backupPi(c, key, label, PendingIntent.FLAG_UPDATE_CURRENT);
+        try {
+            if (Scheduler.canExact(c)) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+            else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        } catch (SecurityException e) {
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        }
+    }
+
+    /** Hora's own sound is playing: the backup isn't needed. */
+    static void soundStarted(Context c) {
+        Scheduler.prefs(c).edit().putBoolean("soundOk", true).apply();
+        PendingIntent pi = backupPi(c, "", "", PendingIntent.FLAG_NO_CREATE);
+        if (pi != null) { c.getSystemService(AlarmManager.class).cancel(pi); pi.cancel(); }
+        BackupReceiver.stop(c);
     }
 
     /** Bedtime reminders are a quiet notification: no full screen, no looping sound. */
@@ -91,19 +126,15 @@ public class AlarmReceiver extends BroadcastReceiver {
         try { nm.notify(BED_ID, n); } catch (SecurityException ignored) { }
     }
 
+    /** A silent, high-priority channel: it's only there to wake the screen and open Hora. */
     static void ensureChannel(Context c) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
+        if (nm.getNotificationChannel(OLD_CHANNEL) != null) nm.deleteNotificationChannel(OLD_CHANNEL);
         if (nm.getNotificationChannel(CHANNEL) != null) return;
         NotificationChannel ch = new NotificationChannel(CHANNEL, "Alarms and timers", NotificationManager.IMPORTANCE_HIGH);
-        ch.setDescription("Rings when an alarm or timer goes off");
-        Uri sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        if (sound == null) sound = Settings.System.DEFAULT_ALARM_ALERT_URI;
-        ch.setSound(sound, new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build());
-        ch.enableVibration(true);
-        ch.setVibrationPattern(new long[]{0, 500, 400, 500});
+        ch.setDescription("Opens Hora over the lock screen when an alarm or timer goes off");
+        ch.setSound(null, null);
+        ch.enableVibration(false);   // Hora vibrates with the pattern chosen for the alarm
         ch.setBypassDnd(true);
         ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         nm.createNotificationChannel(ch);
@@ -111,5 +142,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     static void cancel(Context c) {
         c.getSystemService(NotificationManager.class).cancel(NOTIFICATION_ID);
+        Scheduler.prefs(c).edit().remove("ringing").apply();
+        PendingIntent pi = backupPi(c, "", "", PendingIntent.FLAG_NO_CREATE);
+        if (pi != null) { c.getSystemService(AlarmManager.class).cancel(pi); pi.cancel(); }
+        BackupReceiver.stop(c);
     }
 }

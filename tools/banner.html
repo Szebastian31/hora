@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hora banner</title>
+<!-- The README banner: five real screens in phone frames. tools/screenshots.sh turns this page into screenshots/banner.png.
+     The background is the Tide wake-up scene from scenes.js; the CSS gradient is its fallback. -->
+<style>
+  :root{--top:#121a4e;--mid:#4f4a8c;--bot:#1d2252;--b1:rgba(222,143,134,.5);--b2:rgba(18,26,78,.6);--b3:rgba(255,207,158,.45);--b4:rgba(70,63,124,.55);--ink:#f2f5ff;--muted:rgba(242,245,255,.7)}
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1280px;height:720px;overflow:hidden}
+  body{font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;
+    background:radial-gradient(50% 60% at 10% 4%,var(--b1),transparent 70%),radial-gradient(45% 55% at 92% 8%,var(--b2),transparent 70%),
+      radial-gradient(55% 60% at 4% 100%,var(--b4),transparent 70%),radial-gradient(60% 60% at 96% 104%,var(--b3),transparent 70%),
+      linear-gradient(180deg,var(--top),var(--mid) 60%,var(--bot))}
+  header{position:absolute;left:0;right:0;top:44px;text-align:center}
+  header .row{display:inline-flex;align-items:center;gap:16px}
+  header .ico{width:58px;height:58px;border-radius:16px;display:block;box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}
+  h1{font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;font-weight:700;font-size:58px;letter-spacing:-2px;line-height:1}
+  header p{margin-top:12px;font-size:19px;font-weight:500;color:var(--muted)}
+  .phones{position:absolute;left:0;right:0;top:200px;height:640px}
+  .phone{position:absolute;top:0;width:250px;aspect-ratio:390/844;border-radius:42px;padding:9px;background:#0a0d18;
+    box-shadow:0 0 0 1.5px rgba(255,255,255,.18) inset,0 40px 70px -30px rgba(0,0,0,.75),0 0 0 1px rgba(0,0,0,.4)}
+  .phone img{display:block;width:100%;height:100%;border-radius:34px;object-fit:cover;object-position:top}
+  /* no painted notch: each screenshot already has the phone's cutout, drawn by the app */
+  #sea{position:absolute;inset:0;width:100%;height:100%;display:block}
+  header{text-shadow:0 2px 18px rgba(5,8,30,.45)}
+  .p1{left:110px;transform:translateY(70px) rotate(-6deg)}
+  .p2{left:330px;transform:translateY(26px) rotate(-2.5deg)}
+  .p3{left:515px;z-index:3;width:250px}
+  .p4{left:700px;transform:translateY(26px) rotate(2.5deg)}
+  .p5{left:920px;transform:translateY(70px) rotate(6deg)}
+  .p2,.p4{z-index:2}
+</style>
+</head>
+<body>
+<canvas id="sea"></canvas>
+<header>
+  <div class="row"><img class="ico" src="../icons/icon-1024.png" onerror="this.src='../icons/icon.svg'" alt=""><h1>Hora</h1></div>
+  <p>A clock, alarm, timer and stopwatch that tells you how right it is.</p>
+</header>
+<div class="phones">
+  <div class="phone p1"><img src="../screenshots/alarms.png" alt=""></div>
+  <div class="phone p2"><img src="../screenshots/timer.png" alt=""></div>
+  <div class="phone p3"><img src="../screenshots/clock.png" alt=""></div>
+  <div class="phone p4"><img src="../screenshots/ringing.png" alt=""></div>
+  <div class="phone p5"><img src="../screenshots/stopwatch.png" alt=""></div>
+</div>
+<script src="../scenes.js"></script>
+<script>
+  // the background is Hora's own Tide wake-up scene: a dusky sunset over the sea
+  try { window.HoraScenes.mount(document.getElementById("sea"), "ocean", { fps: 30, dpr: 2 }); } catch (e) {}
+</script>
+</body>
+</html>
