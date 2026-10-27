@@ -108,6 +108,8 @@ html,body{overscroll-behavior:none;background:#0b1433}
 .cbtn.paused{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--warn)}
 .cbtn[disabled]{opacity:.4}
 .cbar{display:flex;justify-content:space-between;align-items:center;margin:4px 6px 18px}
+.addt{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.addt .btn{min-width:84px;justify-content:center}
 .ch{flex:none;display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 14px;border-radius:18px;background:var(--card2);color:var(--fg);font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;border:0;transition:background .2s,color .2s}
 .ch span{color:var(--fg2);font-weight:500}
 .ch.on{background:var(--acc);color:var(--acc-ink)}
@@ -469,8 +471,13 @@ background:linear-gradient(color-mix(in srgb,var(--sky-bot) 30%,var(--sheet)),va
 .snd.on{background:var(--acc);color:var(--acc-ink)}
 .snd.on svg{opacity:1;animation:eq .9s ease-in-out infinite alternate}
 @keyframes eq{to{transform:scaleY(.55)}}
-.snd.file{box-shadow:inset 0 0 0 1.5px var(--stroke);background:none}
+.snd.file{grid-column:1 / -1;flex-direction:row;align-items:center;gap:12px;padding:12px 14px;box-shadow:inset 0 0 0 1.5px var(--stroke);background:none}
+.snd.file .ft{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.snd.file small{font-size:11.5px;color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snd.file .pick{font-size:12px;font-weight:700;color:var(--acc);flex:none}
+.snd.file svg{width:22px!important;height:22px!important;opacity:.8}
 .snd.file.on{background:var(--acc);box-shadow:none}
+.snd.file.on small,.snd.file.on .pick{color:var(--acc-ink);opacity:.8}
 .snd input{display:none}
 .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .tile{position:relative;aspect-ratio:4/5;border-radius:18px;overflow:hidden;cursor:pointer;background:var(--card2);box-shadow:0 8px 22px rgba(0,0,0,.18)}

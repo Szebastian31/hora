@@ -14,9 +14,9 @@ import android.net.Uri;
 import android.provider.Settings;
 
 /**
- * The safety net. A few seconds after an alarm fires, if Hora's own sound still hasn't started
- * (the screen didn't open, the WebView was slow, the sound file failed), this rings the phone's own
- * alarm sound on a loop so an alarm is never silent.
+ * The safety net. A few seconds after an alarm fires, if no sound has started (Android wouldn't let the ringing
+ * start, or neither the chosen sound nor the phone's alarm sound would play), this rings the phone's own alarm
+ * sound on a loop, in a notification, so an alarm is never silent.
  */
 public class BackupReceiver extends BroadcastReceiver {
     static final String CHANNEL = "hora_backup_v1";
@@ -27,7 +27,11 @@ public class BackupReceiver extends BroadcastReceiver {
         String key = in.getStringExtra("key");
         SharedPreferences p = Scheduler.prefs(c);
         if (key == null || !key.equals(p.getString("ringing", null)) || p.getBoolean("soundOk", false)) return;
+        ring(c, key, in.getStringExtra("label"));
+    }
 
+    /** Rings the phone's own alarm sound on a loop, in a notification that opens Hora. */
+    static void ring(Context c, String key, String label) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         if (nm.getNotificationChannel(CHANNEL) == null) {
             NotificationChannel ch = new NotificationChannel(CHANNEL, "Backup alarm sound", NotificationManager.IMPORTANCE_HIGH);
@@ -44,7 +48,6 @@ public class BackupReceiver extends BroadcastReceiver {
             ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             nm.createNotificationChannel(ch);
         }
-        String label = in.getStringExtra("label");
         PendingIntent full = PendingIntent.getActivity(c, 5, AlarmReceiver.openIntent(c, key),
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(c, CHANNEL)

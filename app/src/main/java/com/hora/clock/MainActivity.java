@@ -17,6 +17,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.AlarmClock;
 import android.provider.Settings;
+import android.util.Base64;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
@@ -35,6 +36,9 @@ import androidx.webkit.WebViewAssetLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,10 +60,20 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> fileCb;
     private float insetTop = 24, insetBottom = 0;
     private int savedMusicVolume = -1;
+    private FileOutputStream sndOut;
+    private String sndName;
+    private static WeakReference<MainActivity> current = new WeakReference<>(null);
+
+    /** Something was done from a notification: if Hora is running, it catches up straight away. */
+    static void pushActions() {
+        MainActivity a = current.get();
+        if (a != null) a.js("window.horaActions&&horaActions()");
+    }
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        current = new WeakReference<>(this);
 
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#0b1433"));
@@ -151,12 +165,14 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
-        // a ring that went off while Hora wasn't on screen, e.g. a notification that wasn't tapped
+        // catch up on anything done from notifications (stopped, snoozed, dismissed) before showing a ring
+        js("window.horaActions&&horaActions()");
+        // a ring that is still going while Hora wasn't on screen, e.g. a notification that wasn't tapped
         SharedPreferences p = Scheduler.prefs(this);
         String key = p.getString("pending", null);
         if (key != null) {
-            if (System.currentTimeMillis() - p.getLong("pendingAt", 0) < 15 * 60_000) js("window.horaFire&&horaFire(" + JSONObject.quote(key) + ")");
-            p.edit().remove("pending").apply();
+            if (key.equals(RingService.ringingKey()) || System.currentTimeMillis() - p.getLong("pendingAt", 0) < 15 * 60_000) js("window.horaFire&&horaFire(" + JSONObject.quote(key) + ")");
+            if (!key.equals(RingService.ringingKey())) p.edit().remove("pending").apply();
         }
     }
 
@@ -171,9 +187,12 @@ public class MainActivity extends Activity {
         try {
             switch (i.getAction()) {
                 case Scheduler.ACTION_FIRE: {
-                    showOverLockScreen(true);
-                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                     String key = i.getStringExtra("key");
+                    // only over the lock screen while it's really ringing, not for one already stopped
+                    if (key != null && key.equals(RingService.ringingKey())) {
+                        showOverLockScreen(true);
+                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    }
                     if (key != null) js("window.horaFire&&horaFire(" + JSONObject.quote(key) + ")");
                     break;
                 }
@@ -349,6 +368,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (current.get() == this) current = new WeakReference<>(null);
         restoreVolume();
         if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
             try { getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback((android.window.OnBackInvokedCallback) backCallback); } catch (Exception ignored) {}
@@ -369,12 +389,12 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 if (on) {
                     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    raiseVolume();
-                    // Hora's own sound is playing, so the backup system alarm sound isn't needed
-                    if (soundStarted) { AlarmReceiver.soundStarted(MainActivity.this); AlarmReceiver.cancel(MainActivity.this); }
+                    // a preview plays in Hora on the media volume; a real ring is played by Android at alarm volume
+                    if (RingService.ringingKey().isEmpty()) raiseVolume();
                 } else {
                     getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                     showOverLockScreen(false);
+                    RingService.stopQuietly();
                     AlarmReceiver.cancel(MainActivity.this);
                     restoreVolume();
                     Vibrator vib = getSystemService(Vibrator.class);
@@ -382,6 +402,71 @@ public class MainActivity extends Activity {
                 }
             });
         }
+
+        /** Hora noticed a ring before Android did: ring it now. False if it was already handled. */
+        @JavascriptInterface
+        public boolean ring(String key) {
+            if (key == null) return false;
+            if (key.equals(RingService.ringingKey())) return true;
+            if (Scheduler.isDone(MainActivity.this, key)) return false;
+            JSONObject ev = Scheduler.find(MainActivity.this, key);
+            try {
+                if (ev == null) ev = new JSONObject().put("k", key).put("label", "Hora").put("name", "Hora").put("at", System.currentTimeMillis());
+            } catch (Exception e) { return false; }
+            return AlarmReceiver.ring(MainActivity.this, ev);
+        }
+
+        @JavascriptInterface
+        public String ringingKey() { return RingService.ringingKey(); }
+
+        @JavascriptInterface
+        public long ringLeft() { return RingService.left(); }
+
+        @JavascriptInterface
+        public String takeActions() { return Scheduler.takeActions(MainActivity.this); }
+
+        /* The sounds Android plays when ringing, handed over by Hora in base64 pieces. */
+        @JavascriptInterface
+        public String soundSig(String name) {
+            String n = RingService.safe(name);
+            boolean there = new File(new File(getFilesDir(), "sounds"), n).isFile();
+            return there ? Scheduler.prefs(MainActivity.this).getString("sig_" + n, "") : "";
+        }
+
+        @JavascriptInterface
+        public void soundBegin(String name) {
+            try {
+                if (sndOut != null) sndOut.close();
+                File dir = new File(getFilesDir(), "sounds");
+                if (!dir.isDirectory()) dir.mkdirs();
+                sndName = RingService.safe(name);
+                sndOut = new FileOutputStream(new File(dir, sndName + ".part"));
+            } catch (Exception e) {
+                sndOut = null;
+            }
+        }
+
+        @JavascriptInterface
+        public void soundChunk(String name, String b64) {
+            if (sndOut == null || !RingService.safe(name).equals(sndName)) return;
+            try { sndOut.write(Base64.decode(b64, Base64.DEFAULT)); } catch (Exception e) { sndOut = null; }
+        }
+
+        @JavascriptInterface
+        public void soundEnd(String name, String sig) {
+            if (sndOut == null || !RingService.safe(name).equals(sndName)) return;
+            try {
+                sndOut.close();
+                File dir = new File(getFilesDir(), "sounds"), part = new File(dir, sndName + ".part"), done = new File(dir, sndName);
+                if (done.exists()) done.delete();
+                if (part.renameTo(done)) Scheduler.prefs(MainActivity.this).edit().putString("sig_" + sndName, sig).apply();
+            } catch (Exception ignored) {
+            }
+            sndOut = null;
+        }
+
+        @JavascriptInterface
+        public boolean popupsAllowed() { return AlarmReceiver.popupsAllowed(MainActivity.this); }
 
         @JavascriptInterface
         @SuppressWarnings("deprecation")
@@ -491,6 +576,10 @@ public class MainActivity extends Activity {
                         break;
                     case "fullscreen":
                         i = Build.VERSION.SDK_INT >= 34 ? new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, pkg) : details;
+                        break;
+                    case "channel":
+                        i = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName())
+                                .putExtra(Settings.EXTRA_CHANNEL_ID, AlarmReceiver.CHANNEL);
                         break;
                     default:
                         i = details;

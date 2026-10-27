@@ -1,4 +1,4 @@
-const VERSION = "hora-v23";
+const VERSION = "hora-v25";
 const FILES = ["./", "index.html", "style.css", "app.js", "scenes.js", "manifest.webmanifest", "icons/icon.svg"];
 
 self.addEventListener("install", e => {

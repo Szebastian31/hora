@@ -41,7 +41,7 @@ const SLEEP_ID = 9001;
 
 const DEF = {
   skin: "live", accent: "rose", font: "crust", h24: true, secs: true, correct: true, ticks: true, wake: false, notify: false, analog: false,
-  weather: true, fahr: false, swAnalog: true,
+  weather: true, fahr: false, swAnalog: true, upcoming: true,
   cities: ["Europe/London", "America/New_York", "Asia/Tokyo"],
   alarms: [
     { id: 1, h: 7, m: 0, label: "Work", days: [1,1,1,1,1,0,0], on: true, sound: "glass", gentle: true, snooze: 9, scene: "sunrise", vib: "pulse" },
@@ -93,20 +93,34 @@ if (NATIVE) {
   try { Object.defineProperty(navigator, "vibrate", { configurable: true, value: p => { NAT.vibrate(Array.isArray(p) ? p.join(",") : String(p)); return true; } }); } catch (e) {}
 }
 let schT = null;
-/* hand Android every upcoming ring, in device time, so it can wake Hora even when it's closed */
+/* hand Android every upcoming ring, in device time, so it can ring even when Hora is closed. Each one carries what
+   Android needs to ring it on its own: the sound, vibration, snooze length and what to do if nobody answers. */
+function ringInfo(a) {
+  const s = ringSound(a.sound, "snd" + a.id, a.fileName, a.fileAt);
+  return { name: a.label || "Alarm", snd: s.name, vib: (VIBS[a.vib] || VIBS.pulse).p.join(","), gentle: !!a.gentle,
+    ringMs: (a.ringFor || 10) * 60000, snooze: a.snooze || 9, after: a.after || "snooze", h24: !!S.h24, up: S.upcoming !== false };
+}
 function schedNative() {
   if (!NATIVE) return;
   clearTimeout(schT);
   schT = setTimeout(() => {
     try {
-      const off = S.correct ? OFF : 0, n = now(), ev = [];
+      const off = S.correct ? OFF : 0, n = now(), ev = [], snd = {};
+      const use = s => { snd[s.name] = s; return s.name; };
       // the next few rings of each alarm, so repeats keep working even if Hora isn't opened for days
-      S.alarms.forEach(a => { let at = a.on ? NEXT[a.id] : null; for (let i = 0; at && i < 4; i++) { ev.push({ k: "a" + a.id + "@" + at, at: at - off, label: a.label || "Alarm" }); if (!a.days.some(Boolean)) break; at = nextRing(a, at + 1000); } });
-      SNOOZES.forEach(s => ev.push({ k: "s" + s.a.id + "@" + s.at, at: s.at - off, label: (s.a.label || "Alarm") + " (snoozed)" }));
-      S.timers.forEach(t => { if (t.run && !t.done) ev.push({ k: "t" + t.id + "@" + t.endAt, at: t.endAt - off, label: t.label + " timer" }); });
+      S.alarms.forEach(a => {
+        let at = a.on ? NEXT[a.id] : null;
+        if (at) use(ringSound(a.sound, "snd" + a.id, a.fileName, a.fileAt));
+        for (let i = 0; at && i < 4; i++) { ev.push(Object.assign({ k: "a" + a.id + "@" + at, at: at - off, label: a.label || "Alarm" }, ringInfo(a))); if (!a.days.some(Boolean)) break; at = nextRing(a, at + 1000); }
+      });
+      SNOOZES.forEach(s => { use(ringSound(s.a.sound, "snd" + s.a.id, s.a.fileName, s.a.fileAt)); ev.push(Object.assign({ k: "s" + s.a.id + "@" + s.at, at: s.at - off, label: (s.a.label || "Alarm") + " (snoozed)", auto: s.auto || 0 }, ringInfo(s.a))); });
+      const ts = ringSound(S.timerSound, "sndtimer", S.timerFile, S.timerFileAt);
+      S.timers.forEach(t => { if (t.run && !t.done) { use(ts); ev.push({ k: "t" + t.id + "@" + t.endAt, at: t.endAt - off, label: t.label + " timer", name: t.label, snd: ts.name, vib: VIBS.pulse.p.join(","), gentle: false, ringMs: (S.timerRingFor || 2) * 60000, h24: !!S.h24 }); } });
       // bedtime reminders are quiet notifications, not full-screen alarms ("b" keys)
       bedtimes(n, 4).forEach(b => ev.push({ k: "b" + SLEEP_ID + "@" + b.rem, at: b.rem - off, label: "Bedtime at " + hmA(new Date(b.bed)) }));
       NAT.schedule(JSON.stringify(ev.filter(e => e.at > n - off - 1000).sort((x, y) => x.at - y.at).slice(0, 40)));
+      // the timer sound is kept ready too, so a timer started later rings with it straight away
+      use(ts); syncSounds(Object.values(snd));
     } catch (e) {}
   }, 60);
 }
@@ -452,8 +466,8 @@ const SOUNDS = {
 };
 const ALARM_SOUNDS = ["glass", "dawn", "keys", "kalimba", "rise", "marimba", "harp", "lumen", "bowl", "birds", "crystal", "pulse"];
 const TIMER_SOUNDS = ["ding", "kalimba", "marimba", "glass", "crystal", "harp", "bowl", "pulse", "kitchen"];
-function playSound(name, vol = .8, at) {
-  const a = ac(); if (!a) return;
+function playSound(name, vol = .8, at, ctx) {
+  const a = ctx || ac(); if (!a) return;
   const s = SOUNDS[name] || SOUNDS.glass, t = at || a.currentTime + .03, out = a.createGain();
   out.gain.value = vol * .3; out.connect(bus(a));
   // a little human looseness in timing and touch
@@ -488,24 +502,78 @@ async function playFile(key, vol, loop, maxMs) {
 }
 function preview(sound, key) { stopFile(); if (sound === "custom") playFile(key, .8, false, 7000); else playSound(sound, .7); }
 const soundName = (sound, fileName) => sound === "custom" ? (fileName || "Your sound") : (SOUNDS[sound] || SOUNDS.glass).name;
-/* a picker grid shared by the alarm editor, sleep and the timer sheet */
+/* In the Android app, Android itself plays a ringing alarm, so it sounds even when Hora can't open (for example while
+   you're using another app). Each built-in sound is rendered once into a seamless loop and handed over as a WAV;
+   your own songs are handed over as they are. */
+const SND_V = "r1";   // bump when the sound engine changes, so the rendered copies are made again
+async function renderLoop(name) {
+  const per = loopPeriod(name), reps = Math.max(1, Math.ceil(8 / per)), len = per * reps, tail = 4, sr = 44100;
+  const a = new OfflineAudioContext(2, Math.ceil(sr * (len + tail)), sr);
+  for (let i = 0; i < reps; i++) playSound(name, .9, .02 + i * per, a);
+  const buf = await a.startRendering(), n = Math.round(sr * len), L = buf.getChannelData(0), R = buf.getChannelData(1);
+  // fold the last echoes back onto the start, so the loop has no gap or click where it repeats
+  for (let i = n; i < L.length; i++) { L[i - n] += L[i]; R[i - n] += R[i]; }
+  let peak = 0; for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(L[i]), Math.abs(R[i]));
+  const g = peak > 0 ? .89 / peak : 1, out = new DataView(new ArrayBuffer(44 + n * 4));
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) out.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, "RIFF"); out.setUint32(4, 36 + n * 4, true); str(8, "WAVEfmt "); out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 2, true);
+  out.setUint32(24, sr, true); out.setUint32(28, sr * 4, true); out.setUint16(32, 4, true); out.setUint16(34, 16, true); str(36, "data"); out.setUint32(40, n * 4, true);
+  for (let i = 0, o = 44; i < n; i++, o += 4) { out.setInt16(o, clamp(L[i] * g, -1, 1) * 32767, true); out.setInt16(o + 2, clamp(R[i] * g, -1, 1) * 32767, true); }
+  return out.buffer;
+}
+/* which file Android should play for a ring, and a signature that changes when the sound does */
+function ringSound(sound, key, fileName, fileAt) {
+  if (sound === "custom" && fileName) return { name: key, sig: "f:" + fileName + ":" + (fileAt || 0), key };
+  const k = SOUNDS[sound] ? sound : "glass";
+  return { name: k, sig: SND_V + ":" + k };
+}
+let sndQ = Promise.resolve();
+function syncSounds(list) {
+  if (!NATIVE || !NAT.soundBegin || typeof OfflineAudioContext === "undefined") return;
+  // one at a time, in order
+  sndQ = sndQ.then(async () => {
+    for (const s of list) {
+      try {
+        if (NAT.soundSig(s.name) === s.sig) continue;
+        let bytes = null;
+        if (s.key) { const m = await SC.media.get(s.key); if (m) bytes = await (await fetch(m.url)).arrayBuffer(); }
+        else bytes = await renderLoop(s.name);
+        if (!bytes) continue;
+        // in pieces whose size divides by 3, so each one is complete base64 on its own
+        const u = new Uint8Array(bytes), CH = 3 * 131072;
+        NAT.soundBegin(s.name);
+        for (let o = 0; o < u.length; o += CH) {
+          const part = u.subarray(o, o + CH); let bin = "";
+          for (let i = 0; i < part.length; i += 0x8000) bin += String.fromCharCode.apply(null, part.subarray(i, i + 0x8000));
+          NAT.soundChunk(s.name, btoa(bin)); await sleep(0);
+        }
+        NAT.soundEnd(s.name, s.sig);
+      } catch (e) {}
+    }
+  }).catch(() => {});
+}
+/* a picker grid shared by the alarm editor, sleep and the timer sheet; the last row picks any song on the phone */
 const WAVE = `<svg viewBox="0 0 24 12"><path d="M1 6h2M5 3v6M8 1v10M11 4v4M14 2v8M17 4v4M20 3v6M23 6h0"/></svg>`;
-function soundGrid(list, cur, fileName, id, noFile) {
+const fileSub = fileName => fileName ? "Your song · tap to play it, or Change" : "Pick any song or audio file on this phone";
+function soundGrid(list, cur, fileName, id) {
   return `<div class="snds" id="${id}">` + list.map(k => `<div class="snd ${cur === k ? "on" : ""}" data-k="${k}">${WAVE}<b>${SOUNDS[k].name}</b></div>`).join("") +
-    (noFile ? "" : `<label class="snd file ${cur === "custom" ? "on" : ""}" data-k="custom"><svg viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><b>${fileName ? esc(fileName) : "Your sound"}</b><input type="file" accept="audio/*"></label>`) + `</div>`;
+    `<label class="snd file ${cur === "custom" ? "on" : ""}" data-k="custom"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span class="ft"><b>${fileName ? esc(fileName) : "Your own song"}</b><small>${fileSub(fileName)}</small></span><span class="pick">${fileName ? "Change" : "Choose"}</span><input type="file" accept="audio/*"></label></div>`;
 }
 function bindSoundGrid(id, key, get, set) {
   const root = $("#" + id), paint = () => $$("#" + id + " .snd").forEach(x => x.classList.toggle("on", x.dataset.k === get().sound));
   $$("#" + id + " .snd:not(.file)").forEach(x => x.onclick = () => { set({ sound: x.dataset.k }); paint(); preview(x.dataset.k); });
   const file = root.querySelector(".file"); if (!file) return;
   const inp = file.querySelector("input");
-  file.onclick = e => { if (e.target === inp) return; if (get().fileName && get().sound !== "custom") { e.preventDefault(); set({ sound: "custom" }); paint(); preview("custom", key); } };
+  // with a song already chosen, tapping the row selects it again; "Change" opens the file picker
+  file.onclick = e => { if (e.target === inp || e.target.closest(".pick")) return; if (get().fileName && get().sound !== "custom") { e.preventDefault(); set({ sound: "custom" }); paint(); preview("custom", key); } };
   inp.onchange = async () => {
     const f = inp.files[0]; if (!f) return;
     if (f.size > 40 * 1024 * 1024) { toast("That file is over 40 MB"); return; }
     const kept = await SC.media.put(key, f), nm = f.name.replace(/\.[^.]+$/, "").slice(0, 26);
-    set({ sound: "custom", fileName: nm }); file.querySelector("b").textContent = nm; paint(); preview("custom", key);
-    toast(kept ? "Sound set" : "Set for now, but this browser won't keep it after closing");
+    set({ sound: "custom", fileName: nm, fileAt: Date.now() });
+    file.querySelector("b").textContent = nm; file.querySelector("small").textContent = fileSub(nm); file.querySelector(".pick").textContent = "Change";
+    paint(); preview("custom", key);
+    toast(kept ? "Song set" : "Set for now, but this browser won't keep it after closing");
   };
 }
 const SC = window.HoraScenes;
@@ -1191,7 +1259,7 @@ function syncSleep() {
   const z = S.sleep; let a = sleepAlarm();
   if (!z.set) { if (a) S.alarms = S.alarms.filter(x => x !== a); return; }
   if (!a) { a = newAlarm({ id: SLEEP_ID, sleep: true, label: "Wake up", vib: "gentle" }); S.alarms.push(a); }
-  Object.assign(a, { h: Math.floor(z.wake / 60), m: z.wake % 60, days: z.days.slice(), on: z.on && z.alarm, sound: z.sound, scene: z.scene, label: "Wake up", gentle: true });
+  Object.assign(a, { h: Math.floor(z.wake / 60), m: z.wake % 60, days: z.days.slice(), on: z.on && z.alarm, sound: z.sound, fileName: z.fileName || "", fileAt: z.fileAt || 0, scene: z.scene, label: "Wake up", gentle: true });
 }
 const SUNI = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
 const MOONI = `<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>`;
@@ -1237,7 +1305,7 @@ function editSleep() {
     <div style="font-size:11.5px;color:var(--fg2);margin:8px 4px 0;line-height:1.45">Tap one to use it as your bedtime. A cycle is about 90 minutes on average, plus 15 minutes to fall asleep. Yours may differ.</div>
     <div class="grp" style="margin-top:18px"><div class="srow"><div>Wake-up alarm<small>Rings gently, with its own scene and sound</small></div><div class="sw-t ${z.alarm ? "on" : ""}" id="sAl"></div></div></div>
     <div id="sAlBox">
-      <div class="lab">Wake-up sound</div>${soundGrid(ALARM_SOUNDS, z.sound, "", "sSnd", true)}
+      <div class="lab">Wake-up sound</div>${soundGrid(ALARM_SOUNDS, z.sound, z.fileName, "sSnd")}
       <div class="lab">Wake-up scene</div><div class="chips" id="sScn">${Object.entries(SC.SCENES).map(([k, s]) => `<button class="ch" data-k="${k}">${s.name}</button>`).join("")}</div>
     </div>
     ${S.sleep.set ? `<div class="acts"><button class="btn danger wide" id="sOff">Remove sleep schedule</button></div>` : ""}
@@ -1286,7 +1354,7 @@ function editSleep() {
     $$("#sRem .ch").forEach(x => x.onclick = () => { z.remind = +x.dataset.m; tick(); paint(); });
     $$("#sScn .ch").forEach(x => x.onclick = () => { z.scene = x.dataset.k; tick(); paint(); });
     $("#sAl").onclick = e => { z.alarm = !z.alarm; e.currentTarget.classList.toggle("on"); tick(); paint(); };
-    bindSoundGrid("sSnd", "", () => z, v => Object.assign(z, v));
+    bindSoundGrid("sSnd", "snd" + SLEEP_ID, () => z, v => Object.assign(z, v));
     onSheetClose = stopFile;
     if ($("#sOff")) $("#sOff").onclick = () => { S.sleep.set = false; syncSleep(); save(); recalcAlarms(); closeSheet(); toast("Sleep schedule removed"); renderAll(); };
     $("#snR").onclick = () => {
@@ -1302,8 +1370,25 @@ function editSleep() {
 
 /* ---------- ringing ---------- */
 let RING = null, ringIv = null, ringStart = 0, QUEUE = [], ringAuto = null;
+/* In the Android app, Android rings real alarms and timers itself (sound, vibration, and ending the ring if nobody
+   answers). Hora only shows the ring screen for the one Android is ringing right now, and never brings back a ring
+   that was already stopped or snoozed from its notification. */
+const nativeRings = o => NATIVE && !o.preview && !!o.ek && !!NAT.ringingKey;
+function nativeOwns(o) {
+  try {
+    if (NAT.ringingKey() === o.ek) return true;
+    // Hora noticed first (Android's alarm can be a moment late): ask Android to start ringing it
+    return now() - +o.ek.split("@")[1] < 90000 && NAT.ring(o.ek);
+  } catch (e) { return true; }
+}
 function soundLoop(o) {
-  // tell Android an alarm is ringing: keep the screen on, raise the volume, and report whether sound really started
+  const lim = o.kind === "timer" ? 60000 * (S.timerRingFor || 2) : o.preview ? 15000 : (o.a.ringFor || 10) * 60000;
+  o.endsAt = Date.now() + lim;
+  if (nativeRings(o)) {
+    try { const left = NAT.ringLeft(); if (left > 0) o.endsAt = Date.now() + left; NAT.ringing(true, true); } catch (e) {}
+    return;
+  }
+  // a preview, or the browser version: Hora plays the sound itself
   if (NATIVE) setTimeout(() => { if (RING === o) try { NAT.ringing(true, o.sound === "custom" ? !!(AUD && !AUD.paused) : !!(AC && AC.state === "running")); } catch (e) {} }, 900);
   const own = o.sound === "custom", key = own ? "glass" : o.sound;
   const vol = () => o.gentle ? Math.min(1, .12 + (Date.now() - ringStart) / 30000) : .9;
@@ -1325,8 +1410,6 @@ function soundLoop(o) {
       ringIv = setInterval(() => { if (AUD) AUD.volume = clamp(vol(), 0, 1); shake(); }, 150);
     });
   } else synth();
-  const lim = o.kind === "timer" ? 60000 * (S.timerRingFor || 2) : o.preview ? 15000 : (o.a.ringFor || 10) * 60000;
-  o.endsAt = Date.now() + lim;
   ringAuto = setTimeout(() => { if (RING === o) autoEnd(o); }, lim);
   if (document.hidden && S.notify && "Notification" in window && Notification.permission === "granted") { try { new Notification("Hora · " + o.title, { body: o.sub || "", icon: "icons/icon.svg" }); } catch (e) {} }
 }
@@ -1338,6 +1421,7 @@ function autoEnd(o) {
 }
 function ring(o) {
   if (RING) { QUEUE.push(o); return; }
+  if (nativeRings(o) && !nativeOwns(o)) return;
   RING = o; ringStart = Date.now();
   if (o.kind === "timer") { soundLoop(o); ISL.open = true; renderIsland(); return; }
   $("#rK").textContent = o.preview && !DEMO ? "Alarm preview" : o.auto ? "Alarm · snoozed " + o.auto + "×" : o.a.sleep ? "Good morning" : "Alarm";
@@ -1409,7 +1493,7 @@ function syncLive() {
   if (RING) o = null;   // the alarm screen takes over
   else if (t) {
     const more = list.length > 1 ? ` · ${list.length} timers` : "";
-    o = { kind: "timer", title: t.label, running: t.run, left: Math.round(tRem(t)), total: t.total,
+    o = { kind: "timer", key: "t" + t.id + "@" + t.endAt, title: t.label, running: t.run, left: Math.round(tRem(t)), total: t.total, more, h24: !!S.h24,
       when: t.run ? Math.round(t.endAt - off) : 0, chip: t.run ? "" : "Paused",
       text: (t.run ? "Ends " + hmA(new Date(t.endAt)) : "Paused · " + clk(t.left) + " left") + more };
   } else if (W.run) {
@@ -1579,13 +1663,13 @@ function renderTimer() {
   arc.classList.toggle("lap2", !f && S.setMs >= 3600000); arc.classList.toggle("paused", !!f && !f.run);
   $("#dBig").textContent = big; if ($("#dLbl").innerHTML !== lbl) $("#dLbl").innerHTML = lbl;
   const ctl = f
-    ? `<button class="cbtn" id="tC">Cancel</button><button class="btn ghost sm" id="tP1">+1 min</button><button class="cbtn ${f.run ? "paused" : "acc"}" id="tP">${f.run ? "Pause" : "Resume"}</button>`
+    ? `<button class="cbtn" id="tC">Cancel</button><div class="addt"><button class="btn ghost sm" data-add="30000">+30 s</button><button class="btn ghost sm" data-add="60000">+1 min</button></div><button class="cbtn ${f.run ? "paused" : "acc"}" id="tP">${f.run ? "Pause" : "Resume"}</button>`
     : `<button class="cbtn" id="tClr" ${S.setMs ? "" : "disabled"}>Clear</button><span></span><button class="cbtn acc" id="tGo" ${S.setMs ? "" : "disabled"}>Start</button>`;
   if ($("#tCtrls").dataset.h !== ctl) {
     $("#tCtrls").innerHTML = ctl; $("#tCtrls").dataset.h = ctl;
     if (f) {
       $("#tC").onclick = () => { const ff = focused(); S.timers = S.timers.filter(t => t !== ff); S.focus = (S.timers.find(t => !t.done) || {}).id || null; save(); tick(.8); renderAll(); };
-      $("#tP1").onclick = () => { const ff = focused(); if (ff.run) ff.endAt += 60000; else ff.left += 60000; ff.total += 60000; save(); tick(); renderAll(); };
+      $$("#tCtrls [data-add]").forEach(b => b.onclick = () => { const ff = focused(); if (ff) addTime(ff, +b.dataset.add); });
       $("#tP").onclick = toggleFocused;
     } else {
       $("#tGo").onclick = startTimer;
@@ -1610,15 +1694,17 @@ function renderTimer() {
   }
   renderPresets();
 }
+/* more time on a timer that is running or paused; the ring, the status bar and the lock screen move with it */
+function addTime(t, ms) { if (t.run) t.endAt += ms; else t.left += ms; t.total += ms; save(); tick(1.2); renderAll(); toast("+" + (ms < 60000 ? ms / 1000 + " s" : ms / 60000 + " min") + " · " + (t.run ? "ends " + hmA(new Date(t.endAt)) : clk(t.left) + " left")); }
 function pauseT(t, pause) { if (pause && t.run) { t.left = tRem(t); t.run = false; } else if (!pause && !t.run) { t.endAt = now() + t.left; t.run = true; } }
 $("#tAll").onclick = () => { const list = S.timers.filter(t => !t.done), any = list.some(t => t.run); list.forEach(t => pauseT(t, any)); save(); tick(); renderAll(); toast(any ? "All timers paused" : "All timers running"); };
 function toggleFocused() { const f = focused(); if (!f) return; pauseT(f, f.run); save(); tick(); renderAll(); }
 $("#newTimer").onclick = () => { S.focus = null; S.setMs = S.setMs || 300000; save(); tick(); renderTimer(); };
 const paintTSnd = () => $("#tSndN").textContent = soundName(S.timerSound, S.timerFile);
 $("#tSnd").onclick = () => {
-  openSheet(nav("When it ends", "", "Done") + `<div class="kind" style="text-align:center">Plays when any timer ends. Tap to hear it.</div>${soundGrid(TIMER_SOUNDS, S.timerSound, S.timerFile, "tSndG")}
+  openSheet(nav("When it ends", "", "Done") + `<div class="kind" style="text-align:center">Plays when any timer ends. Tap one to hear it, or pick your own song.</div>${soundGrid(TIMER_SOUNDS, S.timerSound, S.timerFile, "tSndG")}
     <div class="lab">Keep ringing for</div><div class="chips" id="tFor">${[1, 2, 5, 10].map(m => `<button class="ch" data-m="${m}">${m}<span>min</span></button>`).join("")}</div>`, () => {
-    bindSoundGrid("tSndG", "sndtimer", () => ({ sound: S.timerSound, fileName: S.timerFile }), v => { if (v.sound) S.timerSound = v.sound; if (v.fileName) S.timerFile = v.fileName; save(); paintTSnd(); });
+    bindSoundGrid("tSndG", "sndtimer", () => ({ sound: S.timerSound, fileName: S.timerFile }), v => { if (v.sound) S.timerSound = v.sound; if (v.fileName) { S.timerFile = v.fileName; S.timerFileAt = v.fileAt || Date.now(); } save(); paintTSnd(); });
     const pf = () => $$("#tFor .ch").forEach(x => x.classList.toggle("on", +x.dataset.m === S.timerRingFor));
     $$("#tFor .ch").forEach(x => x.onclick = () => { S.timerRingFor = +x.dataset.m; save(); tick(); pf(); }); pf();
   });
@@ -1755,6 +1841,7 @@ const TOGS = [
   ["correct", "Correct device drift", "Uses the accuracy check to fix the time on screen"],
   ["wake", "Keep screen awake", "So alarms and timers can ring while Hora is open"],
   ["notify", "Notify when in another tab", "Shows a notification when something rings"],
+  ["upcoming", "Upcoming alarm notice", "Two hours before an alarm, a notification lets you dismiss it early"],
   ["ticks", "Tactile sounds", "Soft ticks on the dials, wheels and buttons"]
 ];
 function renderFontPick() {
@@ -1775,7 +1862,7 @@ if (document.fonts && document.fonts.load) {
     .finally(() => { if (YB === "missing" && S.font === "crust") toast("Crust Cream font file not found, using Rounded"); renderFace(); if (VIEW === "vProfile") renderFontPick(); });
 }
 function renderToggles() {
-  const h = TOGS.filter(([k]) => !(NATIVE && (k === "wake" || k === "notify")) && !(k === "fahr" && !S.weather)).map(([k, t, s]) => `<div class="tog"><div>${t}<small>${s}</small></div><div class="sw-t ${S[k] ? "on" : ""}" data-k="${k}"></div></div>`).join("");
+  const h = TOGS.filter(([k]) => !(NATIVE && (k === "wake" || k === "notify")) && !(!NATIVE && k === "upcoming") && !(k === "fahr" && !S.weather)).map(([k, t, s]) => `<div class="tog"><div>${t}<small>${s}</small></div><div class="sw-t ${S[k] ? "on" : ""}" data-k="${k}"></div></div>`).join("");
   if ($("#toggles").dataset.h === h) return;
   $("#toggles").innerHTML = h; $("#toggles").dataset.h = h;
   $$("#toggles .sw-t").forEach(el => el.onclick = async () => {
@@ -1785,6 +1872,7 @@ function renderToggles() {
     }
     if (k === "wake") await wake();
     if (k === "correct") { recalcAlarms(); paintBadge(); }
+    if (k === "upcoming") schedNative();
     if (k === "weather") { if (S.weather) loadWeather(true); renderWx(); }
     if (k === "fahr") renderWx();
     save(); tick(); renderToggles(); renderAll(); drawRuler();
@@ -1823,14 +1911,15 @@ function renderDefault() {
 }
 /* inside the APK: show whether Android will let alarms ring on time */
 function renderNativeCard() {
-  let exact = true, batt = true, notif = true, full = true, ver = "";
-  try { exact = NAT.exactAllowed(); batt = NAT.batteryIgnored(); notif = NAT.notificationsAllowed(); full = NAT.fullScreenAllowed(); ver = NAT.version(); } catch (e) {}
+  let exact = true, batt = true, notif = true, full = true, pop = true, ver = "";
+  try { exact = NAT.exactAllowed(); batt = NAT.batteryIgnored(); notif = NAT.notificationsAllowed(); full = NAT.fullScreenAllowed(); if (NAT.popupsAllowed) pop = NAT.popupsAllowed(); ver = NAT.version(); } catch (e) {}
   const row = (ok, title, sub, act, label) => `<div class="tog"><div>${title}<small>${sub}</small></div>${ok ? `<span class="pill">On</span>` : `<button class="btn sm" data-act="${act}">${label}</button>`}</div>`;
   const h = `<div class="instok">✓ Alarms and timers ring even when Hora is closed or the phone is locked.</div>
     ${row(exact, "Exact alarms", "Lets alarms ring at the exact minute", "exact", "Allow")}
     ${row(batt, "No battery limits", "Stops the phone from putting Hora to sleep", "battery", "Allow")}
     ${row(notif, "Notifications", "Needed for alarms and bedtime reminders", "notif", "Allow")}
     ${row(full, "Full-screen alarms", "Lets an alarm open over the lock screen", "fullscreen", "Allow")}
+    ${row(pop, "Alarm pop-ups", "Shows Stop and Snooze on top while you use the phone", "channel", "Turn on")}
     <div class="honest" style="margin:10px 0 0"><b>On Oppo phones:</b> also open <b>App settings → Battery</b> and allow <b>background activity</b> and <b>auto launch</b>. Otherwise ColorOS may stop Hora overnight.<br><button class="btn ghost sm" data-act="app" style="margin-top:8px">Open app settings</button></div>
     <div style="font-size:11px;color:var(--fg2);margin-top:10px">Hora for Android ${esc(ver)}</div>`;
   if ($("#defBody").innerHTML !== h) {
@@ -1856,17 +1945,17 @@ function fireAlarm(a, at) {
   const k = "a" + a.id + "@" + at; if (FIRED.has(k)) return; FIRED.add(k);
   if (!a.days.some(Boolean)) a.on = false;
   NEXT[a.id] = a.on ? nextRing(a, Math.max(now(), at) + 1000) : null; save();
-  if (now() - at < 15 * 60000) alarmRing(a);
+  if (now() - at < 15 * 60000) alarmRing(a, { ek: k });
 }
 function fireSnooze(s) {
   const k = "s" + s.a.id + "@" + s.at; SNOOZES = SNOOZES.filter(x => x !== s); saveSnoozes();
   if (FIRED.has(k)) return; FIRED.add(k);
-  if (now() - s.at < 15 * 60000) alarmRing(s.a, { sub: s.auto ? "Snoozed automatically" : "After snoozing", gentle: false, auto: s.auto || 0 });
+  if (now() - s.at < 15 * 60000) alarmRing(s.a, { sub: s.auto ? "Snoozed automatically" : "After snoozing", gentle: false, auto: s.auto || 0, ek: k });
 }
 function fireTimer(t) {
   if (t.done) return;
   t.done = true; t.run = false; t.left = 0; save();
-  ring({ kind: "timer", title: t.label + " is done", sub: "Set for " + dur(t.total) + " · finished " + hmA(new Date(t.endAt)), sound: S.timerSound, key: "sndtimer", gentle: false, vib: "pulse", tid: t.id });
+  ring({ kind: "timer", title: t.label + " is done", sub: "Set for " + dur(t.total) + " · finished " + hmA(new Date(t.endAt)), sound: S.timerSound, key: "sndtimer", gentle: false, vib: "pulse", tid: t.id, ek: "t" + t.id + "@" + t.endAt });
 }
 /* a quiet nudge: a soft bowl and the island, never a full-screen alarm */
 function fireBed(b) {
@@ -1884,12 +1973,45 @@ function check() {
   S.timers.forEach(t => { if (t.run && !t.done && n >= t.endAt) fireTimer(t); });
   if (BEDNEXT && n >= BEDNEXT.rem) fireBed(BEDNEXT);
 }
+/* What happened in Android's notifications while Hora wasn't looking: a ring stopped or snoozed there, a timer given
+   another minute, or an upcoming alarm dismissed before it rang. Android calls this straight away when Hora is open. */
+function nativeActions() {
+  if (!NATIVE || !NAT.takeActions) return;
+  let list = [];
+  try { list = JSON.parse(NAT.takeActions() || "[]"); } catch (e) {}
+  if (!list.length) return;
+  list.forEach(x => {
+    const m = /^([ast])(\d+)@(\d+)$/.exec(x.key || ""); if (!m) return;
+    const kind = m[1], id = +m[2], at = +m[3];
+    QUEUE = QUEUE.filter(q => q.ek !== x.key);
+    if (RING && RING.ek === x.key) stopRing();
+    if (kind === "t") {
+      const t = S.timers.find(y => y.id === id); if (!t) return;
+      // more time from the running timer's notification (only if it's still the same run of that timer)
+      if (x.do === "add") { if (t.run && !t.done && "t" + t.id + "@" + t.endAt === x.key) { t.endAt = x.until; t.total += x.ms; } return; }
+      if (x.do === "plus") Object.assign(t, { done: false, run: true, total: t.total + 60000, left: 60000, endAt: x.until });
+      else Object.assign(t, { done: true, run: false, left: 0 });
+      return;
+    }
+    FIRED.add(x.key);
+    if (kind === "s") SNOOZES = SNOOZES.filter(s => !(s.a.id === id && s.at === at));
+    const a = S.alarms.find(y => y.id === id); if (!a) return;
+    const once = !a.days.some(Boolean);
+    if (x.do === "dismiss") { if (kind === "a") { if (once) a.on = false; else a.skip = at; } }
+    else if (kind === "a" && once) a.on = false;
+    if (x.do === "snooze" && x.until) SNOOZES.push({ at: x.until, a, auto: x.auto || 0 });
+  });
+  S.timers = S.timers.filter(t => !t.done || t.run);
+  saveSnoozes(); save(); recalcAlarms(); renderAll();
+}
+window.horaActions = () => { nativeActions(); renderIsland(); };
 /* called by the Android app when it wakes Hora for a scheduled ring */
 window.horaFire = key => {
+  nativeActions();
   const m = /^([astb])(\d+)@(\d+)$/.exec(key || ""); if (!m) return;
   const kind = m[1], id = +m[2], at = +m[3];
   if (kind === "a") { const a = S.alarms.find(x => x.id === id); if (a && !FIRED.has(key)) fireAlarm(a, at); }
-  else if (kind === "s") { const s = SNOOZES.find(x => x.a.id === id && x.at === at); if (s) fireSnooze(s); else { const a = S.alarms.find(x => x.id === id); if (a && !FIRED.has(key) && now() - at < 15 * 60000) { FIRED.add(key); alarmRing(a, { sub: "After snoozing", gentle: false }); } } }
+  else if (kind === "s") { const s = SNOOZES.find(x => x.a.id === id && x.at === at); if (s) fireSnooze(s); else { const a = S.alarms.find(x => x.id === id); if (a && !FIRED.has(key) && now() - at < 15 * 60000) { FIRED.add(key); alarmRing(a, { sub: "After snoozing", gentle: false, ek: key }); } } }
   else if (kind === "b") { const b = bedtimes(at - 1000, 1)[0]; if (b) fireBed(b); }
   else { const t = S.timers.find(x => x.id === id); if (t) fireTimer(t); }
   renderAll();
@@ -1942,12 +2064,13 @@ document.addEventListener("keydown", e => {
     else if ((e.key === "r" || e.key === "R") && !W.run) swLap();
   } else if (VIEW === "vTimer" && e.code === "Space") { e.preventDefault(); focused() ? toggleFocused() : startTimer(); }
 });
-document.addEventListener("visibilitychange", () => { if (!document.hidden) { wake(); check(); renderAll(); loadWeather(); if (Date.now() - SYNCED_AT > 5 * 60000) sync(); } });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { nativeActions(); wake(); check(); renderAll(); loadWeather(); if (Date.now() - SYNCED_AT > 5 * 60000) sync(); } });
 addEventListener("resize", drawRuler);
 
 S.timers = S.timers.filter(t => !t.done || t.run);
 if (S.focus && !focused()) S.focus = null;
 if (DEMO) startDemo();
+if (!DEMO) nativeActions();
 syncSleep(); recalcAlarms(); paintSky(); renderAll(); drawRuler(); renderWatchStatic(); renderWatch(); wake(); openFromShortcut();
 requestAnimationFrame(drawMap);
 if (DEMO) runDemo(); else { loadWeather(); sync(); }

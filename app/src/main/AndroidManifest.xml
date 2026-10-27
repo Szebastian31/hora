@@ -14,6 +14,10 @@
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <!-- lets a running timer or stopwatch show as a live chip in the status bar (Android 16+) -->
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <!-- an alarm or timer rings from Android itself, so it sounds even when Hora can't open -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application
         android:allowBackup="true"
@@ -56,6 +60,13 @@
 
         <receiver android:name=".AlarmReceiver" android:exported="false" />
         <receiver android:name=".BackupReceiver" android:exported="false" />
+        <receiver android:name=".ActionReceiver" android:exported="false" />
+        <receiver android:name=".Upcoming" android:exported="false" />
+
+        <service
+            android:name=".RingService"
+            android:exported="false"
+            android:foregroundServiceType="systemExempted|mediaPlayback" />
 
         <receiver android:name=".BootReceiver" android:exported="true">
             <intent-filter>
