@@ -10,8 +10,8 @@ android {
         applicationId "com.hora.clock"
         minSdk 26
         targetSdk 36
-        versionCode 6
-        versionName "1.4.1"
+        versionCode 7
+        versionName "1.5.0"
     }
 
     buildTypes {
@@ -19,8 +19,6 @@ android {
             minifyEnabled false
         }
         debug {
-            // debug builds are signed with the auto-generated debug key,
-            // which is all that's needed to sideload onto a personal phone.
         }
     }
 
@@ -50,4 +48,34 @@ preBuild.dependsOn copyWebApp
 dependencies {
     // serves the bundled web app from a secure https origin inside the WebView
     implementation 'androidx.webkit:webkit:1.11.0'
+}
+
+// The family signing key never lives in git. GitHub builds get it from the FAMILY_* secrets,
+// local builds from ~/.gradle/gradle.properties.
+def familyProp = { String k -> System.getenv(k) ?: project.findProperty(k) }
+def familyKeystore = {
+    def path = familyProp("FAMILY_KEYSTORE_PATH")
+    if (path) return file(path)
+    def b64 = System.getenv("FAMILY_KEYSTORE_B64")
+    if (!b64) return null
+    def f = new File(System.getProperty("java.io.tmpdir"), "family-${rootProject.name}.jks")
+    f.bytes = Base64.mimeDecoder.decode(b64)
+    return f
+}()
+
+android {
+    signingConfigs {
+        family {
+            if (familyKeystore) {
+                storeFile familyKeystore
+                storePassword familyProp("FAMILY_KEYSTORE_PASSWORD")
+                keyAlias familyProp("FAMILY_KEY_ALIAS")
+                keyPassword familyProp("FAMILY_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        debug { signingConfig signingConfigs.family }
+        release { signingConfig signingConfigs.family }
+    }
 }

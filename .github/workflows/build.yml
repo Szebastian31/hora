@@ -8,6 +8,13 @@ on:
 permissions:
   contents: write
 
+env:
+  # the family signing key, read by the app build file
+  FAMILY_KEYSTORE_B64: ${{ secrets.FAMILY_KEYSTORE_B64 }}
+  FAMILY_KEYSTORE_PASSWORD: ${{ secrets.FAMILY_KEYSTORE_PASSWORD }}
+  FAMILY_KEY_PASSWORD: ${{ secrets.FAMILY_KEY_PASSWORD }}
+  FAMILY_KEY_ALIAS: ${{ secrets.FAMILY_KEY_ALIAS }}
+
 jobs:
   build:
     runs-on: ubuntu-24.04
