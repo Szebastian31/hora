@@ -65,9 +65,13 @@ Everything stays on your phone. Your alarms, photos, videos and sounds are saved
 
 Found a bug? [Open an issue](https://github.com/Szebastian31/hora/issues) and describe what happened, which phone you use and which browser.
 
+## License
+
+Released under the [MIT License](LICENSE).
+
 ---
 
-_Hora is Latin for "hour". It's a sibling to Consensus Weather, Fidelis, Vestis, Caelum, Kalendae and Augur._
+_Hora is Latin for "hour". It's a sibling to Consensus Weather, Augur, Annales, Kalendae, Caelum and Fidelis, all one tap away in [Hub](https://github.com/Szebastian31/hub)._
 
 <details>
 <summary>For developers</summary>
@@ -87,6 +91,8 @@ The interface is plain HTML, CSS and JavaScript, hosted on GitHub Pages. The And
 | `.github/workflows/build.yml` | Builds the APK and publishes it as a release |
 
 Built with compileSdk and targetSdk 36, Android Gradle Plugin 8.13 and Gradle 8.13. After changing any file, bump `VERSION` in `sw.js` so installed web copies update, and `versionName` + `versionCode` in `app/build.gradle` for a new APK release.
+
+**Signing.** Builds are signed with the family key. It never lives in git: GitHub builds read it from the `FAMILY_*` secrets, local builds from `~/.gradle/gradle.properties`. Every build installs over the last one.
 
 **Screenshots:** `tools/screenshots.sh` (or `tools/screenshots.sh dusk` for another background). It needs Google Chrome and touches none of your own data. Without it, `index.html?demo=clock` shows the same made-up alarms and timers in any browser (`demo=alarms`, `timer`, `stopwatch` or `ring`).
 
