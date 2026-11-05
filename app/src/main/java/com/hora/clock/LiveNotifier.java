@@ -85,7 +85,7 @@ final class LiveNotifier {
                 Scheduler.replace(c, key, ev);
             }
             o.put("key", nk).put("when", when).put("total", o.optLong("total") + ms)
-                    .put("text", "Ends " + RingService.time(c, when, o.optBoolean("h24", true)) + o.optString("more", ""));
+                    .put("text", Lang.s(c, R.string.ends, RingService.time(c, when, o.optBoolean("h24", true))) + o.optString("more", ""));
             Scheduler.addAction(c, new JSONObject().put("key", key).put("do", "add").put("ms", ms).put("until", newKeyAt));
             MainActivity.pushActions();
             show(c, o.toString());
@@ -97,8 +97,8 @@ final class LiveNotifier {
         try {
             NotificationManager nm = c.getSystemService(NotificationManager.class);
             if (nm.getNotificationChannel(CHANNEL) == null) {
-                NotificationChannel ch = new NotificationChannel(CHANNEL, "Running timers and stopwatch", NotificationManager.IMPORTANCE_DEFAULT);
-                ch.setDescription("Shows a running timer or the stopwatch in the status bar");
+                NotificationChannel ch = new NotificationChannel(CHANNEL, Lang.s(c, R.string.ch_live), NotificationManager.IMPORTANCE_DEFAULT);
+                ch.setDescription(Lang.s(c, R.string.ch_live_desc));
                 ch.setSound(null, null);
                 ch.enableVibration(false);
                 ch.setShowBadge(false);
@@ -137,8 +137,8 @@ final class LiveNotifier {
             String key = o.optString("key", "");
             if (timer && running && !key.isEmpty()) {
                 Icon ic = Icon.createWithResource(c, R.drawable.ic_stat_hora);
-                b.addAction(new Notification.Action.Builder(ic, "+30 s", ActionReceiver.pi(c, ActionReceiver.ADD30, key)).build());
-                b.addAction(new Notification.Action.Builder(ic, "+1 min", ActionReceiver.pi(c, ActionReceiver.ADD60, key)).build());
+                b.addAction(new Notification.Action.Builder(ic, Lang.s(c, R.string.plus30), ActionReceiver.pi(c, ActionReceiver.ADD30, key)).build());
+                b.addAction(new Notification.Action.Builder(ic, Lang.s(c, R.string.plus1), ActionReceiver.pi(c, ActionReceiver.ADD60, key)).build());
             }
             if (Build.VERSION.SDK_INT >= 36) {
                 Notification.ProgressStyle st = new Notification.ProgressStyle().setStyledByProgress(false);

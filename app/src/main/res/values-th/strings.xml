@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">นาฬิกาปลุกและตัวจับเวลา</string>
+    <string name="ch_ring_desc">ส่งเสียงปลุกและตัวจับเวลา พร้อมปุ่มหยุดและเลื่อนปลุก เปิดป๊อปอัปไว้เพื่อให้แสดงขณะที่คุณใช้โทรศัพท์</string>
+    <string name="ch_bed">การเตือนเข้านอน</string>
+    <string name="ch_bed_desc">การเตือนเบาๆ ก่อนเวลาเข้านอนตามตารางการนอนของคุณ</string>
+    <string name="bed_soon">ใกล้ถึงเวลาเข้านอนแล้ว</string>
+    <string name="ch_backup">เสียงปลุกสำรอง</string>
+    <string name="ch_backup_desc">เล่นเสียงปลุกของโทรศัพท์เองหากเสียงของ Hora เริ่มไม่ได้</string>
+    <string name="backup_timer">หมดเวลาแล้ว · แตะเพื่อหยุด</string>
+    <string name="backup_alarm">นาฬิกาปลุก · แตะเพื่อหยุดหรือเลื่อนปลุก</string>
+    <string name="ch_live">ตัวจับเวลาและนาฬิกาจับเวลาที่กำลังทำงาน</string>
+    <string name="ch_live_desc">แสดงตัวจับเวลาหรือนาฬิกาจับเวลาที่กำลังทำงานในแถบสถานะ</string>
+    <string name="ch_up">การปลุกที่ใกล้ถึง</string>
+    <string name="ch_up_desc">การปลุกครั้งถัดไป ล่วงหน้าสองสามชั่วโมง เพื่อให้คุณปิดได้ก่อน</string>
+    <string name="up_title">การปลุกที่ใกล้ถึง</string>
+    <string name="up_snoozed">การปลุกที่เลื่อนไว้</string>
+    <string name="rings_again">จะปลุกอีกครั้งเวลา %1$s</string>
+    <string name="dismiss">ปิด</string>
+    <string name="dismiss_now">ปิดตอนนี้</string>
+    <string name="times_up">หมดเวลา</string>
+    <string name="alarm">นาฬิกาปลุก</string>
+    <string name="snoozed_label">%1$s (เลื่อนปลุก)</string>
+    <string name="snooze_min">เลื่อนปลุก · %1$d นาที</string>
+    <string name="stop">หยุด</string>
+    <string name="bed_title">ได้เวลาผ่อนคลายแล้ว</string>
+    <string name="ends">สิ้นสุด %1$s</string>
+    <string name="plus1">+1 นาที</string>
+    <string name="plus30">+30 วิ</string>
+    <string name="timer_done">%1$s เสร็จแล้ว</string>
+</resources>

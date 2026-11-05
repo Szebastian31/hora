@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Alarms and timers</string>
+    <string name="ch_ring_desc">Rings alarms and timers, with Stop and Snooze. Keep pop-ups on so they show while you use the phone</string>
+    <string name="ch_bed">Bedtime reminders</string>
+    <string name="ch_bed_desc">A gentle nudge before your sleep schedule\'s bedtime</string>
+    <string name="bed_soon">Bedtime soon</string>
+    <string name="ch_backup">Backup alarm sound</string>
+    <string name="ch_backup_desc">Rings the phone\'s own alarm sound if Hora\'s sound couldn\'t start</string>
+    <string name="backup_timer">Timer is done · tap to stop</string>
+    <string name="backup_alarm">Alarm · tap to stop or snooze</string>
+    <string name="ch_live">Running timers and stopwatch</string>
+    <string name="ch_live_desc">Shows a running timer or the stopwatch in the status bar</string>
+    <string name="ch_up">Upcoming alarms</string>
+    <string name="ch_up_desc">The next alarm, a couple of hours ahead, so you can dismiss it early</string>
+    <string name="up_title">Upcoming alarm</string>
+    <string name="up_snoozed">Snoozed alarm</string>
+    <string name="rings_again">rings again at %1$s</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="dismiss_now">Dismiss now</string>
+    <string name="times_up">Time\'s up</string>
+    <string name="alarm">Alarm</string>
+    <string name="snoozed_label">%1$s (snoozed)</string>
+    <string name="snooze_min">Snooze · %1$d min</string>
+    <string name="stop">Stop</string>
+    <string name="bed_title">Time to wind down</string>
+    <string name="ends">Ends %1$s</string>
+    <string name="plus1">+1 min</string>
+    <string name="plus30">+30 s</string>
+    <string name="timer_done">%1$s is done</string>
+</resources>

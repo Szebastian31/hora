@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Alarmer og tidtakere</string>
+    <string name="ch_ring_desc">Ringer alarmer og tidtakere, med Stopp og Slumre. La popup-varsler være på så de vises mens du bruker telefonen</string>
+    <string name="ch_bed">Leggetidspåminnelser</string>
+    <string name="ch_bed_desc">Et mildt dytt før leggetiden i søvnplanen din</string>
+    <string name="bed_soon">Snart leggetid</string>
+    <string name="ch_backup">Reservealarmlyd</string>
+    <string name="ch_backup_desc">Spiller telefonens egen alarmlyd hvis Horas lyd ikke kunne starte</string>
+    <string name="backup_timer">Tidtakeren er ferdig · trykk for å stoppe</string>
+    <string name="backup_alarm">Alarm · trykk for å stoppe eller slumre</string>
+    <string name="ch_live">Tidtakere og stoppeklokke som går</string>
+    <string name="ch_live_desc">Viser en tidtaker som går eller stoppeklokken i statuslinjen</string>
+    <string name="ch_up">Kommende alarmer</string>
+    <string name="ch_up_desc">Den neste alarmen, et par timer i forveien, så du kan avvise den tidlig</string>
+    <string name="up_title">Kommende alarm</string>
+    <string name="up_snoozed">Slumret alarm</string>
+    <string name="rings_again">ringer igjen kl. %1$s</string>
+    <string name="dismiss">Avvis</string>
+    <string name="dismiss_now">Avvis nå</string>
+    <string name="times_up">Tiden er ute</string>
+    <string name="alarm">Alarm</string>
+    <string name="snoozed_label">%1$s (slumrer)</string>
+    <string name="snooze_min">Slumre · %1$d min</string>
+    <string name="stop">Stopp</string>
+    <string name="bed_title">På tide å roe ned</string>
+    <string name="ends">Slutter %1$s</string>
+    <string name="plus1">+1 min</string>
+    <string name="plus30">+30 s</string>
+    <string name="timer_done">%1$s er ferdig</string>
+</resources>

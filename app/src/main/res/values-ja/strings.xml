@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">アラームとタイマー</string>
+    <string name="ch_ring_desc">アラームとタイマーを鳴らし、停止とスヌーズを表示します。スマホの使用中にも表示されるよう、ポップアップはオンのままにしてください</string>
+    <string name="ch_bed">就寝リマインダー</string>
+    <string name="ch_bed_desc">睡眠スケジュールの就寝時刻の前にそっとお知らせします</string>
+    <string name="bed_soon">もうすぐ就寝時刻です</string>
+    <string name="ch_backup">予備のアラーム音</string>
+    <string name="ch_backup_desc">Hora の音が鳴らせなかったときに、スマホ標準のアラーム音を鳴らします</string>
+    <string name="backup_timer">タイマー終了 · タップで停止</string>
+    <string name="backup_alarm">アラーム · タップで停止またはスヌーズ</string>
+    <string name="ch_live">動作中のタイマーとストップウォッチ</string>
+    <string name="ch_live_desc">動作中のタイマーやストップウォッチをステータスバーに表示します</string>
+    <string name="ch_up">次のアラーム</string>
+    <string name="ch_up_desc">次のアラームを数時間前に表示し、前もって解除できるようにします</string>
+    <string name="up_title">次のアラーム</string>
+    <string name="up_snoozed">スヌーズ中のアラーム</string>
+    <string name="rings_again">%1$s にもう一度鳴ります</string>
+    <string name="dismiss">解除</string>
+    <string name="dismiss_now">今すぐ解除</string>
+    <string name="times_up">時間になりました</string>
+    <string name="alarm">アラーム</string>
+    <string name="snoozed_label">%1$s（スヌーズ中）</string>
+    <string name="snooze_min">スヌーズ · %1$d分</string>
+    <string name="stop">停止</string>
+    <string name="bed_title">そろそろ休む準備を</string>
+    <string name="ends">%1$s に終了</string>
+    <string name="plus1">+1分</string>
+    <string name="plus30">+30秒</string>
+    <string name="timer_done">%1$sが終了しました</string>
+</resources>

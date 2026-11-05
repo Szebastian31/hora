@@ -10,8 +10,8 @@ android {
         applicationId "com.hora.clock"
         minSdk 26
         targetSdk 36
-        versionCode 7
-        versionName "1.5.0"
+        versionCode 8
+        versionName "1.6.0"
     }
 
     buildTypes {
@@ -38,7 +38,7 @@ android {
 
 tasks.register('copyWebApp', Copy) {
     from(rootProject.projectDir) {
-        include 'index.html', 'style.css', 'app.js', 'scenes.js', 'icons/**', 'fonts/**'
+        include 'index.html', 'style.css', 'app.js', 'scenes.js', 'i18n.js', 'i18n/**', 'icons/**', 'fonts/**'
         exclude 'icons/*.png'
     }
     into "$buildDir/generated/hora-web/www"

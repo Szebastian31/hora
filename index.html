@@ -18,17 +18,17 @@
 <body>
 <aside class="side">
   <div class="brand"><img src="icons/icon.svg" alt=""><h1>Hora</h1></div>
-  <p class="lede">A clock, alarm, timer and stopwatch that tells you how right it is. The background is the real sky over Gliwice right now.</p>
+  <p class="lede" data-t="A clock, alarm, timer and stopwatch that tells you how right it is. The background is the real sky over Gliwice right now.">A clock, alarm, timer and stopwatch that tells you how right it is. The background is the real sky over Gliwice right now.</p>
   <ul class="how">
-    <li><b>Tap the clock</b> for the analog face. Tap the weather for the next hours.</li>
-    <li><b>Drag the time ruler</b> under World: the map's day and night move with it, so you can plan a call.</li>
-    <li><b>Sleep</b> sets a bedtime reminder and a wake-up alarm from one dial.</li>
-    <li><b>Swipe an alarm left</b> to skip its next ring or delete it.</li>
-    <li><b>Timers:</b> drag the ring, tap the time for a wheel, or tap a preset. Edit presets to make them yours.</li>
-    <li><b>Stopwatch:</b> tap the face to switch between analog and digital.</li>
+    <li data-t-html="<b>Tap the clock</b> for the analog face. Tap the weather for the next hours."><b>Tap the clock</b> for the analog face. Tap the weather for the next hours.</li>
+    <li data-t-html="<b>Drag the time ruler</b> under World: the map's day and night move with it, so you can plan a call."><b>Drag the time ruler</b> under World: the map's day and night move with it, so you can plan a call.</li>
+    <li data-t-html="<b>Sleep</b> sets a bedtime reminder and a wake-up alarm from one dial."><b>Sleep</b> sets a bedtime reminder and a wake-up alarm from one dial.</li>
+    <li data-t-html="<b>Swipe an alarm left</b> to skip its next ring or delete it."><b>Swipe an alarm left</b> to skip its next ring or delete it.</li>
+    <li data-t-html="<b>Timers:</b> drag the ring, tap the time for a wheel, or tap a preset. Edit presets to make them yours."><b>Timers:</b> drag the ring, tap the time for a wheel, or tap a preset. Edit presets to make them yours.</li>
+    <li data-t-html="<b>Stopwatch:</b> tap the face to switch between analog and digital."><b>Stopwatch:</b> tap the face to switch between analog and digital.</li>
   </ul>
-  <p class="keys"><kbd>Space</kbd> start / stop · <kbd>L</kbd> lap · <kbd>R</kbd> reset · <kbd>1</kbd>–<kbd>5</kbd> tabs</p>
-  <p class="fam">A sibling to Consensus Weather, Fidelis, Vestis and Caelum</p>
+  <p class="keys" data-t-html="<kbd>Space</kbd> start / stop · <kbd>L</kbd> lap · <kbd>R</kbd> reset · <kbd>1</kbd>–<kbd>5</kbd> tabs"><kbd>Space</kbd> start / stop · <kbd>L</kbd> lap · <kbd>R</kbd> reset · <kbd>1</kbd>–<kbd>5</kbd> tabs</p>
+  <p class="fam" data-t="Part of a family with Consensus Weather, Augur, Annales, Kalendae, Caelum and Fidelis">Part of a family with Consensus Weather, Augur, Annales, Kalendae, Caelum and Fidelis</p>
 </aside>
 
 <div class="phone">
@@ -49,26 +49,26 @@
   <!-- Clock -->
   <section class="view show" id="vClock">
     <div class="hero" id="hero">
-      <div class="htop"><span class="badge idle" id="sync"><i></i><span id="syncTxt">Checking clock…</span></span><span class="hcity"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Gliwice</span></div>
+      <div class="htop"><span class="badge idle" id="sync"><i></i><span id="syncTxt" data-t="Checking clock…">Checking clock…</span></span><span class="hcity"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Gliwice</span></div>
       <div class="face" id="face">
         <div class="digi" id="digi"></div>
-        <svg id="analog" viewBox="0 0 240 240" aria-label="Analog clock"></svg>
+        <svg id="analog" viewBox="0 0 240 240" aria-label="Analog clock" data-t-aria="Analog clock"></svg>
       </div>
       <div class="hdate" id="dateLine">—</div>
       <div class="wxrow"><button class="wx" id="wx" hidden></button></div>
       <div class="hgrid" id="hGrid"></div>
     </div>
     <div class="card" id="sunCard">
-      <div class="card-h"><h3>Daylight</h3><span class="cmeta" id="moonTxt"></span></div>
+      <div class="card-h"><h3 data-t="Daylight">Daylight</h3><span class="cmeta" id="moonTxt"></span></div>
       <div class="sunbig" id="sunBig">—</div>
       <svg class="sunsvg" viewBox="0 0 320 86" id="sunSvg"></svg>
       <div class="sunrow"><span><b id="rise">—</b></span><span id="goldTxt"></span><span><b id="set">—</b></span></div>
     </div>
     <div class="card">
-      <div class="card-h"><h3>World</h3><a id="editCities">Edit</a></div>
+      <div class="card-h"><h3 data-t="World">World</h3><a id="editCities" data-t="Edit">Edit</a></div>
       <div class="map"><canvas id="mapC"></canvas></div>
       <div class="time">
-        <div class="label"><b id="tLabel">Now</b><span id="tDelta"></span><button class="chip" id="tNow">Back to now</button></div>
+        <div class="label"><b id="tLabel" data-t="Now">Now</b><span id="tDelta"></span><button class="chip" id="tNow" data-t="Back to now">Back to now</button></div>
         <div class="ruler" id="ruler"><canvas id="rulerC"></canvas></div>
       </div>
       <div id="world"></div>
@@ -78,63 +78,67 @@
   <!-- Alarms -->
   <section class="view" id="vAlarm">
     <div class="head">
-      <div class="ttl">Alarms</div>
-      <div class="hbtns"><button class="ibtn acc" id="addAlarm" title="New alarm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+      <div class="ttl" data-t="Alarms">Alarms</div>
+      <div class="hbtns"><button class="ibtn acc" id="addAlarm" title="New alarm" data-t-title="New alarm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
     </div>
     <div class="anext" id="aNext"></div>
     <div class="card" id="sleepCard"></div>
     <div id="alarmList"></div>
-    <div class="honest" id="webNote" data-native="<b>Alarms ring even when Hora is closed</b> or the phone is locked. If one is ever late, check Profile → Alarms on this phone."><b>Honest note:</b> as a web app, Hora can only ring while it's open on screen. Turn on <b>Keep screen awake</b> in Profile and leave it on the nightstand, or keep your phone's own alarm as a backup.</div>
+    <div class="honest" id="webNote" data-native="<b>Alarms ring even when Hora is closed</b> or the phone is locked. If one is ever late, check Profile → Alarms on this phone." data-t-html="<b>Honest note:</b> as a web app, Hora can only ring while it's open on screen. Turn on <b>Keep screen awake</b> in Profile and leave it on the nightstand, or keep your phone's own alarm as a backup."><b>Honest note:</b> as a web app, Hora can only ring while it's open on screen. Turn on <b>Keep screen awake</b> in Profile and leave it on the nightstand, or keep your phone's own alarm as a backup.</div>
   </section>
 
   <!-- Timer -->
   <section class="view" id="vTimer">
     <div class="head">
-      <div><div class="ttl">Timers</div><div class="sub" id="timerSub">Drag the ring, or pick a preset</div></div>
-      <div class="hbtns"><button class="ibtn acc" id="newTimer" title="New timer" style="display:none"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+      <div><div class="ttl" data-t="Timers">Timers</div><div class="sub" id="timerSub"></div></div>
+      <div class="hbtns"><button class="ibtn acc" id="newTimer" title="New timer" data-t-title="New timer" style="display:none"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
     </div>
     <div class="dialwrap" id="dialWrap">
       <svg viewBox="0 0 300 300" id="dial"><g id="dTicks"></g><circle class="track" cx="150" cy="150" r="124"/><circle class="arc" id="dArc" cx="150" cy="150" r="124" transform="rotate(-90 150 150)"/><circle class="knob" id="dKnob" r="13" cx="150" cy="26"/></svg>
-      <div class="dcenter"><div class="big" id="dBig">05:00</div><div class="lbl" id="dLbl">—</div><div class="edit" id="dEdit">Set exact time</div></div>
+      <div class="dcenter"><div class="big" id="dBig">05:00</div><div class="lbl" id="dLbl">—</div><div class="edit" id="dEdit" data-t="Set exact time">Set exact time</div></div>
     </div>
     <div class="cbar" id="tCtrls"></div>
-    <div class="setrow" id="tName"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg><span>Name</span><b id="tNameV">Timer</b><i>›</i></div>
-    <div class="setrow" id="tSnd"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>When it ends</span><b id="tSndN">Ding</b><i>›</i></div>
-    <div class="card" id="tListCard" style="display:none"><div class="card-h"><h3>Running</h3><a id="tAll">Pause all</a></div><div id="tList"></div></div>
-    <div class="card"><div class="card-h"><h3>Presets</h3><a id="editPresets">Edit</a></div><div class="pgrid" id="presets"></div></div>
+    <div class="setrow" id="tName"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg><span data-t="Name">Name</span><b id="tNameV" data-t="Timer">Timer</b><i>›</i></div>
+    <div class="setrow" id="tSnd"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span data-t="When it ends">When it ends</span><b id="tSndN">Ding</b><i>›</i></div>
+    <div class="card" id="tListCard" style="display:none"><div class="card-h"><h3 data-t="Running">Running</h3><a id="tAll" data-t="Pause all">Pause all</a></div><div id="tList"></div></div>
+    <div class="card"><div class="card-h"><h3 data-t="Presets">Presets</h3><a id="editPresets" data-t="Edit">Edit</a></div><div class="pgrid" id="presets"></div></div>
   </section>
 
   <!-- Stopwatch -->
   <section class="view" id="vWatch">
-    <div class="head"><div><div class="ttl">Stopwatch</div><div class="sub" id="watchSub">Space to start, L for a lap</div></div></div>
+    <div class="head"><div><div class="ttl" data-t="Stopwatch">Stopwatch</div><div class="sub" id="watchSub"></div></div></div>
     <div class="swface" id="swFace"><svg viewBox="0 0 300 300" id="swSvg"></svg></div>
     <div class="swdig" id="swDig"><div class="swbig" id="swBig">0:00<small>.00</small></div><div class="swlap" id="swLapD"></div></div>
     <div class="cbar"><button class="cbtn" id="swL">Lap</button><span class="pill dim" id="swPace" style="visibility:hidden">—</span><button class="cbtn acc" id="swS">Start</button></div>
-    <div class="card" id="lapCard" style="display:none"><div class="card-h"><h3>Laps</h3><a id="copyLaps">Copy</a></div><div id="laps"></div></div>
+    <div class="card" id="lapCard" style="display:none"><div class="card-h"><h3 data-t="Laps">Laps</h3><a id="copyLaps" data-t="Copy">Copy</a></div><div id="laps"></div></div>
   </section>
 
   <!-- Profile -->
   <section class="view" id="vProfile">
-    <div class="head"><div><div class="ttl">Profile</div><div class="sub">Look, clock settings and how accurate Hora is</div></div></div>
-    <div class="card"><div class="card-h"><h3>Look</h3></div>
-      <div class="lab2">Background</div><div class="swatches" id="skins"></div>
-      <div class="lab2">Accent colour</div><div class="swatches" id="accents"></div>
+    <div class="head"><div><div class="ttl" data-t="Profile">Profile</div><div class="sub" data-t="Look, language, clock settings and how accurate Hora is">Look, language, clock settings and how accurate Hora is</div></div></div>
+    <div class="card"><div class="card-h"><h3 data-t="Look">Look</h3></div>
+      <div class="lab2" data-t="Background">Background</div><div class="swatches" id="skins"></div>
+      <div class="lab2" data-t="Accent colour">Accent colour</div><div class="swatches" id="accents"></div>
     </div>
-    <div class="card"><div class="card-h"><h3>Clock digits</h3></div><div class="fontpick" id="fontPick"></div></div>
-    <div class="card"><div class="card-h"><h3>Settings</h3></div><div id="toggles"></div></div>
-    <div class="card" id="defCard"><div class="card-h"><h3 id="defTitle">Make Hora your clock</h3></div><div id="defBody"></div></div>
-    <div class="card"><div class="card-h"><h3>How accurate is this?</h3></div>
+    <div class="card"><div class="card-h"><h3 data-t="Language">Language</h3></div>
+      <select class="langSel" id="langSel" aria-label="Language" data-t-aria="Language"></select>
+      <div class="langNote" data-t="Hora reloads in the new language">Hora reloads in the new language</div>
+    </div>
+    <div class="card"><div class="card-h"><h3 data-t="Clock digits">Clock digits</h3></div><div class="fontpick" id="fontPick"></div></div>
+    <div class="card"><div class="card-h"><h3 data-t="Settings">Settings</h3></div><div id="toggles"></div></div>
+    <div class="card" id="defCard"><div class="card-h"><h3 id="defTitle" data-t="Make Hora your clock">Make Hora your clock</h3></div><div id="defBody"></div></div>
+    <div class="card"><div class="card-h"><h3 data-t="How accurate is this?">How accurate is this?</h3></div>
       <div class="honest" style="margin:0" id="accText">—</div>
-      <button class="btn ghost sm" id="resync" style="margin-top:10px">Check again</button>
+      <button class="btn ghost sm" id="resync" style="margin-top:10px" data-t="Check again">Check again</button>
     </div>
   </section>
 
   <nav class="tabs" id="tabs">
-    <div class="tab on" data-v="vClock"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Clock</div>
-    <div class="tab" data-v="vAlarm"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7"/><path d="M12 10v3l2 1.5M4.5 5.5l3-2.5M19.5 5.5l-3-2.5M7 19.5l-1.5 2M17 19.5l1.5 2"/></svg>Alarms</div>
-    <div class="tab" data-v="vTimer"><i class="live"></i><svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/></svg>Timers</div>
-    <div class="tab" data-v="vWatch"><i class="live"></i><svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="7.5"/><path d="M12 14V10M10 2.5h4M12 2.5v4M18.5 7.5l1.5-1.5"/></svg>Stopwatch</div>
-    <div class="tab" data-v="vProfile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg>Profile</div>
+    <div class="tab on" data-v="vClock"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span data-t="Clock">Clock</span></div>
+    <div class="tab" data-v="vAlarm"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7"/><path d="M12 10v3l2 1.5M4.5 5.5l3-2.5M19.5 5.5l-3-2.5M7 19.5l-1.5 2M17 19.5l1.5 2"/></svg><span data-t="Alarms">Alarms</span></div>
+    <div class="tab" data-v="vTimer"><i class="live"></i><svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/></svg><span data-t="Timers">Timers</span></div>
+    <div class="tab" data-v="vWatch"><i class="live"></i><svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="7.5"/><path d="M12 14V10M10 2.5h4M12 2.5v4M18.5 7.5l1.5-1.5"/></svg><span data-t="Stopwatch">Stopwatch</span></div>
+    <div class="tab" data-v="vProfile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg><span data-t="Profile">Profile</span></div>
   </nav>
 
   <div class="scrim" id="scrim"></div>
@@ -142,12 +146,13 @@
 
   <div class="ring" id="ring">
     <div class="rvis" id="rVis"></div><div class="rshade"></div>
-    <div class="rtop"><div class="rk" id="rK">Alarm</div><div class="rt" id="rT">07:00</div><div class="rl" id="rL">Work</div><div class="rs" id="rS"></div><div class="rw" id="rW"></div></div>
+    <div class="rtop"><div class="rk" id="rK" data-t="Alarm">Alarm</div><div class="rt" id="rT">07:00</div><div class="rl" id="rL"></div><div class="rs" id="rS"></div><div class="rw" id="rW"></div></div>
     <div class="rb" id="rB"></div>
   </div>
   <div class="toast" id="toast"></div>
 </div>
 </div>
+<script src="i18n.js"></script>
 <script src="scenes.js"></script>
 <script src="app.js"></script>
 <script>if("serviceWorker" in navigator && location.protocol==="https:") addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>

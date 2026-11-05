@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">అలారాలు మరియు టైమర్‌లు</string>
+    <string name="ch_ring_desc">ఆపు మరియు స్నూజ్‌తో అలారాలు, టైమర్‌లను మోగిస్తుంది. ఫోన్ వాడుతున్నప్పుడు కూడా కనిపించేలా పాప్-అప్‌లను ఆన్‌లో ఉంచండి</string>
+    <string name="ch_bed">నిద్ర రిమైండర్‌లు</string>
+    <string name="ch_bed_desc">మీ నిద్ర షెడ్యూల్‌లోని నిద్ర సమయానికి ముందు ఒక మృదువైన సూచన</string>
+    <string name="bed_soon">త్వరలో నిద్ర సమయం</string>
+    <string name="ch_backup">బ్యాకప్ అలారం శబ్దం</string>
+    <string name="ch_backup_desc">Hora శబ్దం మొదలు కాకపోతే ఫోన్ సొంత అలారం శబ్దాన్ని మోగిస్తుంది</string>
+    <string name="backup_timer">టైమర్ పూర్తయింది · ఆపడానికి నొక్కండి</string>
+    <string name="backup_alarm">అలారం · ఆపడానికి లేదా స్నూజ్ చేయడానికి నొక్కండి</string>
+    <string name="ch_live">నడుస్తున్న టైమర్‌లు మరియు స్టాప్‌వాచ్</string>
+    <string name="ch_live_desc">నడుస్తున్న టైమర్ లేదా స్టాప్‌వాచ్‌ను స్టేటస్ బార్‌లో చూపుతుంది</string>
+    <string name="ch_up">రాబోయే అలారాలు</string>
+    <string name="ch_up_desc">తదుపరి అలారం, కొన్ని గంటల ముందే, మీరు దాన్ని ముందుగా రద్దు చేయడానికి</string>
+    <string name="up_title">రాబోయే అలారం</string>
+    <string name="up_snoozed">స్నూజ్ చేసిన అలారం</string>
+    <string name="rings_again">%1$sకి మళ్లీ మోగుతుంది</string>
+    <string name="dismiss">రద్దు చేయి</string>
+    <string name="dismiss_now">ఇప్పుడే రద్దు చేయి</string>
+    <string name="times_up">సమయం అయిపోయింది</string>
+    <string name="alarm">అలారం</string>
+    <string name="snoozed_label">%1$s (స్నూజ్ చేయబడింది)</string>
+    <string name="snooze_min">స్నూజ్ · %1$d ని</string>
+    <string name="stop">ఆపు</string>
+    <string name="bed_title">విశ్రాంతి తీసుకునే సమయం</string>
+    <string name="ends">%1$sకి ముగుస్తుంది</string>
+    <string name="plus1">+1 ని</string>
+    <string name="plus30">+30 సె</string>
+    <string name="timer_done">%1$s పూర్తయింది</string>
+</resources>

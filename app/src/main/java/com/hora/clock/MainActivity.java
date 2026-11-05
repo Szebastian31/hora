@@ -558,6 +558,16 @@ public class MainActivity extends Activity {
             }
         }
 
+        /** The language Hora is shown in, so its notifications and their names in Settings use it too. */
+        @JavascriptInterface
+        public void setLang(String code) {
+            SharedPreferences p = Scheduler.prefs(MainActivity.this);
+            if (code == null || code.equals(p.getString("lang", ""))) return;
+            p.edit().putString("lang", code).apply();
+            Lang.relabel(MainActivity.this);
+            Upcoming.refresh(MainActivity.this);
+        }
+
         @JavascriptInterface
         public void openSettings(String what) {
             runOnUiThread(() -> {

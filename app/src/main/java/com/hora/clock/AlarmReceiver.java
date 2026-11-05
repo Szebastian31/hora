@@ -102,8 +102,8 @@ public class AlarmReceiver extends BroadcastReceiver {
     private static void bedtime(Context c, String key, String label) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         if (nm.getNotificationChannel(BED_CHANNEL) == null) {
-            NotificationChannel ch = new NotificationChannel(BED_CHANNEL, "Bedtime reminders", NotificationManager.IMPORTANCE_DEFAULT);
-            ch.setDescription("A gentle nudge before your sleep schedule's bedtime");
+            NotificationChannel ch = new NotificationChannel(BED_CHANNEL, Lang.s(c, R.string.ch_bed), NotificationManager.IMPORTANCE_DEFAULT);
+            ch.setDescription(Lang.s(c, R.string.ch_bed_desc));
             ch.enableVibration(true);
             ch.setVibrationPattern(new long[]{0, 120, 1100});
             nm.createNotificationChannel(ch);
@@ -114,8 +114,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getActivity(c, 3, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(c, BED_CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat_hora)
-                .setContentTitle("Time to wind down")
-                .setContentText(label != null ? label : "Bedtime soon")
+                .setContentTitle(Lang.s(c, R.string.bed_title))
+                .setContentText(label != null ? label : Lang.s(c, R.string.bed_soon))
                 .setCategory(Notification.CATEGORY_REMINDER)
                 .setContentIntent(pi)
                 .setAutoCancel(true)
@@ -128,8 +128,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         for (String old : OLD_CHANNELS) if (nm.getNotificationChannel(old) != null) nm.deleteNotificationChannel(old);
         if (nm.getNotificationChannel(CHANNEL) != null) return;
-        NotificationChannel ch = new NotificationChannel(CHANNEL, "Alarms and timers", NotificationManager.IMPORTANCE_HIGH);
-        ch.setDescription("Rings alarms and timers, with Stop and Snooze. Keep pop-ups on so they show while you use the phone");
+        NotificationChannel ch = new NotificationChannel(CHANNEL, Lang.s(c, R.string.ch_ring), NotificationManager.IMPORTANCE_HIGH);
+        ch.setDescription(Lang.s(c, R.string.ch_ring_desc));
         ch.setSound(null, null);
         ch.enableVibration(false);   // Hora vibrates with the pattern chosen for the alarm
         ch.setBypassDnd(true);

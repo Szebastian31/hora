@@ -34,8 +34,8 @@ public class BackupReceiver extends BroadcastReceiver {
     static void ring(Context c, String key, String label) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         if (nm.getNotificationChannel(CHANNEL) == null) {
-            NotificationChannel ch = new NotificationChannel(CHANNEL, "Backup alarm sound", NotificationManager.IMPORTANCE_HIGH);
-            ch.setDescription("Rings the phone's own alarm sound if Hora's sound couldn't start");
+            NotificationChannel ch = new NotificationChannel(CHANNEL, Lang.s(c, R.string.ch_backup), NotificationManager.IMPORTANCE_HIGH);
+            ch.setDescription(Lang.s(c, R.string.ch_backup_desc));
             Uri sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             if (sound == null) sound = Settings.System.DEFAULT_ALARM_ALERT_URI;
             ch.setSound(sound, new AudioAttributes.Builder()
@@ -53,7 +53,7 @@ public class BackupReceiver extends BroadcastReceiver {
         Notification n = new Notification.Builder(c, CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat_hora)
                 .setContentTitle(label != null && !label.isEmpty() ? label : "Hora")
-                .setContentText(key.startsWith("t") ? "Timer is done · tap to stop" : "Alarm · tap to stop or snooze")
+                .setContentText(Lang.s(c, key.startsWith("t") ? R.string.backup_timer : R.string.backup_alarm))
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setFullScreenIntent(full, true)

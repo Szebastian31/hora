@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Wekkers en timers</string>
+    <string name="ch_ring_desc">Laat wekkers en timers afgaan, met Stop en Sluimeren. Laat pop-ups aan, zodat ze ook verschijnen terwijl je de telefoon gebruikt</string>
+    <string name="ch_bed">Bedtijdherinneringen</string>
+    <string name="ch_bed_desc">Een zacht seintje vóór de bedtijd van je slaapschema</string>
+    <string name="bed_soon">Bijna bedtijd</string>
+    <string name="ch_backup">Reservewekkergeluid</string>
+    <string name="ch_backup_desc">Speelt het wekkergeluid van de telefoon als het geluid van Hora niet kon starten</string>
+    <string name="backup_timer">Timer is klaar · tik om te stoppen</string>
+    <string name="backup_alarm">Wekker · tik om te stoppen of te sluimeren</string>
+    <string name="ch_live">Lopende timers en stopwatch</string>
+    <string name="ch_live_desc">Toont een lopende timer of de stopwatch in de statusbalk</string>
+    <string name="ch_up">Komende wekkers</string>
+    <string name="ch_up_desc">De volgende wekker, een paar uur van tevoren, zodat je hem vroeg kunt uitzetten</string>
+    <string name="up_title">Komende wekker</string>
+    <string name="up_snoozed">Sluimerende wekker</string>
+    <string name="rings_again">gaat weer af om %1$s</string>
+    <string name="dismiss">Sluiten</string>
+    <string name="dismiss_now">Nu uitzetten</string>
+    <string name="times_up">De tijd is om</string>
+    <string name="alarm">Wekker</string>
+    <string name="snoozed_label">%1$s (gesluimerd)</string>
+    <string name="snooze_min">Sluimeren · %1$d min</string>
+    <string name="stop">Stop</string>
+    <string name="bed_title">Tijd om tot rust te komen</string>
+    <string name="ends">Eindigt om %1$s</string>
+    <string name="plus1">+1 min</string>
+    <string name="plus30">+30 s</string>
+    <string name="timer_done">%1$s is klaar</string>
+</resources>

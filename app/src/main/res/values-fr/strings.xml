@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Alarmes et minuteurs</string>
+    <string name="ch_ring_desc">Fait sonner les alarmes et les minuteurs, avec Arrêter et Répéter. Laissez les fenêtres pop-up activées pour les voir pendant que vous utilisez le téléphone</string>
+    <string name="ch_bed">Rappels de coucher</string>
+    <string name="ch_bed_desc">Un petit rappel avant l\'heure du coucher de votre programme de sommeil</string>
+    <string name="bed_soon">Bientôt l\'heure du coucher</string>
+    <string name="ch_backup">Son d\'alarme de secours</string>
+    <string name="ch_backup_desc">Fait sonner l\'alarme du téléphone si le son de Hora n\'a pas pu démarrer</string>
+    <string name="backup_timer">Minuteur terminé · touchez pour arrêter</string>
+    <string name="backup_alarm">Alarme · touchez pour arrêter ou répéter</string>
+    <string name="ch_live">Minuteurs et chronomètre en cours</string>
+    <string name="ch_live_desc">Affiche un minuteur en cours ou le chronomètre dans la barre d\'état</string>
+    <string name="ch_up">Prochaines alarmes</string>
+    <string name="ch_up_desc">La prochaine alarme, quelques heures avant, pour pouvoir l\'annuler à l\'avance</string>
+    <string name="up_title">Prochaine alarme</string>
+    <string name="up_snoozed">Alarme répétée</string>
+    <string name="rings_again">sonne à nouveau à %1$s</string>
+    <string name="dismiss">Ignorer</string>
+    <string name="dismiss_now">Annuler maintenant</string>
+    <string name="times_up">Temps écoulé</string>
+    <string name="alarm">Alarme</string>
+    <string name="snoozed_label">%1$s (répétée)</string>
+    <string name="snooze_min">Répéter · %1$d min</string>
+    <string name="stop">Arrêter</string>
+    <string name="bed_title">C\'est l\'heure de se détendre</string>
+    <string name="ends">Fin %1$s</string>
+    <string name="plus1">+1 min</string>
+    <string name="plus30">+30 s</string>
+    <string name="timer_done">%1$s terminé</string>
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Будильники и таймеры</string>
+    <string name="ch_ring_desc">Звонит будильниками и таймерами, с кнопками «Стоп» и «Отложить». Не отключайте всплывающие уведомления, чтобы их было видно, пока вы пользуетесь телефоном</string>
+    <string name="ch_bed">Напоминания об отбое</string>
+    <string name="ch_bed_desc">Мягкое напоминание перед временем отхода ко сну по вашему расписанию</string>
+    <string name="bed_soon">Скоро пора спать</string>
+    <string name="ch_backup">Запасной звук будильника</string>
+    <string name="ch_backup_desc">Включает звук будильника телефона, если звук Hora не запустился</string>
+    <string name="backup_timer">Таймер завершён · нажмите, чтобы остановить</string>
+    <string name="backup_alarm">Будильник · нажмите, чтобы остановить или отложить</string>
+    <string name="ch_live">Запущенные таймеры и секундомер</string>
+    <string name="ch_live_desc">Показывает запущенный таймер или секундомер в строке состояния</string>
+    <string name="ch_up">Ближайшие будильники</string>
+    <string name="ch_up_desc">Следующий будильник за пару часов, чтобы его можно было отменить заранее</string>
+    <string name="up_title">Ближайший будильник</string>
+    <string name="up_snoozed">Отложенный будильник</string>
+    <string name="rings_again">зазвонит снова в %1$s</string>
+    <string name="dismiss">Отменить</string>
+    <string name="dismiss_now">Отменить сейчас</string>
+    <string name="times_up">Время вышло</string>
+    <string name="alarm">Будильник</string>
+    <string name="snoozed_label">%1$s (отложен)</string>
+    <string name="snooze_min">Отложить · %1$d мин</string>
+    <string name="stop">Стоп</string>
+    <string name="bed_title">Пора успокаиваться</string>
+    <string name="ends">Закончится в %1$s</string>
+    <string name="plus1">+1 мин</string>
+    <string name="plus30">+30 с</string>
+    <string name="timer_done">%1$s: готово</string>
+</resources>

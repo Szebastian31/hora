@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Ébresztők és időzítők</string>
+    <string name="ch_ring_desc">Megszólaltatja az ébresztőket és időzítőket, Leállítás és Szundi gombbal. Hagyd bekapcsolva a felugró értesítéseket, hogy a telefon használata közben is látszódjanak</string>
+    <string name="ch_bed">Lefekvési emlékeztetők</string>
+    <string name="ch_bed_desc">Szelíd figyelmeztetés az alvásrend szerinti lefekvés előtt</string>
+    <string name="bed_soon">Hamarosan lefekvés</string>
+    <string name="ch_backup">Tartalék ébresztőhang</string>
+    <string name="ch_backup_desc">A telefon saját ébresztőhangját játssza le, ha a Hora hangja nem indult el</string>
+    <string name="backup_timer">Az időzítő lejárt · koppints a leállításhoz</string>
+    <string name="backup_alarm">Ébresztő · koppints a leállításhoz vagy szundihoz</string>
+    <string name="ch_live">Futó időzítők és stopper</string>
+    <string name="ch_live_desc">A futó időzítőt vagy a stoppert mutatja az állapotsoron</string>
+    <string name="ch_up">Közelgő ébresztők</string>
+    <string name="ch_up_desc">A következő ébresztő néhány órával előtte, hogy előre kikapcsolhasd</string>
+    <string name="up_title">Közelgő ébresztő</string>
+    <string name="up_snoozed">Szundiban lévő ébresztő</string>
+    <string name="rings_again">újra szól ekkor: %1$s</string>
+    <string name="dismiss">Elvetés</string>
+    <string name="dismiss_now">Kikapcsolás most</string>
+    <string name="times_up">Lejárt az idő</string>
+    <string name="alarm">Ébresztő</string>
+    <string name="snoozed_label">%1$s (szundi)</string>
+    <string name="snooze_min">Szundi · %1$d p</string>
+    <string name="stop">Leállítás</string>
+    <string name="bed_title">Ideje lecsendesedni</string>
+    <string name="ends">Vége: %1$s</string>
+    <string name="plus1">+1 p</string>
+    <string name="plus30">+30 mp</string>
+    <string name="timer_done">%1$s: kész</string>
+</resources>

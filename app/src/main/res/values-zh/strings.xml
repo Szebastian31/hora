@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">闹钟和计时器</string>
+    <string name="ch_ring_desc">响起闹钟和计时器，带有“停止”和“稍后提醒”。请保持弹出通知开启，这样使用手机时也能看到</string>
+    <string name="ch_bed">就寝提醒</string>
+    <string name="ch_bed_desc">在睡眠计划的就寝时间前温和提醒你</string>
+    <string name="bed_soon">快到就寝时间了</string>
+    <string name="ch_backup">备用闹铃声</string>
+    <string name="ch_backup_desc">如果 Hora 的声音无法播放，就响起手机自带的闹铃声</string>
+    <string name="backup_timer">计时结束 · 点按停止</string>
+    <string name="backup_alarm">闹钟 · 点按停止或稍后提醒</string>
+    <string name="ch_live">正在运行的计时器和秒表</string>
+    <string name="ch_live_desc">在状态栏中显示正在运行的计时器或秒表</string>
+    <string name="ch_up">即将响铃的闹钟</string>
+    <string name="ch_up_desc">提前几小时显示下一个闹钟，方便你提前关闭</string>
+    <string name="up_title">即将响铃的闹钟</string>
+    <string name="up_snoozed">已推迟的闹钟</string>
+    <string name="rings_again">%1$s 再次响铃</string>
+    <string name="dismiss">关闭</string>
+    <string name="dismiss_now">立即关闭</string>
+    <string name="times_up">时间到</string>
+    <string name="alarm">闹钟</string>
+    <string name="snoozed_label">%1$s（已稍后提醒）</string>
+    <string name="snooze_min">稍后提醒 · %1$d 分钟</string>
+    <string name="stop">停止</string>
+    <string name="bed_title">该放松准备睡觉了</string>
+    <string name="ends">%1$s 结束</string>
+    <string name="plus1">+1 分钟</string>
+    <string name="plus30">+30 秒</string>
+    <string name="timer_done">%1$s已完成</string>
+</resources>

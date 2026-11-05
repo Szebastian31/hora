@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">অ্যালার্ম ও টাইমার</string>
+    <string name="ch_ring_desc">অ্যালার্ম ও টাইমার বাজায়, থামান ও স্নুজ সহ। পপ-আপ চালু রাখুন যাতে ফোন ব্যবহারের সময়ও দেখা যায়</string>
+    <string name="ch_bed">ঘুমানোর রিমাইন্ডার</string>
+    <string name="ch_bed_desc">আপনার ঘুমের সময়সূচির ঘুমানোর সময়ের আগে একটি মৃদু ইঙ্গিত</string>
+    <string name="bed_soon">শীঘ্রই ঘুমানোর সময়</string>
+    <string name="ch_backup">ব্যাকআপ অ্যালার্মের শব্দ</string>
+    <string name="ch_backup_desc">Hora-র শব্দ শুরু না হলে ফোনের নিজস্ব অ্যালার্মের শব্দ বাজায়</string>
+    <string name="backup_timer">টাইমার শেষ · থামাতে ট্যাপ করুন</string>
+    <string name="backup_alarm">অ্যালার্ম · থামাতে বা স্নুজ করতে ট্যাপ করুন</string>
+    <string name="ch_live">চলমান টাইমার ও স্টপওয়াচ</string>
+    <string name="ch_live_desc">স্ট্যাটাস বারে চলমান টাইমার বা স্টপওয়াচ দেখায়</string>
+    <string name="ch_up">আসন্ন অ্যালার্ম</string>
+    <string name="ch_up_desc">পরের অ্যালার্ম, কয়েক ঘণ্টা আগে, যাতে আগেই বাতিল করতে পারেন</string>
+    <string name="up_title">আসন্ন অ্যালার্ম</string>
+    <string name="up_snoozed">স্নুজ করা অ্যালার্ম</string>
+    <string name="rings_again">%1$s-এ আবার বাজবে</string>
+    <string name="dismiss">বাতিল করুন</string>
+    <string name="dismiss_now">এখনই বাতিল করুন</string>
+    <string name="times_up">সময় শেষ</string>
+    <string name="alarm">অ্যালার্ম</string>
+    <string name="snoozed_label">%1$s (স্নুজ করা)</string>
+    <string name="snooze_min">স্নুজ · %1$d মি</string>
+    <string name="stop">থামান</string>
+    <string name="bed_title">বিশ্রামের সময় হলো</string>
+    <string name="ends">%1$s-এ শেষ</string>
+    <string name="plus1">+1 মি</string>
+    <string name="plus30">+30 সে</string>
+    <string name="timer_done">%1$s শেষ</string>
+</resources>

@@ -16,7 +16,6 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 /**
  * "Upcoming alarm · Work · 07:00" with a Dismiss button, from two hours before the next alarm (or for as long as an
@@ -65,33 +64,33 @@ public class Upcoming extends BroadcastReceiver {
 
     private static void post(Context c, NotificationManager nm, JSONObject ev, long at, boolean snoozed) {
         if (nm.getNotificationChannel(CHANNEL) == null) {
-            NotificationChannel ch = new NotificationChannel(CHANNEL, "Upcoming alarms", NotificationManager.IMPORTANCE_LOW);
-            ch.setDescription("The next alarm, a couple of hours ahead, so you can dismiss it early");
+            NotificationChannel ch = new NotificationChannel(CHANNEL, Lang.s(c, R.string.ch_up), NotificationManager.IMPORTANCE_LOW);
+            ch.setDescription(Lang.s(c, R.string.ch_up_desc));
             ch.setShowBadge(false);
             nm.createNotificationChannel(ch);
         }
-        String key = ev.optString("k"), name = ev.optString("name", "Alarm");
-        String when = day(at) + RingService.time(c, at, ev.optBoolean("h24", true));
+        String key = ev.optString("k"), name = ev.optString("name", Lang.s(c, R.string.alarm));
+        String when = day(c, at) + RingService.time(c, at, ev.optBoolean("h24", true));
         Notification n = new Notification.Builder(c, CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat_hora)
-                .setContentTitle(snoozed ? "Snoozed alarm" : "Upcoming alarm")
-                .setContentText(name + " · " + (snoozed ? "rings again at " : "") + when)
+                .setContentTitle(Lang.s(c, snoozed ? R.string.up_snoozed : R.string.up_title))
+                .setContentText(name + " · " + (snoozed ? Lang.s(c, R.string.rings_again, when) : when))
                 .setCategory(Notification.CATEGORY_REMINDER)
                 .setContentIntent(Scheduler.showPi(c))
                 .setShowWhen(false)
                 .setOnlyAlertOnce(true)
                 .setTimeoutAfter(Math.max(1000, at - System.currentTimeMillis()))
                 .addAction(new Notification.Action.Builder(Icon.createWithResource(c, R.drawable.ic_stat_hora),
-                        snoozed ? "Dismiss" : "Dismiss now", ActionReceiver.pi(c, ActionReceiver.DISMISS, key)).build())
+                        Lang.s(c, snoozed ? R.string.dismiss : R.string.dismiss_now), ActionReceiver.pi(c, ActionReceiver.DISMISS, key)).build())
                 .build();
         try { nm.notify(ID, n); } catch (SecurityException ignored) { }
     }
 
     /** "" for today, otherwise the short weekday: "Wed 07:00". */
-    private static String day(long at) {
+    private static String day(Context c, long at) {
         Calendar a = Calendar.getInstance(), b = Calendar.getInstance();
         b.setTimeInMillis(at);
         if (a.get(Calendar.YEAR) == b.get(Calendar.YEAR) && a.get(Calendar.DAY_OF_YEAR) == b.get(Calendar.DAY_OF_YEAR)) return "";
-        return new SimpleDateFormat("EEE", Locale.getDefault()).format(new Date(at)) + " ";
+        return new SimpleDateFormat("EEE", Lang.format(c)).format(new Date(at)) + " ";
     }
 }

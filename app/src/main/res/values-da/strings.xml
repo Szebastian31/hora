@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Alarmer og timere</string>
+    <string name="ch_ring_desc">Ringer med alarmer og timere, med Stop og Udsæt. Lad pop op-vinduer være slået til, så de vises, mens du bruger telefonen</string>
+    <string name="ch_bed">Sengetidspåmindelser</string>
+    <string name="ch_bed_desc">Et blidt skub før sengetid i din søvnplan</string>
+    <string name="bed_soon">Snart sengetid</string>
+    <string name="ch_backup">Reservealarmlyd</string>
+    <string name="ch_backup_desc">Afspiller telefonens egen alarmlyd, hvis Horas lyd ikke kunne starte</string>
+    <string name="backup_timer">Timeren er færdig · tryk for at stoppe</string>
+    <string name="backup_alarm">Alarm · tryk for at stoppe eller udsætte</string>
+    <string name="ch_live">Kørende timere og stopur</string>
+    <string name="ch_live_desc">Viser en kørende timer eller stopuret i statuslinjen</string>
+    <string name="ch_up">Kommende alarmer</string>
+    <string name="ch_up_desc">Den næste alarm, et par timer før, så du kan afvise den i god tid</string>
+    <string name="up_title">Kommende alarm</string>
+    <string name="up_snoozed">Udsat alarm</string>
+    <string name="rings_again">ringer igen kl. %1$s</string>
+    <string name="dismiss">Afvis</string>
+    <string name="dismiss_now">Afvis nu</string>
+    <string name="times_up">Tiden er gået</string>
+    <string name="alarm">Alarm</string>
+    <string name="snoozed_label">%1$s (udsat)</string>
+    <string name="snooze_min">Udsæt · %1$d min</string>
+    <string name="stop">Stop</string>
+    <string name="bed_title">Tid til at slappe af</string>
+    <string name="ends">Slutter %1$s</string>
+    <string name="plus1">+1 min</string>
+    <string name="plus30">+30 s</string>
+    <string name="timer_done">%1$s er færdig</string>
+</resources>

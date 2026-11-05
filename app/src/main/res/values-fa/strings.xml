@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">زنگ‌ها و تایمرها</string>
+    <string name="ch_ring_desc">زنگ‌ها و تایمرها را با توقف و تعویق به صدا درمی‌آورد. پنجره‌های بازشو را روشن نگه دارید تا هنگام استفاده از گوشی هم دیده شوند</string>
+    <string name="ch_bed">یادآورهای خواب</string>
+    <string name="ch_bed_desc">یک یادآوری آرام پیش از وقت خواب در برنامهٔ خوابتان</string>
+    <string name="bed_soon">به‌زودی وقت خواب است</string>
+    <string name="ch_backup">صدای زنگ پشتیبان</string>
+    <string name="ch_backup_desc">اگر صدای Hora پخش نشد، صدای زنگ خود گوشی را پخش می‌کند</string>
+    <string name="backup_timer">تایمر تمام شد · برای توقف ضربه بزنید</string>
+    <string name="backup_alarm">زنگ · برای توقف یا تعویق ضربه بزنید</string>
+    <string name="ch_live">تایمرها و کرنومتر در حال اجرا</string>
+    <string name="ch_live_desc">تایمر در حال اجرا یا کرنومتر را در نوار وضعیت نشان می‌دهد</string>
+    <string name="ch_up">زنگ‌های پیش رو</string>
+    <string name="ch_up_desc">زنگ بعدی، چند ساعت زودتر، تا بتوانید از قبل ردش کنید</string>
+    <string name="up_title">زنگ پیش رو</string>
+    <string name="up_snoozed">زنگ به تعویق افتاده</string>
+    <string name="rings_again">ساعت %1$s دوباره زنگ می‌زند</string>
+    <string name="dismiss">رد کردن</string>
+    <string name="dismiss_now">همین حالا رد کن</string>
+    <string name="times_up">وقت تمام شد</string>
+    <string name="alarm">زنگ</string>
+    <string name="snoozed_label">%1$s (به تعویق افتاده)</string>
+    <string name="snooze_min">تعویق · %1$d دقیقه</string>
+    <string name="stop">توقف</string>
+    <string name="bed_title">وقت آرام گرفتن است</string>
+    <string name="ends">پایان %1$s</string>
+    <string name="plus1">+1 دقیقه</string>
+    <string name="plus30">+30 ث</string>
+    <string name="timer_done">%1$s تمام شد</string>
+</resources>

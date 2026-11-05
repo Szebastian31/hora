@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 /**
  * Rings an alarm or timer from Android itself: the sound chosen in Hora (a rendered copy of a built-in sound, or
@@ -239,7 +238,7 @@ public class RingService extends Service {
                 int auto = how.equals("autosnooze") ? e.optInt("auto", 0) + 1 : 0;
                 long until = now + e.optLong("snooze", 9) * 60_000L;
                 next = new JSONObject(e.toString()).put("k", "s" + id + "@" + (until + off)).put("at", until)
-                        .put("auto", auto).put("label", e.optString("name", "Alarm") + " (snoozed)");
+                        .put("auto", auto).put("label", Lang.s(this, R.string.snoozed_label, e.optString("name", Lang.s(this, R.string.alarm))));
                 act.put("do", "snooze").put("until", until + off).put("auto", auto);
             } else if ("plus".equals(how) && timer) {
                 long until = now + 60_000;
@@ -297,8 +296,9 @@ public class RingService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = new Notification.Builder(this, AlarmReceiver.CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat_hora)
-                .setContentTitle(timer ? name + " is done" : name)
-                .setContentText(timer ? "Time's up" : (key.startsWith("s") ? "Snoozed alarm · " : "Alarm · ") + time(this, started, ev.optBoolean("h24", true)))
+                .setContentTitle(timer ? Lang.s(this, R.string.timer_done, name) : name)
+                .setContentText(timer ? Lang.s(this, R.string.times_up)
+                        : Lang.s(this, key.startsWith("s") ? R.string.up_snoozed : R.string.alarm) + " · " + time(this, started, ev.optBoolean("h24", true)))
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setFullScreenIntent(open, true)
@@ -310,17 +310,17 @@ public class RingService extends Service {
                 .setUsesChronometer(true);   // counts how long it has been ringing
         Icon ic = Icon.createWithResource(this, R.drawable.ic_stat_hora);
         if (timer) {
-            b.addAction(new Notification.Action.Builder(ic, "+1 min", ActionReceiver.pi(this, ActionReceiver.PLUS, key)).build());
+            b.addAction(new Notification.Action.Builder(ic, Lang.s(this, R.string.plus1), ActionReceiver.pi(this, ActionReceiver.PLUS, key)).build());
         } else {
-            b.addAction(new Notification.Action.Builder(ic, "Snooze · " + ev.optInt("snooze", 9) + " min", ActionReceiver.pi(this, ActionReceiver.SNOOZE, key)).build());
+            b.addAction(new Notification.Action.Builder(ic, Lang.s(this, R.string.snooze_min, ev.optInt("snooze", 9)), ActionReceiver.pi(this, ActionReceiver.SNOOZE, key)).build());
         }
-        b.addAction(new Notification.Action.Builder(ic, "Stop", ActionReceiver.pi(this, ActionReceiver.STOP, key)).build());
+        b.addAction(new Notification.Action.Builder(ic, Lang.s(this, R.string.stop), ActionReceiver.pi(this, ActionReceiver.STOP, key)).build());
         if (Build.VERSION.SDK_INT >= 31) b.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
         return b.build();
     }
 
     static String time(Context c, long ms, boolean h24) {
-        return new SimpleDateFormat(h24 ? "HH:mm" : "h:mm a", Locale.getDefault()).format(new Date(ms));
+        return new SimpleDateFormat(h24 ? "HH:mm" : "h:mm a", Lang.format(c)).format(new Date(ms));
     }
 
     static String safe(String name) {

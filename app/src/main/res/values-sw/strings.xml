@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Kengele na vipima muda</string>
+    <string name="ch_ring_desc">Inalia kengele na vipima muda, pamoja na Simamisha na Ahirisha. Acha madirisha ibukizi yakiwa yamewashwa ili yaonekane unapotumia simu</string>
+    <string name="ch_bed">Vikumbusho vya kulala</string>
+    <string name="ch_bed_desc">Kikumbusho kidogo kabla ya wakati wa kulala katika ratiba yako ya usingizi</string>
+    <string name="bed_soon">Wakati wa kulala unakaribia</string>
+    <string name="ch_backup">Sauti ya akiba ya kengele</string>
+    <string name="ch_backup_desc">Inalia sauti ya kengele ya simu yenyewe ikiwa sauti ya Hora haikuweza kuanza</string>
+    <string name="backup_timer">Kipima muda kimekamilika · gusa ili kusimamisha</string>
+    <string name="backup_alarm">Kengele · gusa ili kusimamisha au kuahirisha</string>
+    <string name="ch_live">Vipima muda na saa ya kupima vinavyoendelea</string>
+    <string name="ch_live_desc">Inaonyesha kipima muda kinachoendelea au saa ya kupima kwenye upau wa hali</string>
+    <string name="ch_up">Kengele zinazokuja</string>
+    <string name="ch_up_desc">Kengele inayofuata, saa chache kabla, ili uweze kuiondoa mapema</string>
+    <string name="up_title">Kengele inayokuja</string>
+    <string name="up_snoozed">Kengele iliyoahirishwa</string>
+    <string name="rings_again">italia tena saa %1$s</string>
+    <string name="dismiss">Ondoa</string>
+    <string name="dismiss_now">Ondoa sasa</string>
+    <string name="times_up">Muda umekwisha</string>
+    <string name="alarm">Kengele</string>
+    <string name="snoozed_label">%1$s (imeahirishwa)</string>
+    <string name="snooze_min">Ahirisha · %1$d dk</string>
+    <string name="stop">Simamisha</string>
+    <string name="bed_title">Wakati wa kupumzika</string>
+    <string name="ends">Inaisha %1$s</string>
+    <string name="plus1">+1 dk</string>
+    <string name="plus30">+30 s</string>
+    <string name="timer_done">%1$s imekamilika</string>
+</resources>

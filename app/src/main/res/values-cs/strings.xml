@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Budíky a časovače</string>
+    <string name="ch_ring_desc">Zvoní budíky a časovači, s tlačítky Stop a Odložit. Nechte vyskakovací oznámení zapnutá, aby se zobrazila i při používání telefonu</string>
+    <string name="ch_bed">Připomenutí večerky</string>
+    <string name="ch_bed_desc">Jemné upozornění před časem spánku z vašeho plánu</string>
+    <string name="bed_soon">Brzy čas spát</string>
+    <string name="ch_backup">Záložní zvuk budíku</string>
+    <string name="ch_backup_desc">Zazvoní zvukem budíku telefonu, pokud se zvuk Hory nepodařilo spustit</string>
+    <string name="backup_timer">Časovač skončil · klepnutím zastavíte</string>
+    <string name="backup_alarm">Budík · klepnutím zastavíte nebo odložíte</string>
+    <string name="ch_live">Běžící časovače a stopky</string>
+    <string name="ch_live_desc">Zobrazuje běžící časovač nebo stopky na stavovém řádku</string>
+    <string name="ch_up">Nadcházející budíky</string>
+    <string name="ch_up_desc">Další budík pár hodin předem, abyste ho mohli zrušit včas</string>
+    <string name="up_title">Nadcházející budík</string>
+    <string name="up_snoozed">Odložený budík</string>
+    <string name="rings_again">zazvoní znovu v %1$s</string>
+    <string name="dismiss">Zavřít</string>
+    <string name="dismiss_now">Zrušit teď</string>
+    <string name="times_up">Čas vypršel</string>
+    <string name="alarm">Budík</string>
+    <string name="snoozed_label">%1$s (odloženo)</string>
+    <string name="snooze_min">Odložit · %1$d min</string>
+    <string name="stop">Stop</string>
+    <string name="bed_title">Čas se zklidnit</string>
+    <string name="ends">Skončí v %1$s</string>
+    <string name="plus1">+1 min</string>
+    <string name="plus30">+30 s</string>
+    <string name="timer_done">%1$s: hotovo</string>
+</resources>

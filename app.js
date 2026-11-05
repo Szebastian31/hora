@@ -5,6 +5,7 @@ const pad = n => String(n).padStart(2, "0");
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+translateStatic();
 const HOME = { name: "Gliwice", region: "Poland", lat: 50.29, lon: 18.67, home: true };
 const RAD = Math.PI / 180, TAU = Math.PI * 2;
 
@@ -36,20 +37,28 @@ const ACCENTS = {
   sky:   { name: "Sky",   c: "#5cc8ff", d: "#1b7fbf" },
   lilac: { name: "Lilac", c: "#b892ff", d: "#7350d1" }
 };
-const PRESETS0 = [["Tea", 3], ["Eggs", 7], ["Pasta", 10], ["Nap", 20], ["Focus", 25], ["Bread", 40], ["Laundry", 45]].map(([l, m]) => ({ l, ms: m * 60000 }));
+/* the names of skins, colours, sounds and so on are shown in the chosen language; the keys stay English */
+const named = o => Object.values(o).forEach(x => x.name = tr(x.name));
+named(SKINS); named(ACCENTS);
+const PRESETS0 = [["Tea", 3], ["Eggs", 7], ["Pasta", 10], ["Nap", 20], ["Focus", 25], ["Bread", 40], ["Laundry", 45]].map(([l, m]) => ({ l: tr(l), ms: m * 60000 }));
 const SLEEP_ID = 9001;
+/* the default timer name; a timer saved without a name of its own is shown with it */
+const TIMER = tr("Timer");
+/* weekday names, Monday first: short ("Mon") and a single letter for the day pickers */
+const DAYN = [1, 2, 3, 4, 5, 6, 7].map(i => new Date(2024, 0, i).toLocaleDateString(LOCALE, { weekday: "short" }));
+const DAYI = [1, 2, 3, 4, 5, 6, 7].map(i => new Date(2024, 0, i).toLocaleDateString(LOCALE, { weekday: "narrow" }));
 
 const DEF = {
   skin: "live", accent: "rose", font: "crust", h24: true, secs: true, correct: true, ticks: true, wake: false, notify: false, analog: false,
   weather: true, fahr: false, swAnalog: true, upcoming: true,
   cities: ["Europe/London", "America/New_York", "Asia/Tokyo"],
   alarms: [
-    { id: 1, h: 7, m: 0, label: "Work", days: [1,1,1,1,1,0,0], on: true, sound: "glass", gentle: true, snooze: 9, scene: "sunrise", vib: "pulse" },
-    { id: 2, h: 9, m: 30, label: "Slow Sunday", days: [0,0,0,0,0,0,1], on: false, sound: "dawn", gentle: true, snooze: 9, scene: "bloom", vib: "gentle" }
+    { id: 1, h: 7, m: 0, label: tr("Work"), days: [1,1,1,1,1,0,0], on: true, sound: "glass", gentle: true, snooze: 9, scene: "sunrise", vib: "pulse" },
+    { id: 2, h: 9, m: 30, label: tr("Slow Sunday"), days: [0,0,0,0,0,0,1], on: false, sound: "dawn", gentle: true, snooze: 9, scene: "bloom", vib: "gentle" }
   ],
   sleep: { set: false, on: true, bed: 23 * 60, wake: 7 * 60, days: [1,1,1,1,1,1,1], remind: 30, goal: 8, alarm: true, sound: "dawn", scene: "sunrise" },
   presets: PRESETS0,
-  timers: [], focus: null, setMs: 300000, setLabel: "Timer", timerSound: "ding", timerFile: "", timerRingFor: 2,
+  timers: [], focus: null, setMs: 300000, setLabel: "", timerSound: "ding", timerFile: "", timerRingFor: 2,
   watch: { run: false, start: 0, acc: 0, laps: [] }
 };
 let S;
@@ -60,6 +69,8 @@ if (!ACCENTS[S.accent]) S.accent = "rose";
 if (!SKINS[S.skin]) S.skin = "live";
 S.sleep = Object.assign(JSON.parse(JSON.stringify(DEF.sleep)), S.sleep || {});
 if (!Array.isArray(S.presets)) S.presets = PRESETS0;
+/* the timer name used to be saved as the word "Timer"; now no name of its own is saved as "" */
+if (!S.setLabel || S.setLabel === "Timer") S.setLabel = "";
 /* world cities used to be saved as time zone names; now each is { name, sub, tz, lat, lon } so any place can be added */
 S.cities = (S.cities || []).map(c => typeof c === "string" ? CITIES.find(x => x.tz === c) : c).filter(c => c && c.tz && validTz(c.tz));
 function validTz(tz) { try { new Intl.DateTimeFormat("en-US", { timeZone: tz }); return true; } catch (e) { return false; } }
@@ -71,13 +82,13 @@ if (DEMO) {
   const skin = new URLSearchParams(location.search).get("skin");
   S = Object.assign(JSON.parse(JSON.stringify(DEF)), {
     skin: SKINS[skin] ? skin : "live", accent: "rose", font: "crust", fontChosen: true, secs: true, ticks: false, weather: true, analog: false, swAnalog: true,
-    cities: [{ name: "London", sub: "England, United Kingdom", tz: "Europe/London", lat: 51.51, lon: -0.13 },
-      { name: "New York", sub: "New York, United States", tz: "America/New_York", lat: 40.71, lon: -74.0 },
-      { name: "Tokyo", sub: "Japan", tz: "Asia/Tokyo", lat: 35.68, lon: 139.69 }],
+    cities: [{ name: tr("London"), sub: tr("England, United Kingdom"), tz: "Europe/London", lat: 51.51, lon: -0.13 },
+      { name: tr("New York"), sub: tr("New York, United States"), tz: "America/New_York", lat: 40.71, lon: -74.0 },
+      { name: tr("Tokyo"), sub: tr("Japan"), tz: "Asia/Tokyo", lat: 35.68, lon: 139.69 }],
     alarms: [
-      { id: 1, h: 7, m: 0, label: "Work", days: [1,1,1,1,1,0,0], on: true, sound: "glass", gentle: true, snooze: 9, scene: "sunrise", vib: "pulse", ringFor: 10, after: "snooze" },
-      { id: 2, h: 8, m: 15, label: "Gym", days: [1,0,1,0,1,0,0], on: true, sound: "marimba", gentle: false, snooze: 5, scene: "mist", vib: "strong", ringFor: 5, after: "snooze" },
-      { id: 3, h: 9, m: 30, label: "Slow Sunday", days: [0,0,0,0,0,0,1], on: false, sound: "dawn", gentle: true, snooze: 9, scene: "lake", vib: "gentle", ringFor: 10, after: "stop" }
+      { id: 1, h: 7, m: 0, label: tr("Work"), days: [1,1,1,1,1,0,0], on: true, sound: "glass", gentle: true, snooze: 9, scene: "sunrise", vib: "pulse", ringFor: 10, after: "snooze" },
+      { id: 2, h: 8, m: 15, label: tr("Gym"), days: [1,0,1,0,1,0,0], on: true, sound: "marimba", gentle: false, snooze: 5, scene: "mist", vib: "strong", ringFor: 5, after: "snooze" },
+      { id: 3, h: 9, m: 30, label: tr("Slow Sunday"), days: [0,0,0,0,0,0,1], on: false, sound: "dawn", gentle: true, snooze: 9, scene: "lake", vib: "gentle", ringFor: 10, after: "stop" }
     ],
     sleep: Object.assign(JSON.parse(JSON.stringify(DEF.sleep)), { set: true, on: true, bed: 23 * 60, wake: 7 * 60, days: [1,1,1,1,1,0,0], remind: 30 })
   });
@@ -87,8 +98,8 @@ const save = () => { if (DEMO) return; try { localStorage.setItem("hora", JSON.s
 /* ---------- Android app bridge (window.HoraNative exists only inside the APK) ---------- */
 const NAT = window.HoraNative || null, NATIVE = !!NAT;
 if (NATIVE) {
-  const wn = document.getElementById("webNote"); if (wn) wn.innerHTML = wn.dataset.native;
-  const dc = document.getElementById("defTitle"); if (dc) dc.textContent = "Alarms on this phone";
+  const wn = document.getElementById("webNote"); if (wn) { wn.innerHTML = tr(wn.dataset.native); delete wn.dataset.tHtml; }
+  const dc = document.getElementById("defTitle"); if (dc) { dc.dataset.t = "Alarms on this phone"; dc.textContent = tr("Alarms on this phone"); }
   document.documentElement.classList.add("native");
   try { Object.defineProperty(navigator, "vibrate", { configurable: true, value: p => { NAT.vibrate(Array.isArray(p) ? p.join(",") : String(p)); return true; } }); } catch (e) {}
 }
@@ -97,7 +108,7 @@ let schT = null;
    Android needs to ring it on its own: the sound, vibration, snooze length and what to do if nobody answers. */
 function ringInfo(a) {
   const s = ringSound(a.sound, "snd" + a.id, a.fileName, a.fileAt);
-  return { name: a.label || "Alarm", snd: s.name, vib: (VIBS[a.vib] || VIBS.pulse).p.join(","), gentle: !!a.gentle,
+  return { name: a.label || tr("Alarm"), snd: s.name, vib: (VIBS[a.vib] || VIBS.pulse).p.join(","), gentle: !!a.gentle,
     ringMs: (a.ringFor || 10) * 60000, snooze: a.snooze || 9, after: a.after || "snooze", h24: !!S.h24, up: S.upcoming !== false };
 }
 function schedNative() {
@@ -111,13 +122,13 @@ function schedNative() {
       S.alarms.forEach(a => {
         let at = a.on ? NEXT[a.id] : null;
         if (at) use(ringSound(a.sound, "snd" + a.id, a.fileName, a.fileAt));
-        for (let i = 0; at && i < 4; i++) { ev.push(Object.assign({ k: "a" + a.id + "@" + at, at: at - off, label: a.label || "Alarm" }, ringInfo(a))); if (!a.days.some(Boolean)) break; at = nextRing(a, at + 1000); }
+        for (let i = 0; at && i < 4; i++) { ev.push(Object.assign({ k: "a" + a.id + "@" + at, at: at - off, label: a.label || tr("Alarm") }, ringInfo(a))); if (!a.days.some(Boolean)) break; at = nextRing(a, at + 1000); }
       });
-      SNOOZES.forEach(s => { use(ringSound(s.a.sound, "snd" + s.a.id, s.a.fileName, s.a.fileAt)); ev.push(Object.assign({ k: "s" + s.a.id + "@" + s.at, at: s.at - off, label: (s.a.label || "Alarm") + " (snoozed)", auto: s.auto || 0 }, ringInfo(s.a))); });
+      SNOOZES.forEach(s => { use(ringSound(s.a.sound, "snd" + s.a.id, s.a.fileName, s.a.fileAt)); ev.push(Object.assign({ k: "s" + s.a.id + "@" + s.at, at: s.at - off, label: tr("{name} (snoozed)", { name: s.a.label || tr("Alarm") }), auto: s.auto || 0 }, ringInfo(s.a))); });
       const ts = ringSound(S.timerSound, "sndtimer", S.timerFile, S.timerFileAt);
-      S.timers.forEach(t => { if (t.run && !t.done) { use(ts); ev.push({ k: "t" + t.id + "@" + t.endAt, at: t.endAt - off, label: t.label + " timer", name: t.label, snd: ts.name, vib: VIBS.pulse.p.join(","), gentle: false, ringMs: (S.timerRingFor || 2) * 60000, h24: !!S.h24 }); } });
+      S.timers.forEach(t => { if (t.run && !t.done) { use(ts); ev.push({ k: "t" + t.id + "@" + t.endAt, at: t.endAt - off, label: tr("{name} timer", { name: t.label }), name: t.label, snd: ts.name, vib: VIBS.pulse.p.join(","), gentle: false, ringMs: (S.timerRingFor || 2) * 60000, h24: !!S.h24 }); } });
       // bedtime reminders are quiet notifications, not full-screen alarms ("b" keys)
-      bedtimes(n, 4).forEach(b => ev.push({ k: "b" + SLEEP_ID + "@" + b.rem, at: b.rem - off, label: "Bedtime at " + hmA(new Date(b.bed)) }));
+      bedtimes(n, 4).forEach(b => ev.push({ k: "b" + SLEEP_ID + "@" + b.rem, at: b.rem - off, label: tr("Bedtime at {time}", { time: hmA(new Date(b.bed)) }) }));
       NAT.schedule(JSON.stringify(ev.filter(e => e.at > n - off - 1000).sort((x, y) => x.at - y.at).slice(0, 40)));
       // the timer sound is kept ready too, so a timer started later rings with it straight away
       use(ts); syncSounds(Object.values(snd));
@@ -137,9 +148,9 @@ window.horaIntent = o => {
   try {
     if (o.type === "alarm" && o.h != null) {
       const a = newAlarm({ h: o.h, m: o.m || 0, label: o.label || "", days: o.days || [0,0,0,0,0,0,0] });
-      S.alarms.push(a); save(); recalcAlarms(); go("vAlarm"); renderAll(); toast("Alarm set for " + pad(a.h) + ":" + pad(a.m) + " · rings in " + dur(NEXT[a.id] - now()));
+      S.alarms.push(a); save(); recalcAlarms(); go("vAlarm"); renderAll(); toast(tr("Alarm set for {time} · rings in {left}", { time: pad(a.h) + ":" + pad(a.m), left: dur(NEXT[a.id] - now()) }));
     } else if (o.type === "timer" && o.seconds > 0) {
-      S.setMs = o.seconds * 1000; S.setLabel = o.label || "Timer"; S.focus = null; go("vTimer"); startTimer();
+      S.setMs = o.seconds * 1000; S.setLabel = o.label || ""; S.focus = null; go("vTimer"); startTimer();
     } else if (o.type === "alarms") go("vAlarm");
     else if (o.type === "timers") go("vTimer");
     else if (o.type === "stopwatch") go("vWatch");
@@ -162,9 +173,9 @@ const minTxt = mins => { const h = Math.floor(mins / 60) % 24; return fmtHM(h, m
 function dur(ms) {
   ms = Math.max(0, ms);
   const m = Math.ceil(ms / 60000);
-  if (ms < 60000) return "under a minute";
+  if (ms < 60000) return tr("under a minute");
   const h = Math.floor(m / 60), mm = m % 60;
-  return h ? h + " h" + (mm ? " " + mm + " m" : "") : mm + " m";
+  return h ? (mm ? tr("{h} h {m} m", { h, m: mm }) : tr("{h} h", { h })) : tr("{m} m", { m: mm });
 }
 function clk(ms) {
   const t = Math.ceil(Math.max(0, ms) / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
@@ -176,15 +187,16 @@ function swFmt(ms) {
   return { main: (h ? h + ":" + pad(m) : m) + ":" + pad(s), cs: "." + pad(cs) };
 }
 const swStr = ms => { const f = swFmt(ms); return f.main + f.cs; };
-const hDur = ms => { const m = Math.round(ms / 60000); return Math.floor(m / 60) + " h " + pad(m % 60) + " m"; };
+const hDur = ms => { const m = Math.round(ms / 60000); return tr("{h} h {m} m", { h: Math.floor(m / 60), m: pad(m % 60) }); };
 /* "Today", "Tomorrow" or the weekday name */
-function whenDay(ms) {
+const dayDiff = ms => {
   const d = new Date(ms), t = new Date(now());
-  const diff = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(t.getFullYear(), t.getMonth(), t.getDate())) / 86400000);
-  return diff === 0 ? "Today" : diff === 1 ? "Tomorrow" : d.toLocaleDateString("en-GB", { weekday: "long" });
-}
+  return Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(t.getFullYear(), t.getMonth(), t.getDate())) / 86400000);
+};
+const weekday = ms => new Date(ms).toLocaleDateString(LOCALE, { weekday: "long" });
+function whenDay(ms) { const diff = dayDiff(ms); return diff === 0 ? tr("Today") : diff === 1 ? tr("Tomorrow") : weekday(ms); }
 /* the same, for the middle of a sentence: "today", "tomorrow", "Friday" */
-const dayWord = ms => { const w = whenDay(ms); return w === "Today" || w === "Tomorrow" ? w.toLowerCase() : w; };
+const dayWord = ms => { const diff = dayDiff(ms); return diff === 0 ? tr("today") : diff === 1 ? tr("tomorrow") : weekday(ms); };
 
 const partsCache = {};
 function tzParts(tz, ms) {
@@ -227,21 +239,22 @@ window.horaClock = (n, lo, hi) => {
 function paintBadge() {
   const b = $("#sync"), t = $("#syncTxt"); b.className = "badge";
   let acc;
-  if (SYNC === "idle") { b.classList.add("idle"); t.textContent = "Checking clock…"; acc = "Checking your clock against the internet's…"; }
+  if (SYNC === "idle") { b.classList.add("idle"); t.textContent = tr("Checking clock…"); acc = tr("Checking your clock against the internet's…"); }
   else if (SYNC === "fail") {
-    b.classList.add("idle"); t.textContent = "Device clock";
-    acc = "Hora couldn't reach a time source just now, so it's showing your device's own clock. Phones usually sync themselves and are within a fraction of a second, but Hora won't claim that without checking.";
+    b.classList.add("idle"); t.textContent = tr("Device clock");
+    acc = tr("Hora couldn't reach a time source just now, so it's showing your device's own clock. Phones usually sync themselves and are within a fraction of a second, but Hora won't claim that without checking.");
   } else {
     const OFF = DEMO ? 120 : OFFSET(), a = Math.abs(OFF) / 1000, u = Math.max(UNC, 50) / 1000;
-    if (Math.abs(OFF) <= Math.max(UNC, 500)) t.textContent = "On time ±" + u.toFixed(1) + " s";
-    else { b.classList.add("warn"); t.textContent = a.toFixed(1) + " s " + (OFF > 0 ? "slow" : "fast") + (S.correct ? " · fixed" : ""); }
-    acc = "Hora compared your device with an internet clock several times. Your device is <b>" + a.toFixed(2) + " s " + (OFF >= 0 ? "slow" : "fast") +
-      "</b>, give or take " + u.toFixed(2) + " s. " + (S.correct ? "The time on screen, alarms and timers are corrected for this." : "Correction is off, so you're seeing the device's own time.") +
-      " The time source only gives whole seconds, which is why there's a margin. Alarms are rounded to the minute anyway.";
+    if (Math.abs(OFF) <= Math.max(UNC, 500)) t.textContent = tr("On time ±{s} s", { s: u.toFixed(1) });
+    else { b.classList.add("warn"); t.textContent = (OFF > 0 ? tr("{s} s slow", { s: a.toFixed(1) }) : tr("{s} s fast", { s: a.toFixed(1) })) + (S.correct ? " · " + tr("fixed") : ""); }
+    acc = (OFF >= 0 ? tr("Hora compared your device with an internet clock several times. Your device is <b>{s} s slow</b>, give or take {u} s.", { s: a.toFixed(2), u: u.toFixed(2) })
+      : tr("Hora compared your device with an internet clock several times. Your device is <b>{s} s fast</b>, give or take {u} s.", { s: a.toFixed(2), u: u.toFixed(2) })) + " " +
+      (S.correct ? tr("The time on screen, alarms and timers are corrected for this.") : tr("Correction is off, so you're seeing the device's own time.")) + " " +
+      tr("The time source only gives whole seconds, which is why there's a margin. Alarms are rounded to the minute anyway.");
   }
   $("#accText").innerHTML = acc;
 }
-$("#sync").onclick = () => openSheet(nav("Clock accuracy", "", "Done") + `<div class="kind" style="text-align:center">${$("#syncTxt").textContent}</div><div class="honest">${$("#accText").innerHTML}</div><div class="acts"><button class="btn wide" id="sAgain">Check again</button></div>`, () => { $("#sAgain").onclick = () => { closeSheet(); sync(); }; });
+$("#sync").onclick = () => openSheet(nav(tr("Clock accuracy"), "", tr("Done")) + `<div class="kind" style="text-align:center">${$("#syncTxt").textContent}</div><div class="honest">${$("#accText").innerHTML}</div><div class="acts"><button class="btn wide" id="sAgain">${tr("Check again")}</button></div>`, () => { $("#sAgain").onclick = () => { closeSheet(); sync(); }; });
 $("#resync").onclick = () => sync();
 
 /* ---------- sun & sky ---------- */
@@ -465,6 +478,7 @@ const SOUNDS = {
   kitchen: { name: "Kitchen",      voice: "beep",  notes: [[27, 0], [27, .08], [27, .16], [27, .24], [27, .32], [27, .4], [27, .48], [27, .56]], len: .05 }
 };
 const ALARM_SOUNDS = ["glass", "dawn", "keys", "kalimba", "rise", "marimba", "harp", "lumen", "bowl", "birds", "crystal", "pulse"];
+named(SOUNDS);
 const TIMER_SOUNDS = ["ding", "kalimba", "marimba", "glass", "crystal", "harp", "bowl", "pulse", "kitchen"];
 function playSound(name, vol = .8, at, ctx) {
   const a = ctx || ac(); if (!a) return;
@@ -488,6 +502,7 @@ const VIBS = {
   strong: { name: "Strong",    p: [700, 300, 700, 300] }
 };
 const vibLen = k => (VIBS[k] || VIBS.pulse).p.reduce((a, b) => a + b, 0);
+named(VIBS);
 function buzz(k) { const p = (VIBS[k] || VIBS.pulse).p; if (p.length && navigator.vibrate) navigator.vibrate(p); }
 /* the user's own audio files */
 let AUD = null, AUDTO = null;
@@ -501,7 +516,7 @@ async function playFile(key, vol, loop, maxMs) {
   return true;
 }
 function preview(sound, key) { stopFile(); if (sound === "custom") playFile(key, .8, false, 7000); else playSound(sound, .7); }
-const soundName = (sound, fileName) => sound === "custom" ? (fileName || "Your sound") : (SOUNDS[sound] || SOUNDS.glass).name;
+const soundName = (sound, fileName) => sound === "custom" ? (fileName || tr("Your sound")) : (SOUNDS[sound] || SOUNDS.glass).name;
 /* In the Android app, Android itself plays a ringing alarm, so it sounds even when Hora can't open (for example while
    you're using another app). Each built-in sound is rendered once into a seamless loop and handed over as a WAV;
    your own songs are handed over as they are. */
@@ -554,10 +569,10 @@ function syncSounds(list) {
 }
 /* a picker grid shared by the alarm editor, sleep and the timer sheet; the last row picks any song on the phone */
 const WAVE = `<svg viewBox="0 0 24 12"><path d="M1 6h2M5 3v6M8 1v10M11 4v4M14 2v8M17 4v4M20 3v6M23 6h0"/></svg>`;
-const fileSub = fileName => fileName ? "Your song · tap to play it, or Change" : "Pick any song or audio file on this phone";
+const fileSub = fileName => fileName ? tr("Your song · tap to play it, or Change") : tr("Pick any song or audio file on this phone");
 function soundGrid(list, cur, fileName, id) {
   return `<div class="snds" id="${id}">` + list.map(k => `<div class="snd ${cur === k ? "on" : ""}" data-k="${k}">${WAVE}<b>${SOUNDS[k].name}</b></div>`).join("") +
-    `<label class="snd file ${cur === "custom" ? "on" : ""}" data-k="custom"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span class="ft"><b>${fileName ? esc(fileName) : "Your own song"}</b><small>${fileSub(fileName)}</small></span><span class="pick">${fileName ? "Change" : "Choose"}</span><input type="file" accept="audio/*"></label></div>`;
+    `<label class="snd file ${cur === "custom" ? "on" : ""}" data-k="custom"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span class="ft"><b>${fileName ? esc(fileName) : tr("Your own song")}</b><small>${fileSub(fileName)}</small></span><span class="pick">${fileName ? tr("Change") : tr("Choose")}</span><input type="file" accept="audio/*"></label></div>`;
 }
 function bindSoundGrid(id, key, get, set) {
   const root = $("#" + id), paint = () => $$("#" + id + " .snd").forEach(x => x.classList.toggle("on", x.dataset.k === get().sound));
@@ -568,12 +583,12 @@ function bindSoundGrid(id, key, get, set) {
   file.onclick = e => { if (e.target === inp || e.target.closest(".pick")) return; if (get().fileName && get().sound !== "custom") { e.preventDefault(); set({ sound: "custom" }); paint(); preview("custom", key); } };
   inp.onchange = async () => {
     const f = inp.files[0]; if (!f) return;
-    if (f.size > 40 * 1024 * 1024) { toast("That file is over 40 MB"); return; }
+    if (f.size > 40 * 1024 * 1024) { toast(tr("That file is over 40 MB")); return; }
     const kept = await SC.media.put(key, f), nm = f.name.replace(/\.[^.]+$/, "").slice(0, 26);
     set({ sound: "custom", fileName: nm, fileAt: Date.now() });
-    file.querySelector("b").textContent = nm; file.querySelector("small").textContent = fileSub(nm); file.querySelector(".pick").textContent = "Change";
+    file.querySelector("b").textContent = nm; file.querySelector("small").textContent = fileSub(nm); file.querySelector(".pick").textContent = tr("Change");
     paint(); preview("custom", key);
-    toast(kept ? "Song set" : "Set for now, but this browser won't keep it after closing");
+    toast(kept ? tr("Song set") : tr("Set for now, but this browser won't keep it after closing"));
   };
 }
 const SC = window.HoraScenes;
@@ -587,7 +602,7 @@ function toast(msg, act, fn) {
 }
 let onSheetClose = null;
 /* iOS-style sheet top bar: left action, title, right action */
-const nav = (title, left = "Cancel", right = "") => `<div class="snav"><a id="snL">${left}</a><b>${title}</b><a class="r" id="snR">${right}</a></div>`;
+const nav = (title, left = tr("Cancel"), right = "") => `<div class="snav"><a id="snL">${left}</a><b>${title}</b><a class="r" id="snR">${right}</a></div>`;
 function openSheet(html, after) {
   $("#sheetBody").innerHTML = html; $("#scrim").classList.add("show"); $("#sheet").classList.add("show"); $("#sheet").scrollTop = 0;
   requestAnimationFrame(() => {
@@ -692,23 +707,26 @@ function renderFace() {
     $("#aH").setAttribute("transform", `rotate(${hh * 30} 120 120)`);
     $("#aM").setAttribute("transform", `rotate(${mm * 6} 120 120)`);
     $("#aS").setAttribute("transform", `rotate(${Math.floor(s * 4) / 4 * 6} 120 120)`);
-    const dt = d.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase() + " " + d.getDate();
+    const dt = d.toLocaleDateString(LOCALE, { weekday: "short" }).toLocaleUpperCase(LOCALE) + " " + d.getDate();
     if ($("#aDate").textContent !== dt) $("#aDate").textContent = dt;
     const w = wxNow(); $("#aWx").textContent = w ? w.temp : "";
   } else if (S.font === "solid" || S.font === "crust") {
     const html = fmtHM(h, m) + (S.secs ? `<span class="ss">${pad(Math.floor(s))}</span>` : "") + (S.h24 ? "" : `<span class="ap">${apOf(h)}</span>`);
     if ($("#digi").dataset.f !== S.font || $("#digi").innerHTML !== html) { $("#digi").innerHTML = html; $("#digi").dataset.f = S.font; fitDigi(); }
   } else lineTime($("#digi"), fmtHM(h, m), S.secs ? pad(Math.floor(s)) : "", apOf(h));
-  const dl = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const dl = longDate(d);
   if ($("#dateLine").textContent !== dl) $("#dateLine").textContent = dl;
 }
 $("#face").onclick = () => { S.analog = !S.analog; save(); tick(); renderFace(); };
 
 /* ---------- weather (Open-Meteo: free, no account, no key) ---------- */
 const WX = { data: null, at: 0, busy: false };
-const WMO = c => c === 0 ? ["Clear", "clear"] : c === 1 ? ["Mostly clear", "clear"] : c === 2 ? ["Partly cloudy", "part"] : c === 3 ? ["Cloudy", "cloud"]
+const WMO = c => c === 0 ? ["Clear sky", "clear"] : c === 1 ? ["Mostly clear", "clear"] : c === 2 ? ["Partly cloudy", "part"] : c === 3 ? ["Cloudy", "cloud"]
   : c <= 48 ? ["Fog", "fog"] : c <= 57 ? ["Drizzle", "rain"] : c <= 65 ? [c === 65 ? "Heavy rain" : c === 61 ? "Light rain" : "Rain", "rain"] : c <= 67 ? ["Freezing rain", "rain"]
   : c <= 77 ? ["Snow", "snow"] : c <= 82 ? ["Showers", "rain"] : c <= 86 ? ["Snow showers", "snow"] : ["Thunderstorm", "storm"];
+/* "Thursday 5 November", in the chosen language */
+// Gregorian with Western digits in every language, to match the clock faces and the day numbers elsewhere
+const longDate = d => d.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long", calendar: "gregory", numberingSystem: "latn" });
 const CLOUD = `<path d="M7.5 19h9.2a4.1 4.1 0 0 0 .6-8.15A5.6 5.6 0 0 0 6.6 11.2 3.95 3.95 0 0 0 7.5 19z" fill="rgba(255,255,255,.92)"/>`;
 function wxIcon(kind, day) {
   const sun = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffcc5c"/>` + Array.from({ length: 8 }, (_, i) => { const a = i * 45 * RAD; return `<line x1="${cx + Math.cos(a) * (r + 2)}" y1="${cy + Math.sin(a) * (r + 2)}" x2="${cx + Math.cos(a) * (r + 4)}" y2="${cy + Math.sin(a) * (r + 4)}" stroke="#ffcc5c" stroke-width="1.6" stroke-linecap="round"/>`; }).join("");
@@ -728,7 +746,7 @@ const deg = c => Math.round(S.fahr ? c * 9 / 5 + 32 : c) + "°";
 function wxNow() {
   const d = WX.data; if (!d || !d.current || !S.weather) return null;
   const [name, kind] = WMO(d.current.weather_code);
-  return { temp: deg(d.current.temperature_2m), feels: deg(d.current.apparent_temperature), name, kind, day: !!d.current.is_day,
+  return { temp: deg(d.current.temperature_2m), feels: deg(d.current.apparent_temperature), name: tr(name), kind, day: !!d.current.is_day,
     hi: d.daily ? deg(d.daily.temperature_2m_max[0]) : "", lo: d.daily ? deg(d.daily.temperature_2m_min[0]) : "" };
 }
 async function loadWeather(force) {
@@ -754,24 +772,24 @@ function wxHours(n) {
 }
 function rainHint() {
   const hs = wxHours(12), w = hs.find((x, j) => j > 0 && x.p >= 50 && WMO(x.c)[1] !== "snow");
-  return w ? "Rain likely around " + fmtHM(w.h, 0) : "";
+  return w ? tr("Rain likely around {time}", { time: fmtHM(w.h, 0) }) : "";
 }
 function renderWx() {
   const b = $("#wx"), w = wxNow();
   if (!w) { b.hidden = true; $("#rW").innerHTML = ""; return; }
   b.hidden = false;
-  const h = `${wxIcon(w.kind, w.day)}${w.temp} <span>${w.name} · H ${w.hi} L ${w.lo}</span><i>›</i>`;
+  const h = `${wxIcon(w.kind, w.day)}${w.temp} <span>${w.name} · ${tr("H {hi} L {lo}", { hi: w.hi, lo: w.lo })}</span><i>›</i>`;
   if (b.innerHTML !== h) b.innerHTML = h;
-  $("#rW").innerHTML = `${wxIcon(w.kind, w.day)}${w.temp} · ${w.name} in Gliwice`;
+  $("#rW").innerHTML = `${wxIcon(w.kind, w.day)}${tr("{temp} · {sky} in Gliwice", { temp: w.temp, sky: w.name })}`;
 }
 $("#wx").onclick = () => {
   const w = wxNow(); if (!w) return;
   const hs = wxHours(13), when = new Date(WX.at), hint = rainHint();
-  openSheet(nav("Weather", "", "Done") + `
-    <div class="wxbig">${wxIcon(w.kind, w.day)}<div><b>${w.temp}</b><span>${w.name} · feels like ${w.feels}<br>High ${w.hi} · Low ${w.lo}</span></div></div>
+  openSheet(nav(tr("Weather"), "", tr("Done")) + `
+    <div class="wxbig">${wxIcon(w.kind, w.day)}<div><b>${w.temp}</b><span>${tr("{sky} · feels like {temp}", { sky: w.name, temp: w.feels })}<br>${tr("High {hi} · Low {lo}", { hi: w.hi, lo: w.lo })}</span></div></div>
     ${hint ? `<div class="honest" style="margin-bottom:14px">☂ <b>${hint}.</b></div>` : ""}
-    <div class="hours">${hs.map((x, j) => `<div class="hr"><span>${j ? fmtHM(x.h, 0) : "Now"}</span>${wxIcon(WMO(x.c)[1], x.day)}<b>${deg(x.t)}</b><small>${x.p >= 20 ? x.p + "%" : ""}</small></div>`).join("")}</div>
-    <div style="font-size:12px;color:var(--fg2);margin-top:14px;text-align:center">Gliwice · from Open-Meteo, updated ${hmA(when)}</div>`);
+    <div class="hours">${hs.map((x, j) => `<div class="hr"><span>${j ? fmtHM(x.h, 0) : tr("Now")}</span>${wxIcon(WMO(x.c)[1], x.day)}<b>${deg(x.t)}</b><small>${x.p >= 20 ? x.p + "%" : ""}</small></div>`).join("")}</div>
+    <div style="font-size:12px;color:var(--fg2);margin-top:14px;text-align:center">${tr("Gliwice · from Open-Meteo, updated {time}", { time: hmA(when) })}</div>`);
 };
 
 /* ---------- daylight, moon + hero stats ---------- */
@@ -780,7 +798,7 @@ const dayStart = ms => { const d = new Date(ms); return new Date(d.getFullYear()
 function moonAt(ms) {
   const syn = 29.530588853, age = (((ms - Date.UTC(2000, 0, 6, 18, 14)) / 86400000) % syn + syn) % syn, ph = age / syn;
   const lit = Math.round((1 - Math.cos(ph * TAU)) / 2 * 100);
-  const name = ph < .03 || ph > .97 ? "New moon" : ph < .22 ? "Waxing crescent" : ph < .28 ? "First quarter" : ph < .47 ? "Waxing gibbous" : ph < .53 ? "Full moon" : ph < .72 ? "Waning gibbous" : ph < .78 ? "Last quarter" : "Waning crescent";
+  const name = tr(ph < .03 || ph > .97 ? "New moon" : ph < .22 ? "Waxing crescent" : ph < .28 ? "First quarter" : ph < .47 ? "Waxing gibbous" : ph < .53 ? "Full moon" : ph < .72 ? "Waning gibbous" : ph < .78 ? "Last quarter" : "Waning crescent");
   return { lit, name, ph };
 }
 /* the lit part of the moon as seen from the north */
@@ -799,11 +817,11 @@ function renderSun() {
   const { rise, set, gold, tRise } = SUN;
   $("#rise").textContent = rise ? hmA(new Date(rise)) : "—"; $("#set").textContent = set ? hmA(new Date(set)) : "—";
   let big, f, day = rise && set && n >= rise && n < set;
-  if (day) { big = dur(set - n) + " of daylight left"; f = (n - rise) / (set - rise); }
-  else if (rise && n < rise) { big = "Sunrise in " + dur(rise - n); f = null; }
-  else { big = "Sunrise in " + dur((tRise || n) - n); f = null; }
+  if (day) { big = tr("{time} of daylight left", { time: dur(set - n) }); f = (n - rise) / (set - rise); }
+  else if (rise && n < rise) { big = tr("Sunrise in {time}", { time: dur(rise - n) }); f = null; }
+  else { big = tr("Sunrise in {time}", { time: dur((tRise || n) - n) }); f = null; }
   $("#sunBig").textContent = big;
-  $("#goldTxt").textContent = gold && n < gold ? "Golden hour " + hmA(new Date(gold)) : gold && set && n >= gold && n < set ? "Golden hour now" : rise && set ? "Day length " + hDur(set - rise) : "";
+  $("#goldTxt").textContent = gold && n < gold ? tr("Golden hour {time}", { time: hmA(new Date(gold)) }) : gold && set && n >= gold && n < set ? tr("Golden hour now") : rise && set ? tr("Day length {time}", { time: hDur(set - rise) }) : "";
   const mo = moonAt(n); $("#moonTxt").innerHTML = moonSvg(mo.ph) + mo.name + " · " + mo.lit + "%";
   const P0 = [16, 70], P1 = [160, -18], P2 = [304, 70];
   let sx, sy, op = 1;
@@ -826,9 +844,9 @@ function renderSun() {
 function renderHero(n) {
   const { rise, set } = SUN, nx = nextAlarm();
   const T = [
-    [`<em style="color:var(--warn)">▲</em>Sunrise`, rise ? hmA(new Date(rise)) : "—"],
-    [`<em style="color:#8fd6ff">▼</em>Sunset`, set ? hmA(new Date(set)) : "—"],
-    [nx ? "Alarm · in " + dur(nx.at - n) : "Next alarm", nx ? hmA(new Date(nx.at)) : "Off"]
+    [`<em style="color:var(--warn)">▲</em>${tr("Sunrise")}`, rise ? hmA(new Date(rise)) : "—"],
+    [`<em style="color:#8fd6ff">▼</em>${tr("Sunset")}`, set ? hmA(new Date(set)) : "—"],
+    [nx ? tr("Alarm · in {time}", { time: dur(nx.at - n) }) : tr("Next alarm"), nx ? hmA(new Date(nx.at)) : tr("Off")]
   ];
   const h = T.map(([k, v]) => `<div class="hm"><b>${v}</b><span>${k}</span></div>`).join("");
   if ($("#hGrid").innerHTML !== h) $("#hGrid").innerHTML = h;
@@ -956,21 +974,21 @@ function miniClock(h, m, top, bot, night) {
 }
 function renderWorld() {
   const n = now(), at = n + R.shift * 60000, sh = Math.round(R.shift);
-  if (Math.abs(sh) < 1) { $("#tLabel").textContent = "Now"; $("#tDelta").textContent = "drag to plan across time zones"; $("#tNow").style.display = "none"; }
-  else { $("#tLabel").textContent = (sh > 0 ? "+" : "−") + dur(Math.abs(sh) * 60000).replace("under a minute", "0 m"); $("#tDelta").textContent = hmA(new Date(at)) + " in Gliwice"; $("#tNow").style.display = "inline-block"; }
+  if (Math.abs(sh) < 1) { $("#tLabel").textContent = tr("Now"); $("#tDelta").textContent = tr("drag to plan across time zones"); $("#tNow").style.display = "none"; }
+  else { $("#tLabel").textContent = (sh > 0 ? "+" : "−") + dur(Math.abs(sh) * 60000); $("#tDelta").textContent = tr("{time} in Gliwice", { time: hmA(new Date(at)) }); $("#tNow").style.display = "inline-block"; }
   const lkey = localKey(at), loff = -new Date(at).getTimezoneOffset();
   let h = "";
   S.cities.forEach(c => {
     const tz = c.tz;
     const p = tzParts(tz, at), hr = +p.hour % 24, mi = +p.minute, key = p.year + p.month + p.day;
     const diff = (tzOffsetMin(tz, at) - loff) / 60;
-    const day = key === lkey ? "Today" : (key > lkey ? "Tomorrow" : "Yesterday");
-    const ds = diff === 0 ? "same time" : (diff > 0 ? "+" : "−") + Math.abs(diff) + " h";
+    const day = key === lkey ? tr("Today") : (key > lkey ? tr("Tomorrow") : tr("Yesterday"));
+    const ds = diff === 0 ? tr("same time") : (diff > 0 ? "+" : "−") + tr("{h} h", { h: Math.abs(diff) });
     const alt = sunAlt(at, c.lat, c.lon), [tp, bt] = skyFor(alt);
-    const awake = hr >= 8 && hr < 22 ? (hr >= 9 && hr < 18 ? `<span class="pill">Work hours</span>` : `<span class="pill dim">Awake</span>`) : `<span class="pill amber">Asleep</span>`;
-    h += `<div class="row">${miniClock(hr, mi, tp, bt, alt < 0)}<div class="tx"><b>${esc(c.name)}</b><span>${day}, ${ds} &nbsp;${awake}</span></div><div class="rt">${fmtHM(hr, mi)}${S.h24 ? "" : `<small>${apOf(hr)}</small>`}</div></div>`;
+    const awake = hr >= 8 && hr < 22 ? (hr >= 9 && hr < 18 ? `<span class="pill">${tr("Work hours")}</span>` : `<span class="pill dim">${tr("Awake")}</span>`) : `<span class="pill amber">${tr("Asleep")}</span>`;
+    h += `<div class="row">${miniClock(hr, mi, tp, bt, alt < 0)}<div class="tx"><b>${esc(c.name)}</b><span>${day} · ${ds} &nbsp;${awake}</span></div><div class="rt">${fmtHM(hr, mi)}${S.h24 ? "" : `<small>${apOf(hr)}</small>`}</div></div>`;
   });
-  if (!S.cities.length) h = `<div class="empty">No cities yet. Tap Edit to add any city or town.</div>`;
+  if (!S.cities.length) h = `<div class="empty">${tr("No cities yet. Tap Edit to add any city or town.")}</div>`;
   if ($("#world").innerHTML !== h) $("#world").innerHTML = h;
 }
 /* Search any city or town in the world (Open-Meteo geocoding: free, no account). Offline, it falls back to the built-in list. */
@@ -978,7 +996,7 @@ const cityKey = c => c.name + "|" + c.tz + "|" + Math.round(c.lat * 10) + "," + 
 const cityTime = (tz, n) => { const p = tzParts(tz, n), hr = +p.hour % 24; return fmtHM(hr, +p.minute) + (S.h24 ? "" : `<small>${apOf(hr)}</small>`); };
 async function findCities(q) {
   try {
-    const r = await fetch("https://geocoding-api.open-meteo.com/v1/search?count=20&language=en&format=json&name=" + encodeURIComponent(q), { cache: "no-store" });
+    const r = await fetch("https://geocoding-api.open-meteo.com/v1/search?count=20&format=json&language=" + LANG + "&name=" + encodeURIComponent(q), { cache: "no-store" });
     const d = await r.json();
     return (d.results || []).filter(x => x.timezone && validTz(x.timezone))
       .map(x => ({ name: x.name, sub: [x.admin1, x.country].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i && v !== x.name).join(", "), tz: x.timezone, lat: x.latitude, lon: x.longitude }));
@@ -988,15 +1006,15 @@ async function findCities(q) {
   }
 }
 $("#editCities").onclick = () => {
-  openSheet(nav("World clocks", "", "Done") + `<input class="field" id="cq" placeholder="Search any city or town" autocomplete="off" enterkeyhint="search">
-    <div class="lab" id="clLab">Your cities</div><div class="cityl" id="cl"></div>`, () => {
+  openSheet(nav(tr("World clocks"), "", tr("Done")) + `<input class="field" id="cq" placeholder="${tr("Search any city or town")}" autocomplete="off" enterkeyhint="search">
+    <div class="lab" id="clLab">${tr("Your cities")}</div><div class="cityl" id="cl"></div>`, () => {
     let seq = 0, timer = null;
     const mine = () => {
       const n = now();
-      $("#clLab").textContent = "Your cities";
+      $("#clLab").textContent = tr("Your cities");
       $("#cl").innerHTML = S.cities.map((c, i) => `<div class="row" data-i="${i}"><div class="tx"><b>${esc(c.name)}</b><span>${esc(c.sub || c.tz.split("/").pop().replace(/_/g, " "))}</span></div><div class="rt" style="font-size:18px">${cityTime(c.tz, n)}</div>
-        ${i ? `<button class="tpp" data-up title="Move up">↑</button>` : ""}<button class="xdel" data-x title="Remove">✕</button></div>`).join("")
-        || `<div class="empty">Search above to add a city, town or village anywhere in the world.</div>`;
+        ${i ? `<button class="tpp" data-up title="${tr("Move up")}">↑</button>` : ""}<button class="xdel" data-x title="${tr("Remove")}">✕</button></div>`).join("")
+        || `<div class="empty">${tr("Search above to add a city, town or village anywhere in the world.")}</div>`;
       $$("#cl .row").forEach(r => {
         const i = +r.dataset.i;
         r.querySelector("[data-x]").onclick = () => { S.cities.splice(i, 1); save(); tick(.8); mine(); renderWorld(); drawMap(); };
@@ -1005,7 +1023,7 @@ $("#editCities").onclick = () => {
     };
     const results = list => {
       const n = now();
-      $("#clLab").textContent = list.length ? "Results" : "No places found";
+      $("#clLab").textContent = list.length ? tr("Results") : tr("No places found");
       $("#cl").innerHTML = list.map((c, i) => {
         const on = S.cities.some(x => cityKey(x) === cityKey(c));
         return `<div class="row" data-i="${i}"><div class="check ${on ? "on" : ""}">${on ? "✓" : ""}</div><div class="tx"><b>${esc(c.name)}</b><span>${esc(c.sub || "")}</span></div><div class="rt" style="font-size:18px">${cityTime(c.tz, n)}</div></div>`;
@@ -1013,14 +1031,14 @@ $("#editCities").onclick = () => {
       $$("#cl .row").forEach(r => r.onclick = () => {
         const c = list[r.dataset.i], k = S.cities.findIndex(x => cityKey(x) === cityKey(c));
         if (k >= 0) S.cities.splice(k, 1);
-        else { if (S.cities.length >= 20) return toast("Up to 20 cities"); S.cities.push(c); toast(c.name + " added"); }
+        else { if (S.cities.length >= 20) return toast(tr("Up to 20 cities")); S.cities.push(c); toast(tr("{name} added", { name: c.name })); }
         save(); tick(); results(list); renderWorld(); drawMap();
       });
     };
     $("#cq").oninput = () => {
       clearTimeout(timer); const q = $("#cq").value.trim();
       if (q.length < 2) { seq++; mine(); return; }
-      $("#clLab").textContent = "Searching…";
+      $("#clLab").textContent = tr("Searching…");
       timer = setTimeout(async () => { const my = ++seq, list = await findCities(q); if (my === seq) results(list); }, 280);
     };
     mine();
@@ -1033,7 +1051,6 @@ const NEXT = {}; let SNOOZES = [];
 function saveSnoozes() { try { localStorage.setItem("hora-snz", JSON.stringify(SNOOZES.map(s => ({ at: s.at, id: s.a.id, auto: s.auto || 0 })))); } catch (e) {} schedNative(); }
 function addSnooze(s) { SNOOZES.push(s); saveSnoozes(); }
 try { SNOOZES = JSON.parse(localStorage.getItem("hora-snz") || "[]").map(s => ({ at: s.at, a: S.alarms.find(a => a.id === s.id), auto: s.auto })).filter(s => s.a); } catch (e) { SNOOZES = []; }
-const DAYN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const newAlarm = o => Object.assign({ id: Date.now(), h: 7, m: 0, label: "", days: [0,0,0,0,0,0,0], on: true, sound: "glass", gentle: true, snooze: 9, scene: "sunrise", vib: "pulse", ringFor: 10, after: "snooze" }, o);
 function nextAt(a, from) {
   const b = new Date(from), any = a.days.some(Boolean);
@@ -1054,10 +1071,10 @@ function recalcAlarms() {
 }
 function daysText(a) {
   const d = a.days, c = d.filter(Boolean).length;
-  if (!c) return "Once";
-  if (c === 7) return "Every day";
-  if (c === 5 && d.slice(0, 5).every(Boolean)) return "Weekdays";
-  if (c === 2 && d[5] && d[6]) return "Weekends";
+  if (!c) return tr("Once");
+  if (c === 7) return tr("Every day");
+  if (c === 5 && d.slice(0, 5).every(Boolean)) return tr("Weekdays");
+  if (c === 2 && d[5] && d[6]) return tr("Weekends");
   return DAYN.filter((_, i) => d[i]).join(", ");
 }
 function nextAlarm() {
@@ -1074,22 +1091,22 @@ const ICN = {
 };
 function renderAlarms() {
   const n = now(), nx = nextAlarm();
-  $("#aNext").innerHTML = nx ? `<b>${nx.snoozed ? "Snoozed, rings again" : "Alarm"} in ${dur(nx.at - n)}</b><span>${esc(nx.a.label || "Alarm")} · ${whenDay(nx.at)} at ${hmA(new Date(nx.at))}</span>`
-    : `<b>No alarms on</b><span>Tap + to add one</span>`;
+  $("#aNext").innerHTML = nx ? `<b>${nx.snoozed ? tr("Snoozed, rings again in {time}", { time: dur(nx.at - n) }) : tr("Alarm in {time}", { time: dur(nx.at - n) })}</b><span>${tr("{name} · {day} at {time}", { name: esc(nx.a.label || tr("Alarm")), day: whenDay(nx.at), time: hmA(new Date(nx.at)) })}</span>`
+    : `<b>${tr("No alarms on")}</b><span>${tr("Tap + to add one")}</span>`;
   renderSleepCard();
   const list = S.alarms.filter(a => !a.sleep).sort((a, b) => a.h * 60 + a.m - (b.h * 60 + b.m));
   let h = list.map(a => {
     const d = new Date(2000, 0, 1, a.h, a.m), rep = a.days.some(Boolean);
-    const when = a.on && NEXT[a.id] ? "in " + dur(NEXT[a.id] - n) : "Off";
-    const days = rep ? DAYN.map((x, i) => `<i class="${a.days[i] ? "on" : ""}">${x[0]}</i>`).join("") : `<span class="once">Once · ${a.on && NEXT[a.id] ? whenDay(NEXT[a.id]) : "not set"}</span>`;
-    const skip = a.on && a.skip ? `<span class="pill amber">Skipping ${new Date(a.skip).toLocaleDateString("en-GB", { weekday: "short" })}</span>` : "";
-    return `<div class="aw" data-id="${a.id}"><div class="acts">${rep && a.on ? `<button class="skipb" data-act="skip">${ICN.skip}${a.skip ? "Unskip" : "Skip next"}</button>` : ""}<button class="delb" data-act="del">${ICN.del}Delete</button></div>
+    const when = a.on && NEXT[a.id] ? tr("in {time}", { time: dur(NEXT[a.id] - n) }) : tr("Off");
+    const days = rep ? DAYI.map((x, i) => `<i class="${a.days[i] ? "on" : ""}">${x}</i>`).join("") : `<span class="once">${tr("Once")} · ${a.on && NEXT[a.id] ? whenDay(NEXT[a.id]) : tr("not set")}</span>`;
+    const skip = a.on && a.skip ? `<span class="pill amber">${tr("Skipping {day}", { day: new Date(a.skip).toLocaleDateString(LOCALE, { weekday: "short" }) })}</span>` : "";
+    return `<div class="aw" data-id="${a.id}"><div class="acts">${rep && a.on ? `<button class="skipb" data-act="skip">${ICN.skip}${a.skip ? tr("Unskip") : tr("Skip next")}</button>` : ""}<button class="delb" data-act="del">${ICN.del}${tr("Delete")}</button></div>
       <div class="card alarm ${a.on ? "" : "off"}" data-sc="${a.scene || "sunrise"}${a.mv || ""}"><div class="vis"></div><div class="shade"></div>
       <div class="al-top"><div class="at">${hm(d)}${S.h24 ? "" : `<small>${ampm(d)}</small>`}</div><div class="sw-t ${a.on ? "on" : ""}" data-tg></div></div>
-      <div class="al-mid"><b>${esc(a.label || "Alarm")}</b><span>${when} · ${esc(soundName(a.sound, a.fileName))}</span></div>
+      <div class="al-mid"><b>${esc(a.label || tr("Alarm"))}</b><span>${when} · ${esc(soundName(a.sound, a.fileName))}</span></div>
       <div class="al-days">${days}${skip}</div></div></div>`;
   }).join("");
-  if (!list.length) h = `<div class="card empty">No alarms yet. Tap + to add one.</div>`;
+  if (!list.length) h = `<div class="card empty">${tr("No alarms yet. Tap + to add one.")}</div>`;
   if ($("#alarmList").dataset.h === h) return;
   $("#alarmList").innerHTML = h; $("#alarmList").dataset.h = h;
   $$("#alarmList .aw").forEach(wrap => {
@@ -1098,7 +1115,7 @@ function renderAlarms() {
     SC.visual(el.querySelector(".vis"), a, { fps: 20, dpr: 1.5 });
     el.querySelector("[data-tg]").onclick = e => {
       e.stopPropagation(); a.on = !a.on; if (!a.on) a.skip = 0; save(); recalcAlarms(); tick(a.on ? 1.2 : .8);
-      if (a.on) toast("Rings in " + dur(NEXT[a.id] - now())); renderAlarms();
+      if (a.on) toast(tr("Rings in {time}", { time: dur(NEXT[a.id] - now()) })); renderAlarms();
     };
     // swipe left for Skip next and Delete
     let x0 = null, y0 = 0, dx = 0, base = 0, moved = false;
@@ -1116,8 +1133,8 @@ function renderAlarms() {
     el.onclick = e => { if (moved) { moved = false; return; } if (parseFloat(el.style.getPropertyValue("--dx"))) { el.style.setProperty("--dx", "0px"); return; } editAlarm(a); };
     wrap.querySelectorAll(".acts button").forEach(b => b.onclick = () => {
       if (b.dataset.act === "skip") {
-        if (a.skip) { a.skip = 0; toast("Rings as usual"); }
-        else { a.skip = nextAt(a, now()); toast("Skipping " + dayWord(a.skip) + " · next in " + dur(nextRing(a, now()) - now())); }
+        if (a.skip) { a.skip = 0; toast(tr("Rings as usual")); }
+        else { a.skip = nextAt(a, now()); toast(tr("Skipping {day} · next in {time}", { day: dayWord(a.skip), time: dur(nextRing(a, now()) - now()) })); }
         save(); recalcAlarms(); tick(1.2); renderAlarms();
       } else deleteAlarm(a);
     });
@@ -1129,7 +1146,7 @@ function deleteAlarm(a) {
   S.alarms.splice(i, 1); SNOOZES = SNOOZES.filter(s => s.a !== a); saveSnoozes(); save(); recalcAlarms(); tick(.8); renderAll();
   // the scene photo and sound are only removed once Undo has passed
   const t = setTimeout(() => { SC.media.del(a.id); SC.media.del("snd" + a.id); }, 4500);
-  toast("Alarm deleted", "Undo", () => { clearTimeout(t); S.alarms.splice(i, 0, a); save(); recalcAlarms(); renderAll(); });
+  toast(tr("Alarm deleted"), tr("Undo"), () => { clearTimeout(t); S.alarms.splice(i, 0, a); save(); recalcAlarms(); renderAll(); });
 }
 $("#addAlarm").onclick = () => editAlarm(null);
 
@@ -1137,38 +1154,38 @@ function editAlarm(src) {
   const isNew = !src, d = new Date(now() + 3600000);
   const a = src ? JSON.parse(JSON.stringify(src)) : newAlarm({ h: d.getHours(), m: 0 });
   if (!a.scene) a.scene = "sunrise"; if (!a.vib) a.vib = "pulse"; a.ringFor = a.ringFor || 10; a.after = a.after || "snooze";
-  const tiles = Object.entries(SC.SCENES).map(([k, s]) => `<div class="tile ${a.scene === k ? "on" : ""}" data-k="${k}"><div class="vis" style="position:absolute;inset:0"></div><span>${s.name}</span></div>`).join("") +
-    `<label class="tile add ${a.scene === "custom" ? "on" : ""}" data-k="custom"><div class="vis" style="position:absolute;inset:0"></div><div class="plus">＋</div><span>Your photo or video</span><input type="file" accept="image/*,video/*" id="eFile"></label>`;
-  openSheet(nav(isNew ? "New alarm" : "Edit alarm", "Cancel", "Save") + `
+  const tiles = Object.entries(SC.SCENES).map(([k, s]) => `<div class="tile ${a.scene === k ? "on" : ""}" data-k="${k}"><div class="vis" style="position:absolute;inset:0"></div><span>${tr(s.name)}</span></div>`).join("") +
+    `<label class="tile add ${a.scene === "custom" ? "on" : ""}" data-k="custom"><div class="vis" style="position:absolute;inset:0"></div><div class="plus">＋</div><span>${tr("Your photo or video")}</span><input type="file" accept="image/*,video/*" id="eFile"></label>`;
+  openSheet(nav(isNew ? tr("New alarm") : tr("Edit alarm"), tr("Cancel"), tr("Save")) + `
     ${wheel([{ id: "wh", n: 24 }, ":", { id: "wm", n: 60 }])}
     <div class="inline" id="eIn">—</div>
-    ${isNew ? `<div class="chips" style="margin-top:12px;justify-content:center">${[[10, "In 10 min"], [30, "30 min"], [60, "1 hour"], [480, "8 hours"]].map(([m, t]) => `<button class="ch" data-in="${m}">${t}</button>`).join("")}</div>` : ""}
-    <div class="lab">Label</div><input class="field" id="eLabel" maxlength="30" placeholder="Alarm" value="${esc(a.label)}">
-    <div class="lab">Repeat</div>
-    <div class="days" id="eDays">${DAYN.map((x, i) => `<div class="d ${a.days[i] ? "on" : ""}" data-i="${i}">${x[0]}</div>`).join("")}</div>
-    <div class="quick"><a data-q="wd">Weekdays</a><a data-q="we">Weekends</a><a data-q="all">Every day</a><a data-q="none">Once</a></div>
-    <div class="lab">Wake-up scene</div>
+    ${isNew ? `<div class="chips" style="margin-top:12px;justify-content:center">${[[10, tr("In 10 min")], [30, tr("{n} min", { n: 30 })], [60, tr("1 hour")], [480, tr("{n} hours", { n: 8 })]].map(([m, t]) => `<button class="ch" data-in="${m}">${t}</button>`).join("")}</div>` : ""}
+    <div class="lab">${tr("Label")}</div><input class="field" id="eLabel" maxlength="30" placeholder="${tr("Alarm")}" value="${esc(a.label)}">
+    <div class="lab">${tr("Repeat")}</div>
+    <div class="days" id="eDays">${DAYI.map((x, i) => `<div class="d ${a.days[i] ? "on" : ""}" data-i="${i}">${x}</div>`).join("")}</div>
+    <div class="quick"><a data-q="wd">${tr("Weekdays")}</a><a data-q="we">${tr("Weekends")}</a><a data-q="all">${tr("Every day")}</a><a data-q="none">${tr("Once")}</a></div>
+    <div class="lab">${tr("Wake-up scene")}</div>
     <div class="tiles" id="eTiles">${tiles}</div>
-    <div class="lab">Sound</div>
+    <div class="lab">${tr("Sound")}</div>
     ${soundGrid(ALARM_SOUNDS, a.sound, a.fileName, "eSound")}
-    <div class="lab">Vibration</div>
+    <div class="lab">${tr("Vibration")}</div>
     <div class="chips" id="eVib">${Object.entries(VIBS).map(([k, v]) => `<button class="ch" data-v="${k}">${v.name}</button>`).join("")}</div>
-    <div class="lab">Snooze</div>
-    <div class="chips" id="eSnz">${[5, 9, 15].map(m => `<button class="ch" data-m="${m}">${m}<span>min</span></button>`).join("")}<button class="ch" data-m="c">Custom<span id="eSnzC"></span></button></div>
-    <div class="snzc" id="eSnzBox"><button class="stp" data-d="-1" aria-label="Shorter">−</button><div class="snzv"><b id="eSnzV">${a.snooze}</b><span>minutes</span></div><button class="stp" data-d="1" aria-label="Longer">+</button>
+    <div class="lab">${tr("Snooze")}</div>
+    <div class="chips" id="eSnz">${[5, 9, 15].map(m => `<button class="ch" data-m="${m}">${m}<span>${tr("min")}</span></button>`).join("")}<button class="ch" data-m="c">${tr("Custom")}<span id="eSnzC"></span></button></div>
+    <div class="snzc" id="eSnzBox"><button class="stp" data-d="-1" aria-label="${tr("Shorter")}">−</button><div class="snzv"><b id="eSnzV">${a.snooze}</b><span>${tr("minutes")}</span></div><button class="stp" data-d="1" aria-label="${tr("Longer")}">+</button>
       <input type="range" class="rng" id="eSnzR" min="1" max="60" step="1" value="${a.snooze}"></div>
-    <div class="lab">If you don't answer</div>
+    <div class="lab">${tr("If you don't answer")}</div>
     <div class="grp ifno">
-      <div class="srow"><span>Ring for</span><div class="chips" id="eFor" style="margin:0;padding:0;flex:1;justify-content:flex-end">${[1, 3, 5, 10, 15, 30].map(m => `<button class="ch" data-m="${m}" style="height:30px;padding:0 10px">${m}<span>m</span></button>`).join("")}</div></div>
-      <div class="srow"><span>Then</span><div class="seg" id="eAfter" style="width:170px"><div data-v="snooze">Snooze</div><div data-v="stop">Stop</div></div></div>
+      <div class="srow"><span>${tr("Ring for")}</span><div class="chips" id="eFor" style="margin:0;padding:0;flex:1;justify-content:flex-end">${[1, 3, 5, 10, 15, 30].map(m => `<button class="ch" data-m="${m}" style="height:30px;padding:0 10px">${m}<span>${tr("m")}</span></button>`).join("")}</div></div>
+      <div class="srow"><span>${tr("Then")}</span><div class="seg" id="eAfter" style="width:170px"><div data-v="snooze">${tr("Snooze")}</div><div data-v="stop">${tr("Stop")}</div></div></div>
       <small id="eIfTxt"></small>
     </div>
     <div class="grp" style="margin-top:12px">
-      <div class="srow"><div>Gentle wake<small>Starts quiet, louder over 30 seconds</small></div><div class="sw-t ${a.gentle ? "on" : ""}" id="eGentle"></div></div>
+      <div class="srow"><div>${tr("Gentle wake")}<small>${tr("Starts quiet, louder over 30 seconds")}</small></div><div class="sw-t ${a.gentle ? "on" : ""}" id="eGentle"></div></div>
     </div>
-    <div class="acts"><button class="btn ghost wide" id="eTest">Preview</button>${isNew ? "" : `<button class="btn danger wide" id="eDel">Delete</button>`}</div>
+    <div class="acts"><button class="btn ghost wide" id="eTest">${tr("Preview")}</button>${isNew ? "" : `<button class="btn danger wide" id="eDel">${tr("Delete")}</button>`}</div>
   `, () => {
-    const inl = () => { const t = nextAt(a, now()); $("#eIn").innerHTML = t ? `Rings <b>${dayWord(t)}</b> at ${hmA(new Date(t))}, in <b>${dur(t - now())}</b>` : ""; };
+    const inl = () => { const t = nextAt(a, now()); $("#eIn").innerHTML = t ? tr("Rings <b>{day}</b> at {time}, in <b>{left}</b>", { day: dayWord(t), time: hmA(new Date(t)), left: dur(t - now()) }) : ""; };
     const setH = bindWheel("wh", a.h, v => { a.h = v; inl(); }), setM = bindWheel("wm", a.m, v => { a.m = v; inl(); });
     $$("[data-in]").forEach(b => b.onclick = () => { const t = new Date(now() + b.dataset.in * 60000); a.h = t.getHours(); a.m = t.getMinutes(); a.days = [0,0,0,0,0,0,0]; setH(a.h); setM(a.m); $$("#eDays .d").forEach(x => x.classList.remove("on")); tick(1.2); inl(); });
     $$("#eDays .d").forEach(x => x.onclick = () => { a.days[x.dataset.i] = a.days[x.dataset.i] ? 0 : 1; x.classList.toggle("on"); tick(); inl(); });
@@ -1186,11 +1203,11 @@ function editAlarm(src) {
     $("#eTiles .tile.add").onclick = e => { if (SC.media.peek(a.id) && a.scene !== "custom" && e.target.tagName !== "INPUT") { e.preventDefault(); a.scene = "custom"; tick(1.2); paintTiles(); } };
     $("#eFile").onchange = async e => {
       const f = e.target.files[0]; if (!f) return;
-      if (f.size > 80 * 1024 * 1024) { toast("That file is over 80 MB, try a shorter clip"); return; }
+      if (f.size > 80 * 1024 * 1024) { toast(tr("That file is over 80 MB, try a shorter clip")); return; }
       const kept = await SC.media.put(a.id, f);
       a.scene = "custom"; a.mv = Date.now() % 100000;
       $("#eTiles .tile.add .vis").dataset.v = ""; paintTiles(); tick(1.2);
-      toast(kept ? (f.type.startsWith("video") ? "Video set for this alarm" : "Photo set for this alarm") : "Set for now, but this browser won't keep it after closing");
+      toast(kept ? (f.type.startsWith("video") ? tr("Video set for this alarm") : tr("Photo set for this alarm")) : tr("Set for now, but this browser won't keep it after closing"));
     };
     bindSoundGrid("eSound", "snd" + a.id, () => a, v => Object.assign(a, v));
     const paintVib = () => $$("#eVib .ch").forEach(x => x.classList.toggle("on", x.dataset.v === a.vib));
@@ -1200,11 +1217,11 @@ function editAlarm(src) {
     const paintIf = () => {
       $$("#eFor .ch").forEach(y => y.classList.toggle("on", +y.dataset.m === a.ringFor));
       $$("#eAfter div").forEach(y => y.classList.toggle("on", y.dataset.v === a.after));
-      $("#eIfTxt").textContent = a.after === "snooze" ? `Rings for ${a.ringFor} min, then snoozes for ${a.snooze} min. After 3 unanswered snoozes it stops.` : `Rings for ${a.ringFor} min, then stops.`;
+      $("#eIfTxt").textContent = a.after === "snooze" ? tr("Rings for {ring} min, then snoozes for {snooze} min. After 3 unanswered snoozes it stops.", { ring: a.ringFor, snooze: a.snooze }) : tr("Rings for {ring} min, then stops.", { ring: a.ringFor });
     };
     const paintSnz = () => {
       $$("#eSnz .ch").forEach(y => y.classList.toggle("on", y.dataset.m === "c" ? custom : !custom && +y.dataset.m === a.snooze));
-      $("#eSnzC").textContent = custom ? " " + a.snooze + " min" : "";
+      $("#eSnzC").textContent = custom ? " " + tr("{n} min", { n: a.snooze }) : "";
       $("#eSnzBox").classList.toggle("show", custom);
       $("#eSnzV").textContent = a.snooze; $("#eSnzR").value = a.snooze;
       $("#eSnzR").style.setProperty("--p", ((a.snooze - 1) / 59 * 100) + "%"); paintIf();
@@ -1225,13 +1242,13 @@ function editAlarm(src) {
     paintSnz();
     onSheetClose = stopFile;
     $("#eGentle").onclick = e => { a.gentle = !a.gentle; e.currentTarget.classList.toggle("on"); tick(); };
-    $("#eTest").onclick = () => { a.label = $("#eLabel").value.trim(); closeSheet(); ring({ kind: "alarm", title: a.label || "Alarm", sub: "This is a preview", sound: a.sound, key: "snd" + a.id, gentle: a.gentle, vib: a.vib, a, preview: true }); };
+    $("#eTest").onclick = () => { a.label = $("#eLabel").value.trim(); closeSheet(); ring({ kind: "alarm", title: a.label || tr("Alarm"), sub: tr("This is a preview"), sound: a.sound, key: "snd" + a.id, gentle: a.gentle, vib: a.vib, a, preview: true }); };
     if ($("#eDel")) $("#eDel").onclick = () => { closeSheet(); deleteAlarm(S.alarms.find(x => x.id === a.id)); };
     $("#snR").onclick = () => {
       a.label = $("#eLabel").value.trim(); a.on = true; a.skip = 0;
       const i = S.alarms.findIndex(x => x.id === a.id); if (i >= 0) S.alarms[i] = a; else S.alarms.push(a);
       SNOOZES.forEach(s => { if (s.a.id === a.id) s.a = a; });
-      save(); recalcAlarms(); closeSheet(); tick(1.2); toast("Rings in " + dur(NEXT[a.id] - now())); renderAll();
+      save(); recalcAlarms(); closeSheet(); tick(1.2); toast(tr("Rings in {time}", { time: dur(NEXT[a.id] - now()) })); renderAll();
     };
     inl();
   });
@@ -1240,6 +1257,10 @@ function editAlarm(src) {
 /* ---------- sleep schedule: one dial sets the bedtime reminder and the wake-up alarm ---------- */
 let BEDNEXT = null, BED = null;
 const sleepMin = z => ((z.wake - z.bed + 1440) % 1440) || 1440;
+/* "8 h" or "7 h 30 m" */
+const sleepLen = m => m % 60 ? tr("{h} h {m} m", { h: Math.floor(m / 60), m: m % 60 }) : tr("{h} h", { h: m / 60 });
+/* 7.5 → "7½" */
+const half = n => String(n).replace(".5", "½");
 /* upcoming bedtimes: worked back from each wake-up day, with the reminder time before it */
 function bedtimes(from, count) {
   const z = S.sleep, out = []; if (!z.set || !z.on || !z.remind) return out;
@@ -1258,20 +1279,20 @@ const sleepAlarm = () => S.alarms.find(a => a.id === SLEEP_ID);
 function syncSleep() {
   const z = S.sleep; let a = sleepAlarm();
   if (!z.set) { if (a) S.alarms = S.alarms.filter(x => x !== a); return; }
-  if (!a) { a = newAlarm({ id: SLEEP_ID, sleep: true, label: "Wake up", vib: "gentle" }); S.alarms.push(a); }
-  Object.assign(a, { h: Math.floor(z.wake / 60), m: z.wake % 60, days: z.days.slice(), on: z.on && z.alarm, sound: z.sound, fileName: z.fileName || "", fileAt: z.fileAt || 0, scene: z.scene, label: "Wake up", gentle: true });
+  if (!a) { a = newAlarm({ id: SLEEP_ID, sleep: true, label: tr("Wake up"), vib: "gentle" }); S.alarms.push(a); }
+  Object.assign(a, { h: Math.floor(z.wake / 60), m: z.wake % 60, days: z.days.slice(), on: z.on && z.alarm, sound: z.sound, fileName: z.fileName || "", fileAt: z.fileAt || 0, scene: z.scene, label: tr("Wake up"), gentle: true });
 }
 const SUNI = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
 const MOONI = `<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>`;
 function renderSleepCard() {
   const z = S.sleep, el = $("#sleepCard");
   let h;
-  if (!z.set) h = `<div class="sleepc" id="sOpen"><div class="sic">${MOONI}</div><div class="tx"><b>Sleep schedule</b><span>A bedtime reminder and a gentle wake-up, set from one dial</span></div><button class="btn sm">Set up</button></div>`;
+  if (!z.set) h = `<div class="sleepc" id="sOpen"><div class="sic">${MOONI}</div><div class="tx"><b>${tr("Sleep schedule")}</b><span>${tr("A bedtime reminder and a gentle wake-up, set from one dial")}</span></div><button class="btn sm">${tr("Set up")}</button></div>`;
   else {
     const m = sleepMin(z), b = bedtimes(now(), 1)[0], a = sleepAlarm();
-    const sub = !z.on ? "Off" : z.remind && b ? "Reminder " + dayWord(b.rem) + " at " + hmA(new Date(b.rem)) : a && NEXT[a.id] ? "Wake-up " + dayWord(NEXT[a.id]) : daysText(z);
-    h = `<div class="sleepc" id="sOpen"><div class="sic">${MOONI}</div><div class="tx"><b>Sleep · ${hDur(m * 60000).replace(" 00 m", " h").replace(" h h", " h")}</b><span>${sub}</span></div><div class="sw-t ${z.on ? "on" : ""}" id="sTog"></div></div>
-      <div class="sleeprow" style="${z.on ? "" : "opacity:.5"}"><div><span>${MOONI}Bedtime</span><b>${minTxt(z.bed)}</b></div><div><span>${SUNI.replace("<svg", '<svg style="fill:none;stroke:currentColor"')}Wake up</span><b>${minTxt(z.wake)}</b></div></div>`;
+    const sub = !z.on ? tr("Off") : z.remind && b ? tr("Reminder {day} at {time}", { day: dayWord(b.rem), time: hmA(new Date(b.rem)) }) : a && NEXT[a.id] ? tr("Wake-up {day}", { day: dayWord(NEXT[a.id]) }) : daysText(z);
+    h = `<div class="sleepc" id="sOpen"><div class="sic">${MOONI}</div><div class="tx"><b>${tr("Sleep · {time}", { time: sleepLen(m) })}</b><span>${sub}</span></div><div class="sw-t ${z.on ? "on" : ""}" id="sTog"></div></div>
+      <div class="sleeprow" style="${z.on ? "" : "opacity:.5"}"><div><span>${MOONI}${tr("Bedtime")}</span><b>${minTxt(z.bed)}</b></div><div><span>${SUNI.replace("<svg", '<svg style="fill:none;stroke:currentColor"')}${tr("Wake up")}</span><b>${minTxt(z.wake)}</b></div></div>`;
   }
   if (el.dataset.h === h) return;
   el.innerHTML = h; el.dataset.h = h;
@@ -1285,30 +1306,30 @@ function editSleep() {
   for (let i = 0; i < 24; i++) { const [x1, y1] = pt(i * 15, 96), [x2, y2] = pt(i * 15, i % 6 ? 99 : 101); ticks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--fg2)" stroke-width="${i % 6 ? 1 : 1.8}" stroke-linecap="round"/>`; }
   [[0, S.h24 ? "0" : "12AM"], [6, "6"], [12, S.h24 ? "12" : "12PM"], [18, S.h24 ? "18" : "6"]].forEach(([hh, t]) => { const [x, y] = pt(hh * 15, 82); ticks += `<text x="${x}" y="${y}" fill="var(--fg2)" font-size="12" font-weight="650" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,sans-serif">${t}</text>`; });
   const goals = [6, 7, 7.5, 8, 9];
-  openSheet(nav("Sleep", "Cancel", "Save") + `
+  openSheet(nav(tr("Sleep"), tr("Cancel"), tr("Save")) + `
     <div class="sdial" id="sDial"><svg viewBox="0 0 300 300">
       <defs><linearGradient id="sGr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="var(--acc)"/></linearGradient></defs>
       <circle cx="150" cy="150" r="118" fill="none" stroke="var(--card2)" stroke-width="30"/>${ticks}
       <circle id="sArc" cx="150" cy="150" r="118" fill="none" stroke="url(#sGr)" stroke-width="30" stroke-linecap="round"/>
       <g id="kBed"><circle r="13" fill="#1d1a44"/><g transform="translate(-7 -7) scale(.58)" fill="#e9e4ff">${MOONI.replace(/<\/?svg[^>]*>/g, "")}</g></g>
       <g id="kWake"><circle r="13" fill="#3b2410"/><g transform="translate(-7 -7) scale(.58)" fill="none" stroke="#ffcc5c" style="color:#ffcc5c">${SUNI.replace(/<\/?svg[^>]*>/g, "")}</g></g>
-    </svg><div class="ctr"><b id="sDur">8 h</b><span id="sGoal"></span></div></div>
-    <div class="sleeprow" style="margin:6px 0 4px"><div><span>${MOONI}Bedtime</span><b id="sBed">—</b></div><div><span>${SUNI.replace("<svg", '<svg style="fill:none;stroke:currentColor"')}Wake up</span><b id="sWake">—</b></div></div>
-    <div class="lab">Wake-up days</div>
-    <div class="days" id="sDays">${DAYN.map((x, i) => `<div class="d ${z.days[i] ? "on" : ""}" data-i="${i}">${x[0]}</div>`).join("")}</div>
-    <div class="lab">Sleep goal</div>
-    <div class="chips" id="sGoals">${goals.map(g => `<button class="ch" data-g="${g}">${String(g).replace(".5", "½")} h</button>`).join("")}</div>
-    <div class="lab">Bedtime reminder</div>
-    <div class="chips" id="sRem">${[0, 15, 30, 45, 60].map(m => `<button class="ch" data-m="${m}">${m ? m + " min before" : "Off"}</button>`).join("")}</div>
-    <div class="lab">Wake between sleep cycles</div>
+    </svg><div class="ctr"><b id="sDur">${tr("{h} h", { h: 8 })}</b><span id="sGoal"></span></div></div>
+    <div class="sleeprow" style="margin:6px 0 4px"><div><span>${MOONI}${tr("Bedtime")}</span><b id="sBed">—</b></div><div><span>${SUNI.replace("<svg", '<svg style="fill:none;stroke:currentColor"')}${tr("Wake up")}</span><b id="sWake">—</b></div></div>
+    <div class="lab">${tr("Wake-up days")}</div>
+    <div class="days" id="sDays">${DAYI.map((x, i) => `<div class="d ${z.days[i] ? "on" : ""}" data-i="${i}">${x}</div>`).join("")}</div>
+    <div class="lab">${tr("Sleep goal")}</div>
+    <div class="chips" id="sGoals">${goals.map(g => `<button class="ch" data-g="${g}">${tr("{h} h", { h: half(g) })}</button>`).join("")}</div>
+    <div class="lab">${tr("Bedtime reminder")}</div>
+    <div class="chips" id="sRem">${[0, 15, 30, 45, 60].map(m => `<button class="ch" data-m="${m}">${m ? tr("{n} min before", { n: m }) : tr("Off")}</button>`).join("")}</div>
+    <div class="lab">${tr("Wake between sleep cycles")}</div>
     <div class="cycles" id="sCyc"></div>
-    <div style="font-size:11.5px;color:var(--fg2);margin:8px 4px 0;line-height:1.45">Tap one to use it as your bedtime. A cycle is about 90 minutes on average, plus 15 minutes to fall asleep. Yours may differ.</div>
-    <div class="grp" style="margin-top:18px"><div class="srow"><div>Wake-up alarm<small>Rings gently, with its own scene and sound</small></div><div class="sw-t ${z.alarm ? "on" : ""}" id="sAl"></div></div></div>
+    <div style="font-size:11.5px;color:var(--fg2);margin:8px 4px 0;line-height:1.45">${tr("Tap one to use it as your bedtime. A cycle is about 90 minutes on average, plus 15 minutes to fall asleep. Yours may differ.")}</div>
+    <div class="grp" style="margin-top:18px"><div class="srow"><div>${tr("Wake-up alarm")}<small>${tr("Rings gently, with its own scene and sound")}</small></div><div class="sw-t ${z.alarm ? "on" : ""}" id="sAl"></div></div></div>
     <div id="sAlBox">
-      <div class="lab">Wake-up sound</div>${soundGrid(ALARM_SOUNDS, z.sound, z.fileName, "sSnd")}
-      <div class="lab">Wake-up scene</div><div class="chips" id="sScn">${Object.entries(SC.SCENES).map(([k, s]) => `<button class="ch" data-k="${k}">${s.name}</button>`).join("")}</div>
+      <div class="lab">${tr("Wake-up sound")}</div>${soundGrid(ALARM_SOUNDS, z.sound, z.fileName, "sSnd")}
+      <div class="lab">${tr("Wake-up scene")}</div><div class="chips" id="sScn">${Object.entries(SC.SCENES).map(([k, s]) => `<button class="ch" data-k="${k}">${tr(s.name)}</button>`).join("")}</div>
     </div>
-    ${S.sleep.set ? `<div class="acts"><button class="btn danger wide" id="sOff">Remove sleep schedule</button></div>` : ""}
+    ${S.sleep.set ? `<div class="acts"><button class="btn danger wide" id="sOff">${tr("Remove sleep schedule")}</button></div>` : ""}
   `, () => {
     const paint = () => {
       const m = sleepMin(z), a0 = ang(z.bed);
@@ -1316,16 +1337,16 @@ function editSleep() {
       $("#sArc").setAttribute("transform", `rotate(${a0 - 90} 150 150)`);
       const [bx, by] = pt(a0, 118), [wx, wy] = pt(ang(z.wake), 118);
       $("#kBed").setAttribute("transform", `translate(${bx} ${by})`); $("#kWake").setAttribute("transform", `translate(${wx} ${wy})`);
-      $("#sDur").textContent = Math.floor(m / 60) + " h" + (m % 60 ? " " + (m % 60) + " m" : "");
+      $("#sDur").textContent = sleepLen(m);
       const g = z.goal * 60, ok = m >= g;
-      $("#sGoal").textContent = ok ? "Meets your " + String(z.goal).replace(".5", "½") + " h goal" : Math.round((g - m)) + " min under your goal";
+      $("#sGoal").textContent = ok ? tr("Meets your {h} h goal", { h: half(z.goal) }) : tr("{n} min under your goal", { n: Math.round(g - m) });
       $("#sGoal").className = ok ? "ok" : "";
       $("#sBed").textContent = minTxt(z.bed); $("#sWake").textContent = minTxt(z.wake);
       $$("#sGoals .ch").forEach(x => x.classList.toggle("on", +x.dataset.g === z.goal));
       $$("#sRem .ch").forEach(x => x.classList.toggle("on", +x.dataset.m === z.remind));
       $$("#sScn .ch").forEach(x => x.classList.toggle("on", x.dataset.k === z.scene));
       $("#sAlBox").style.display = z.alarm ? "" : "none";
-      $("#sCyc").innerHTML = [6, 5, 4].map(c => { const b = (z.wake - c * 90 - 15 + 2880) % 1440; return `<button class="cyc ${b === z.bed ? "best" : ""}" data-b="${b}"><b>${minTxt(b)}</b><span>${c} cycles · ${String(c * 1.5).replace(".5", "½")} h</span></button>`; }).join("");
+      $("#sCyc").innerHTML = [6, 5, 4].map(c => { const b = (z.wake - c * 90 - 15 + 2880) % 1440; return `<button class="cyc ${b === z.bed ? "best" : ""}" data-b="${b}"><b>${minTxt(b)}</b><span>${tr("{n} cycles · {h} h", { n: c, h: half(c * 1.5) })}</span></button>`; }).join("");
       $$("#sCyc .cyc").forEach(x => x.onclick = () => { z.bed = +x.dataset.b; tick(1.2); paint(); });
     };
     // drag either end, or the arc itself to move both
@@ -1356,13 +1377,13 @@ function editSleep() {
     $("#sAl").onclick = e => { z.alarm = !z.alarm; e.currentTarget.classList.toggle("on"); tick(); paint(); };
     bindSoundGrid("sSnd", "snd" + SLEEP_ID, () => z, v => Object.assign(z, v));
     onSheetClose = stopFile;
-    if ($("#sOff")) $("#sOff").onclick = () => { S.sleep.set = false; syncSleep(); save(); recalcAlarms(); closeSheet(); toast("Sleep schedule removed"); renderAll(); };
+    if ($("#sOff")) $("#sOff").onclick = () => { S.sleep.set = false; syncSleep(); save(); recalcAlarms(); closeSheet(); toast(tr("Sleep schedule removed")); renderAll(); };
     $("#snR").onclick = () => {
       if (!z.days.some(Boolean)) z.days = [1,1,1,1,1,1,1];
       const first = !S.sleep.set;
       S.sleep = Object.assign(z, { set: true, on: first ? true : z.on }); syncSleep(); save(); recalcAlarms(); closeSheet(); tick(1.2);
       const b = bedtimes(now(), 1)[0];
-      toast(b ? "Reminder " + dayWord(b.rem) + " at " + hmA(new Date(b.rem)) : "Sleep schedule saved"); renderAll();
+      toast(b ? tr("Reminder {day} at {time}", { day: dayWord(b.rem), time: hmA(new Date(b.rem)) }) : tr("Sleep schedule saved")); renderAll();
     };
     paint();
   });
@@ -1416,7 +1437,7 @@ function soundLoop(o) {
 function autoEnd(o) {
   if (o.kind === "alarm" && !o.preview && (o.a.after || "snooze") === "snooze" && (o.auto || 0) < 3) {
     addSnooze({ at: now() + o.a.snooze * 60000, a: o.a, auto: (o.auto || 0) + 1 });
-    stopRing(); toast("No answer, snoozed for " + o.a.snooze + " min");
+    stopRing(); toast(tr("No answer, snoozed for {n} min", { n: o.a.snooze }));
   } else stopRing();
 }
 function ring(o) {
@@ -1424,18 +1445,18 @@ function ring(o) {
   if (nativeRings(o) && !nativeOwns(o)) return;
   RING = o; ringStart = Date.now();
   if (o.kind === "timer") { soundLoop(o); ISL.open = true; renderIsland(); return; }
-  $("#rK").textContent = o.preview && !DEMO ? "Alarm preview" : o.auto ? "Alarm · snoozed " + o.auto + "×" : o.a.sleep ? "Good morning" : "Alarm";
+  $("#rK").textContent = o.preview && !DEMO ? tr("Alarm preview") : o.auto ? tr("Alarm · snoozed {n}×", { n: o.auto }) : o.a.sleep ? tr("Good morning") : tr("Alarm");
   ringTime(); renderWx();
   $("#rL").textContent = o.title; $("#rS").textContent = o.sub || "";
-  $("#rB").innerHTML = `<div class="slide" id="rSlide"><div class="chev"><i></i><i></i><i></i></div><span>Slide up to stop</span></div>
-    <button class="snz" id="rA"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>Snooze · ${o.a.snooze} min</button>
+  $("#rB").innerHTML = `<div class="slide" id="rSlide"><div class="chev"><i></i><i></i><i></i></div><span>${tr("Slide up to stop")}</span></div>
+    <button class="snz" id="rA"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>${tr("Snooze · {n} min", { n: o.a.snooze })}</button>
     <div class="rauto" id="rAuto"></div>`;
   const R0 = $("#ring"); R0.classList.add("show"); R0.style.setProperty("--up", 0);
   SC.visual($("#rVis"), o.a, { fps: 50, dpr: 2 });
   soundLoop(o);
   $("#rA").onclick = e => {
     e.stopPropagation();
-    if (!o.preview) { addSnooze({ at: now() + o.a.snooze * 60000, a: o.a }); toast("Snoozed until " + hmA(new Date(now() + o.a.snooze * 60000))); }
+    if (!o.preview) { addSnooze({ at: now() + o.a.snooze * 60000, a: o.a }); toast(tr("Snoozed until {time}", { time: hmA(new Date(now() + o.a.snooze * 60000)) })); }
     tick(.9); stopRing();
   };
   // slide up anywhere above the snooze button
@@ -1447,7 +1468,7 @@ function ring(o) {
     if (y0 === null) return; y0 = null; R0.classList.remove("drag");
     if (up > .28) {
       R0.style.setProperty("--up", 1); tick(1.4);
-      setTimeout(() => { stopRing(); if (!o.preview) { const w = wxNow(); toast(w ? "Good morning · " + w.temp + " and " + w.name.toLowerCase() : "Good morning"); } }, 260);
+      setTimeout(() => { stopRing(); if (!o.preview) { const w = wxNow(); toast(w ? tr("Good morning · {temp} and {sky}", { temp: w.temp, sky: LANG === "en" ? w.name.toLowerCase() : w.name }) : tr("Good morning")); } }, 260);
     } else R0.style.setProperty("--up", 0);
   };
   paintAuto();
@@ -1455,8 +1476,8 @@ function ring(o) {
 function paintAuto() {
   const o = RING, el = $("#rAuto"); if (!o || o.kind !== "alarm" || !el) return;
   const left = Math.max(0, o.endsAt - Date.now()), m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
-  const then = o.preview && !DEMO ? "stops" : (o.a.after || "snooze") === "snooze" && (o.auto || 0) < 3 ? "snoozes" : "stops";
-  el.textContent = `Rings for ${m}:${pad(s)} more, then ${then} by itself`;
+  const snoozes = (o.a.after || "snooze") === "snooze" && (o.auto || 0) < 3 && !(o.preview && !DEMO);
+  el.textContent = tr(snoozes ? "Rings for {left} more, then snoozes by itself" : "Rings for {left} more, then stops by itself", { left: m + ":" + pad(s) });
 }
 function stopRing() {
   clearInterval(ringIv); clearTimeout(ringAuto); stopFile(); RING = null;
@@ -1472,14 +1493,14 @@ function stopRing() {
 const ISL = { open: false, until: 0, sig: "" }, CI = 2 * Math.PI * 9;
 function islandData() {
   if (RING && RING.kind === "timer") return { k: "alert", label: RING.title, sub: RING.sub, t: "0:00", p: 0 };
-  if (BED && Date.now() < BED.until) return { k: "bed", label: "Bedtime at " + hmA(new Date(BED.bed)), full: "Time to wind down", sub: "Bedtime at " + hmA(new Date(BED.bed)) + " · wake up " + hmA(new Date(BED.wake)), t: "in " + Math.max(0, Math.ceil((BED.bed - now()) / 60000)) + "m", p: 1 };
+  if (BED && Date.now() < BED.until) return { k: "bed", label: tr("Bedtime at {time}", { time: hmA(new Date(BED.bed)) }), full: tr("Time to wind down"), sub: tr("Bedtime at {time} · wake up {wake}", { time: hmA(new Date(BED.bed)), wake: hmA(new Date(BED.wake)) }), t: tr("in {n}m", { n: Math.max(0, Math.ceil((BED.bed - now()) / 60000)) }), p: 1 };
   const list = S.timers.filter(t => !t.done), run = list.filter(t => t.run).sort((a, b) => a.endAt - b.endAt);
   const t = run[0] || list[0];
   if (t) {
     const r = tRem(t);
-    return { k: "timer", id: t.id, run: t.run, label: t.label + (list.length > 1 ? ` +${list.length - 1}` : ""), full: t.label, sub: t.run ? "Ends " + hmA(new Date(t.endAt)) + (list.length > 1 ? ` · ${list.length} timers` : "") : "Paused", t: clk(r), p: t.total ? r / t.total : 0 };
+    return { k: "timer", id: t.id, run: t.run, label: t.label + (list.length > 1 ? ` +${list.length - 1}` : ""), full: t.label, sub: t.run ? tr("Ends {time}", { time: hmA(new Date(t.endAt)) }) + (list.length > 1 ? " · " + tr("{n} timers", { n: list.length }) : "") : tr("Paused"), t: clk(r), p: t.total ? r / t.total : 0 };
   }
-  if (W.run) { const e = swEl(); return { k: "sw", label: "Stopwatch", full: "Stopwatch", sub: "Lap " + (W.laps.length + 1) + " · " + swStr(e - lapSum()), t: swFmt(e).main, p: (e / 1000 % 60) / 60 }; }
+  if (W.run) { const e = swEl(); return { k: "sw", label: tr("Stopwatch"), full: tr("Stopwatch"), sub: tr("Lap {n}", { n: W.laps.length + 1 }) + " · " + swStr(e - lapSum()), t: swFmt(e).main, p: (e / 1000 % 60) / 60 }; }
   return null;
 }
 /* In the Android app the live pill lives in the phone's status bar instead: Android counts the clock by
@@ -1492,13 +1513,13 @@ function syncLive() {
   let o = null;
   if (RING) o = null;   // the alarm screen takes over
   else if (t) {
-    const more = list.length > 1 ? ` · ${list.length} timers` : "";
+    const more = list.length > 1 ? " · " + tr("{n} timers", { n: list.length }) : "";
     o = { kind: "timer", key: "t" + t.id + "@" + t.endAt, title: t.label, running: t.run, left: Math.round(tRem(t)), total: t.total, more, h24: !!S.h24,
-      when: t.run ? Math.round(t.endAt - off) : 0, chip: t.run ? "" : "Paused",
-      text: (t.run ? "Ends " + hmA(new Date(t.endAt)) : "Paused · " + clk(t.left) + " left") + more };
+      when: t.run ? Math.round(t.endAt - off) : 0, chip: t.run ? "" : tr("Paused"),
+      text: (t.run ? tr("Ends {time}", { time: hmA(new Date(t.endAt)) }) : tr("Paused · {time} left", { time: clk(t.left) })) + more };
   } else if (W.run) {
-    o = { kind: "sw", title: "Stopwatch", running: true, when: Math.round(W.start - off - W.acc), left: 0, total: 1, chip: "",
-      text: W.laps.length ? "Lap " + (W.laps.length + 1) + " · last lap " + swStr(W.laps[W.laps.length - 1]) : "Running" };
+    o = { kind: "sw", title: tr("Stopwatch"), running: true, when: Math.round(W.start - off - W.acc), left: 0, total: 1, chip: "",
+      text: W.laps.length ? tr("Lap {n} · last lap {time}", { n: W.laps.length + 1, time: swStr(W.laps[W.laps.length - 1]) }) : tr("Running") };
   }
   // the remaining time only matters when it isn't counting by itself
   const sig = o ? JSON.stringify(Object.assign({}, o, { left: o.running ? Math.round(o.when / 1000) : o.left })) : "";
@@ -1514,18 +1535,18 @@ function renderIsland() {
   el.className = "island act" + (ISL.open ? " open" : "") + (d.k === "alert" || d.k === "bed" ? " alert" : "") + (d.k === "sw" ? " sw" : "") + (d.k === "bed" ? " bed" : "");
   const arc = `${(CI * clamp(d.p, 0, 1)).toFixed(2)} ${CI}`;
   $("#iArc").setAttribute("stroke-dasharray", arc); $("#xArc").setAttribute("stroke-dasharray", arc);
-  $("#iL").textContent = d.k === "alert" ? "Done" : d.label; $("#iT").textContent = d.t;
+  $("#iL").textContent = d.k === "alert" ? tr("Done") : d.label; $("#iT").textContent = d.t;
   $("#xL").textContent = d.k === "alert" ? d.label : d.full; $("#xS").textContent = d.sub; $("#xT").textContent = d.t;
   $("#xP").style.width = (d.k === "sw" || d.k === "bed" ? d.p : 1 - d.p) * 100 + "%";
-  document.title = d.k === "alert" ? "Done · " + d.label : d.k === "bed" ? "Bedtime · Hora" : d.t + " · " + d.full;
+  document.title = d.k === "alert" ? tr("Done") + " · " + d.label : d.k === "bed" ? tr("Bedtime") + " · Hora" : d.t + " · " + d.full;
   const play = `<svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>`, pause = `<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>`;
   const sig = d.k + (d.run ? 1 : 0) + W.run;
   if (sig !== ISL.sig) {
     ISL.sig = sig;
-    $("#xB").innerHTML = d.k === "alert" ? `<button class="xb" data-a="plus">+1 min</button><button class="xb" data-a="again">Restart</button><button class="xb or" data-a="stop">Stop</button>`
-      : d.k === "bed" ? `<button class="xb" data-a="bedlater">In 15 min</button><button class="xb or" data-a="bedok">Got it</button>`
-      : d.k === "timer" ? `<button class="xb x" data-a="cancel" aria-label="Cancel">✕</button><button class="xb" data-a="plus">+1 min</button><button class="xb or" data-a="pause">${d.run ? pause + "Pause" : play + "Resume"}</button>`
-      : `<button class="xb" data-a="lap">Lap</button><button class="xb or" data-a="swstop">${pause}Stop</button>`;
+    $("#xB").innerHTML = d.k === "alert" ? `<button class="xb" data-a="plus">${tr("+1 min")}</button><button class="xb" data-a="again">${tr("Restart")}</button><button class="xb or" data-a="stop">${tr("Stop")}</button>`
+      : d.k === "bed" ? `<button class="xb" data-a="bedlater">${tr("In 15 min")}</button><button class="xb or" data-a="bedok">${tr("Got it")}</button>`
+      : d.k === "timer" ? `<button class="xb x" data-a="cancel" aria-label="${tr("Cancel")}">✕</button><button class="xb" data-a="plus">${tr("+1 min")}</button><button class="xb or" data-a="pause">${d.run ? pause + tr("Pause") : play + tr("Resume")}</button>`
+      : `<button class="xb" data-a="lap">${tr("Lap")}</button><button class="xb or" data-a="swstop">${pause}${tr("Stop")}</button>`;
   }
   ISL.d = d;
 }
@@ -1564,7 +1585,9 @@ $("#island").onclick = e => {
 /* ---------- timers ---------- */
 const C1 = 2 * Math.PI * 124;
 const PLAY = `<svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>`, PAUSE = `<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>`;
-const shortDur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return h ? h + ":" + pad(m) + (ss ? ":" + pad(ss) : "") : ss ? m + ":" + pad(ss) : m + " min"; };
+const shortDur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return h ? h + ":" + pad(m) + (ss ? ":" + pad(ss) : "") : ss ? m + ":" + pad(ss) : tr("{n} min", { n: m }); };
+/* the quick names offered for a timer */
+const QUICK = ["Tea", "Oven", "Laundry", "Workout", "Study", "Parking", "Nap"].map(x => tr(x));
 (function buildDial() {
   let h = "";
   for (let i = 0; i < 60; i++) {
@@ -1575,26 +1598,26 @@ const shortDur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 360
   $("#dTicks").innerHTML = h;
 })();
 function renderPresets() {
-  const h = S.presets.map((p, i) => `<button class="pre" data-i="${i}"><b>${shortDur(p.ms).replace(" min", "")}</b><span>${esc(p.l)}${p.ms % 60000 || p.ms >= 3600000 ? "" : " · min"}</span></button>`).join("") + `<button class="pre add" id="preAdd" title="Save the current time as a preset">＋</button>`;
+  const h = S.presets.map((p, i) => { const whole = !(p.ms % 60000) && p.ms < 3600000; return `<button class="pre" data-i="${i}"><b>${whole ? p.ms / 60000 : shortDur(p.ms)}</b><span>${esc(p.l)}${whole ? " · " + tr("min") : ""}</span></button>`; }).join("") + `<button class="pre add" id="preAdd" title="${tr("Save the current time as a preset")}">＋</button>`;
   if ($("#presets").dataset.h === h) return;
   $("#presets").innerHTML = h; $("#presets").dataset.h = h;
   $$("#presets .pre[data-i]").forEach(b => b.onclick = () => { const p = S.presets[b.dataset.i]; S.setMs = p.ms; S.setLabel = p.l; S.focus = null; startTimer(); });
   $("#preAdd").onclick = addPreset;
 }
 function addPreset() {
-  const ms = S.setMs || 300000, l = S.setLabel && S.setLabel !== "Timer" ? S.setLabel : "Timer";
-  if (S.presets.length >= 12) { toast("Up to 12 presets. Edit to remove one."); return; }
-  S.presets.push({ l, ms }); save(); tick(1.2); renderPresets(); toast("Saved " + shortDur(ms) + " as a preset");
+  const ms = S.setMs || 300000, l = S.setLabel || TIMER;
+  if (S.presets.length >= 12) { toast(tr("Up to 12 presets. Edit to remove one.")); return; }
+  S.presets.push({ l, ms }); save(); tick(1.2); renderPresets(); toast(tr("Saved {time} as a preset", { time: shortDur(ms) }));
 }
 $("#editPresets").onclick = () => {
   const P = JSON.parse(JSON.stringify(S.presets));
-  const body = () => P.map((p, i) => `<div class="row" data-i="${i}"><input class="field" value="${esc(p.l)}" maxlength="16" data-n><div class="stepper"><button data-d="-1">−</button><b>${shortDur(p.ms)}</b><button data-d="1">+</button></div><button class="xdel" data-x>✕</button></div>`).join("") || `<div class="empty">No presets. Tap Add.</div>`;
-  openSheet(nav("Presets", "Cancel", "Done") + `<div class="kind" style="text-align:center">Rename them, change their length, or remove ones you don't use</div><div class="pedit" id="pList"></div><div class="acts"><button class="btn ghost wide" id="pAdd">Add preset</button><button class="btn ghost" id="pReset">Reset</button></div>`, () => {
+  const body = () => P.map((p, i) => `<div class="row" data-i="${i}"><input class="field" value="${esc(p.l)}" maxlength="16" data-n><div class="stepper"><button data-d="-1">−</button><b>${shortDur(p.ms)}</b><button data-d="1">+</button></div><button class="xdel" data-x>✕</button></div>`).join("") || `<div class="empty">${tr("No presets. Tap Add.")}</div>`;
+  openSheet(nav(tr("Presets"), tr("Cancel"), tr("Done")) + `<div class="kind" style="text-align:center">${tr("Rename them, change their length, or remove ones you don't use")}</div><div class="pedit" id="pList"></div><div class="acts"><button class="btn ghost wide" id="pAdd">${tr("Add preset")}</button><button class="btn ghost" id="pReset">${tr("Reset")}</button></div>`, () => {
     const draw = () => {
       $("#pList").innerHTML = body();
       $$("#pList .row").forEach(r => {
         const p = P[r.dataset.i];
-        r.querySelector("[data-n]").oninput = e => p.l = e.target.value.trim() || "Timer";
+        r.querySelector("[data-n]").oninput = e => p.l = e.target.value.trim() || TIMER;
         r.querySelectorAll("[data-d]").forEach(b => b.onclick = () => {
           const m = p.ms / 60000, st = m < 10 ? 1 : m < 60 ? 5 : 15, nm = clamp(Math.round(m) + st * b.dataset.d, 1, 600);
           p.ms = nm * 60000; r.querySelector(".stepper b").textContent = shortDur(p.ms); tick();
@@ -1603,7 +1626,7 @@ $("#editPresets").onclick = () => {
       });
     };
     draw();
-    $("#pAdd").onclick = () => { if (P.length >= 12) return toast("Up to 12 presets"); P.push({ l: "Timer", ms: 5 * 60000 }); tick(); draw(); };
+    $("#pAdd").onclick = () => { if (P.length >= 12) return toast(tr("Up to 12 presets")); P.push({ l: TIMER, ms: 5 * 60000 }); tick(); draw(); };
     $("#pReset").onclick = () => { P.splice(0, P.length, ...JSON.parse(JSON.stringify(PRESETS0))); tick(); draw(); };
     $("#snR").onclick = () => { S.presets = P; save(); closeSheet(); renderPresets(); };
   });
@@ -1611,24 +1634,24 @@ $("#editPresets").onclick = () => {
 const tRem = t => t.run ? Math.max(0, t.endAt - now()) : t.left;
 const focused = () => S.timers.find(t => t.id === S.focus && !t.done);
 function startTimer() {
-  if (S.setMs < 1000) { toast("Drag the ring to set a time"); return; }
-  const t = { id: Date.now(), label: S.setLabel || "Timer", total: S.setMs, orig: S.setMs, left: S.setMs, endAt: now() + S.setMs, run: true, done: false };
-  S.timers.push(t); S.focus = t.id; S.setLabel = "Timer"; save(); tick(1.3); ISL.open = true; ISL.until = Date.now() + 2800;
-  toast(t.label + " · ends " + hmA(new Date(t.endAt))); renderAll();
+  if (S.setMs < 1000) { toast(tr("Drag the ring to set a time")); return; }
+  const t = { id: Date.now(), label: S.setLabel || TIMER, total: S.setMs, orig: S.setMs, left: S.setMs, endAt: now() + S.setMs, run: true, done: false };
+  S.timers.push(t); S.focus = t.id; S.setLabel = ""; save(); tick(1.3); ISL.open = true; ISL.until = Date.now() + 2800;
+  toast(tr("{name} · ends {time}", { name: t.label, time: hmA(new Date(t.endAt)) })); renderAll();
 }
 /* exact time: hours, minutes and seconds wheels, plus a name */
 function timerWheel() {
-  const s0 = Math.round(S.setMs / 1000); let H = Math.floor(s0 / 3600), M = Math.floor(s0 % 3600 / 60), Sx = s0 % 60, name = S.setLabel === "Timer" ? "" : S.setLabel;
-  openSheet(nav("New timer", "Cancel", "Start") + wheel([{ id: "th", n: 24, unit: "h" }, { id: "tm", n: 60, unit: "m" }, { id: "ts", n: 60, unit: "s" }]) +
-    `<div class="inline" id="tIn"></div><div class="lab">Name</div><input class="field" id="tNm" maxlength="24" placeholder="Timer" value="${esc(name)}">
-     <div class="lab">Quick names</div><div class="chips">${["Tea", "Oven", "Laundry", "Workout", "Study", "Parking"].map(x => `<button class="ch" data-q="${x}">${x}</button>`).join("")}</div>
-     <div class="acts"><button class="btn ghost wide" id="tSave">Save as preset</button></div>`, () => {
-    const upd = () => { const ms = ((H * 60 + M) * 60 + Sx) * 1000; $("#tIn").innerHTML = ms ? `Ends at <b>${hmA(new Date(now() + ms))}</b>` : "Pick a length"; return ms; };
+  const s0 = Math.round(S.setMs / 1000); let H = Math.floor(s0 / 3600), M = Math.floor(s0 % 3600 / 60), Sx = s0 % 60, name = S.setLabel;
+  openSheet(nav(tr("New timer"), tr("Cancel"), tr("Start")) + wheel([{ id: "th", n: 24, unit: tr("h") }, { id: "tm", n: 60, unit: tr("m") }, { id: "ts", n: 60, unit: tr("s") }]) +
+    `<div class="inline" id="tIn"></div><div class="lab">${tr("Name")}</div><input class="field" id="tNm" maxlength="24" placeholder="${TIMER}" value="${esc(name)}">
+     <div class="lab">${tr("Quick names")}</div><div class="chips">${QUICK.slice(0, 6).map(x => `<button class="ch" data-q="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+     <div class="acts"><button class="btn ghost wide" id="tSave">${tr("Save as preset")}</button></div>`, () => {
+    const upd = () => { const ms = ((H * 60 + M) * 60 + Sx) * 1000; $("#tIn").innerHTML = ms ? tr("Ends at <b>{time}</b>", { time: hmA(new Date(now() + ms)) }) : tr("Pick a length"); return ms; };
     bindWheel("th", H, v => { H = v; upd(); }); bindWheel("tm", M, v => { M = v; upd(); }); bindWheel("ts", Sx, v => { Sx = v; upd(); });
     $$("[data-q]").forEach(b => b.onclick = () => { $("#tNm").value = b.dataset.q; tick(); });
-    const take = () => { const ms = upd(); S.setMs = ms; S.setLabel = $("#tNm").value.trim() || "Timer"; return ms; };
-    $("#tSave").onclick = () => { if (!take()) return toast("Pick a length first"); closeSheet(); addPreset(); };
-    $("#snR").onclick = () => { if (!take()) return toast("Pick a length first"); S.focus = null; closeSheet(); startTimer(); };
+    const take = () => { const ms = upd(); S.setMs = ms; S.setLabel = $("#tNm").value.trim(); return ms; };
+    $("#tSave").onclick = () => { if (!take()) return toast(tr("Pick a length first")); closeSheet(); addPreset(); };
+    $("#snR").onclick = () => { if (!take()) return toast(tr("Pick a length first")); S.focus = null; closeSheet(); startTimer(); };
     upd();
   });
 }
@@ -1636,10 +1659,10 @@ $("#dBig").onclick = () => { if (!focused()) timerWheel(); };
 $("#dEdit").onclick = () => { if (!focused()) timerWheel(); };
 $("#tName").onclick = () => {
   const f = focused();
-  openSheet(nav("Timer name", "Cancel", "Done") + `<input class="field" id="tNm2" maxlength="24" placeholder="Timer" value="${esc(f ? f.label : S.setLabel === "Timer" ? "" : S.setLabel)}"><div class="chips wrap" style="margin-top:12px">${["Tea", "Oven", "Laundry", "Workout", "Study", "Parking", "Nap"].map(x => `<button class="ch" data-q="${x}">${x}</button>`).join("")}</div>`, () => {
+  openSheet(nav(tr("Timer name"), tr("Cancel"), tr("Done")) + `<input class="field" id="tNm2" maxlength="24" placeholder="${TIMER}" value="${esc(f ? f.label : S.setLabel)}"><div class="chips wrap" style="margin-top:12px">${QUICK.map(x => `<button class="ch" data-q="${esc(x)}">${esc(x)}</button>`).join("")}</div>`, () => {
     const inp = $("#tNm2"); inp.focus();
     $$("[data-q]").forEach(b => b.onclick = () => { inp.value = b.dataset.q; tick(); });
-    $("#snR").onclick = () => { const v = inp.value.trim() || "Timer", ff = focused(); if (ff) ff.label = v; else S.setLabel = v; save(); closeSheet(); renderAll(); };
+    $("#snR").onclick = () => { const v = inp.value.trim(), ff = focused(); if (ff) ff.label = v || TIMER; else S.setLabel = v; save(); closeSheet(); renderAll(); };
   });
 };
 function renderTimer() {
@@ -1648,23 +1671,23 @@ function renderTimer() {
   let p, big, lbl, k = $("#dKnob");
   if (f) {
     const r = tRem(f); p = f.total ? r / f.total : 0; big = clk(r);
-    lbl = f.run ? `Ends at <b>${hmA(new Date(f.endAt))}</b>` : `<b>Paused</b>`;
+    lbl = f.run ? tr("Ends at <b>{time}</b>", { time: hmA(new Date(f.endAt)) }) : `<b>${tr("Paused")}</b>`;
     k.style.display = "none"; $("#dEdit").style.display = "none";
-    $("#timerSub").textContent = f.label + " · " + (f.run ? "set for " + dur(f.total) : "paused");
+    $("#timerSub").textContent = f.label + " · " + (f.run ? tr("set for {time}", { time: dur(f.total) }) : tr("paused"));
   } else {
     const mins = S.setMs / 60000; p = (mins % 60) / 60 || (mins >= 60 ? 1 : 0); big = clk(S.setMs);
-    lbl = S.setMs ? `Would end at <b>${hmA(new Date(n + S.setMs))}</b>` : "Drag the ring";
+    lbl = S.setMs ? tr("Would end at <b>{time}</b>", { time: hmA(new Date(n + S.setMs)) }) : tr("Drag the ring");
     k.style.display = ""; $("#dEdit").style.display = "";
     const a = (mins % 60) * 6 * RAD; k.setAttribute("cx", 150 + Math.sin(a) * 124); k.setAttribute("cy", 150 - Math.cos(a) * 124);
-    $("#timerSub").textContent = mins >= 60 ? "Each full turn of the ring is an hour" : "Drag the ring, tap the time, or pick a preset";
+    $("#timerSub").textContent = mins >= 60 ? tr("Each full turn of the ring is an hour") : tr("Drag the ring, tap the time, or pick a preset");
   }
-  $("#tNameV").textContent = f ? f.label : S.setLabel || "Timer";
+  $("#tNameV").textContent = f ? f.label : S.setLabel || TIMER;
   const arc = $("#dArc"); arc.setAttribute("stroke-dasharray", `${(C1 * clamp(p, 0, 1)).toFixed(1)} ${C1}`);
   arc.classList.toggle("lap2", !f && S.setMs >= 3600000); arc.classList.toggle("paused", !!f && !f.run);
   $("#dBig").textContent = big; if ($("#dLbl").innerHTML !== lbl) $("#dLbl").innerHTML = lbl;
   const ctl = f
-    ? `<button class="cbtn" id="tC">Cancel</button><div class="addt"><button class="btn ghost sm" data-add="30000">+30 s</button><button class="btn ghost sm" data-add="60000">+1 min</button></div><button class="cbtn ${f.run ? "paused" : "acc"}" id="tP">${f.run ? "Pause" : "Resume"}</button>`
-    : `<button class="cbtn" id="tClr" ${S.setMs ? "" : "disabled"}>Clear</button><span></span><button class="cbtn acc" id="tGo" ${S.setMs ? "" : "disabled"}>Start</button>`;
+    ? `<button class="cbtn" id="tC">${tr("Cancel")}</button><div class="addt"><button class="btn ghost sm" data-add="30000">${tr("+30 s")}</button><button class="btn ghost sm" data-add="60000">${tr("+1 min")}</button></div><button class="cbtn ${f.run ? "paused" : "acc"}" id="tP">${f.run ? tr("Pause") : tr("Resume")}</button>`
+    : `<button class="cbtn" id="tClr" ${S.setMs ? "" : "disabled"}>${tr("Clear")}</button><span></span><button class="cbtn acc" id="tGo" ${S.setMs ? "" : "disabled"}>${tr("Start")}</button>`;
   if ($("#tCtrls").dataset.h !== ctl) {
     $("#tCtrls").innerHTML = ctl; $("#tCtrls").dataset.h = ctl;
     if (f) {
@@ -1673,17 +1696,17 @@ function renderTimer() {
       $("#tP").onclick = toggleFocused;
     } else {
       $("#tGo").onclick = startTimer;
-      $("#tClr").onclick = () => { S.setMs = 0; S.setLabel = "Timer"; save(); tick(.8); renderTimer(); };
+      $("#tClr").onclick = () => { S.setMs = 0; S.setLabel = ""; save(); tick(.8); renderTimer(); };
     }
   }
   // running list
   const list = S.timers.filter(t => !t.done);
   $("#tListCard").style.display = list.length > (f ? 1 : 0) ? "" : "none";
-  $("#tAll").textContent = list.some(t => t.run) ? "Pause all" : "Resume all";
+  $("#tAll").textContent = list.some(t => t.run) ? tr("Pause all") : tr("Resume all");
   const lh = list.map(t => {
     const r = tRem(t), pp = t.total ? r / t.total : 0, c = 2 * Math.PI * 13;
     return `<div class="row trow ${t.id === S.focus ? "foc" : ""}" data-id="${t.id}"><svg class="mini" viewBox="0 0 34 34"><circle cx="17" cy="17" r="13" stroke="var(--card2)"/><circle cx="17" cy="17" r="13" stroke="${t.run ? "var(--acc)" : "var(--warn)"}" stroke-linecap="round" stroke-dasharray="${(c * pp).toFixed(1)} ${c}" transform="rotate(-90 17 17)"/></svg>
-      <div class="tx"><b>${esc(t.label)}</b><span>${t.run ? "Ends " + hmA(new Date(t.endAt)) : "Paused"}</span></div><div class="rt" style="font-size:21px">${clk(r)}</div><button class="tpp" data-pp>${t.run ? PAUSE : PLAY}</button></div>`;
+      <div class="tx"><b>${esc(t.label)}</b><span>${t.run ? tr("Ends {time}", { time: hmA(new Date(t.endAt)) }) : tr("Paused")}</span></div><div class="rt" style="font-size:21px">${clk(r)}</div><button class="tpp" data-pp>${t.run ? PAUSE : PLAY}</button></div>`;
   }).join("");
   if ($("#tList").dataset.h !== lh) {
     $("#tList").innerHTML = lh; $("#tList").dataset.h = lh;
@@ -1695,15 +1718,15 @@ function renderTimer() {
   renderPresets();
 }
 /* more time on a timer that is running or paused; the ring, the status bar and the lock screen move with it */
-function addTime(t, ms) { if (t.run) t.endAt += ms; else t.left += ms; t.total += ms; save(); tick(1.2); renderAll(); toast("+" + (ms < 60000 ? ms / 1000 + " s" : ms / 60000 + " min") + " · " + (t.run ? "ends " + hmA(new Date(t.endAt)) : clk(t.left) + " left")); }
+function addTime(t, ms) { if (t.run) t.endAt += ms; else t.left += ms; t.total += ms; save(); tick(1.2); renderAll(); toast("+" + (ms < 60000 ? tr("{n} s", { n: ms / 1000 }) : tr("{n} min", { n: ms / 60000 })) + " · " + (t.run ? tr("ends {time}", { time: hmA(new Date(t.endAt)) }) : tr("{time} left", { time: clk(t.left) }))); }
 function pauseT(t, pause) { if (pause && t.run) { t.left = tRem(t); t.run = false; } else if (!pause && !t.run) { t.endAt = now() + t.left; t.run = true; } }
-$("#tAll").onclick = () => { const list = S.timers.filter(t => !t.done), any = list.some(t => t.run); list.forEach(t => pauseT(t, any)); save(); tick(); renderAll(); toast(any ? "All timers paused" : "All timers running"); };
+$("#tAll").onclick = () => { const list = S.timers.filter(t => !t.done), any = list.some(t => t.run); list.forEach(t => pauseT(t, any)); save(); tick(); renderAll(); toast(any ? tr("All timers paused") : tr("All timers running")); };
 function toggleFocused() { const f = focused(); if (!f) return; pauseT(f, f.run); save(); tick(); renderAll(); }
 $("#newTimer").onclick = () => { S.focus = null; S.setMs = S.setMs || 300000; save(); tick(); renderTimer(); };
 const paintTSnd = () => $("#tSndN").textContent = soundName(S.timerSound, S.timerFile);
 $("#tSnd").onclick = () => {
-  openSheet(nav("When it ends", "", "Done") + `<div class="kind" style="text-align:center">Plays when any timer ends. Tap one to hear it, or pick your own song.</div>${soundGrid(TIMER_SOUNDS, S.timerSound, S.timerFile, "tSndG")}
-    <div class="lab">Keep ringing for</div><div class="chips" id="tFor">${[1, 2, 5, 10].map(m => `<button class="ch" data-m="${m}">${m}<span>min</span></button>`).join("")}</div>`, () => {
+  openSheet(nav(tr("When it ends"), "", tr("Done")) + `<div class="kind" style="text-align:center">${tr("Plays when any timer ends. Tap one to hear it, or pick your own song.")}</div>${soundGrid(TIMER_SOUNDS, S.timerSound, S.timerFile, "tSndG")}
+    <div class="lab">${tr("Keep ringing for")}</div><div class="chips" id="tFor">${[1, 2, 5, 10].map(m => `<button class="ch" data-m="${m}">${m}<span>${tr("min")}</span></button>`).join("")}</div>`, () => {
     bindSoundGrid("tSndG", "sndtimer", () => ({ sound: S.timerSound, fileName: S.timerFile }), v => { if (v.sound) S.timerSound = v.sound; if (v.fileName) { S.timerFile = v.fileName; S.timerFileAt = v.fileAt || Date.now(); } save(); paintTSnd(); });
     const pf = () => $$("#tFor .ch").forEach(x => x.classList.toggle("on", +x.dataset.m === S.timerRingFor));
     $$("#tFor .ch").forEach(x => x.onclick = () => { S.timerRingFor = +x.dataset.m; save(); tick(); pf(); }); pf();
@@ -1750,8 +1773,8 @@ function swLap() {
 }
 $("#swS").onclick = swToggle; $("#swL").onclick = swLap;
 $("#copyLaps").onclick = async () => {
-  let run = 0; const txt = W.laps.map((v, i) => { run += v; return `Lap ${i + 1}\t${swStr(v)}\t${swStr(run)}`; }).join("\n");
-  try { await navigator.clipboard.writeText("Lap\tTime\tTotal\n" + txt); toast("Laps copied"); } catch (e) { toast("Couldn't copy here"); }
+  let run = 0; const txt = W.laps.map((v, i) => { run += v; return `${tr("Lap {n}", { n: i + 1 })}\t${swStr(v)}\t${swStr(run)}`; }).join("\n");
+  try { await navigator.clipboard.writeText(tr("Lap") + "\t" + tr("Time") + "\t" + tr("Total") + "\n" + txt); toast(tr("Laps copied")); } catch (e) { toast(tr("Couldn't copy here")); }
 };
 (function buildSw() {
   const P = (cx, cy, a, r) => [cx + Math.sin(a * RAD) * r, cy - Math.cos(a * RAD) * r];
@@ -1777,18 +1800,18 @@ $("#swFace").onclick = toggleFace; $("#swDig").onclick = toggleFace;
 function renderWatchStatic() {
   const s = $("#swS"), l = $("#swL"), e = swEl();
   $("#swFace").classList.toggle("hide", !S.swAnalog); $("#swDig").classList.toggle("show", !S.swAnalog);
-  s.textContent = W.run ? "Stop" : (e ? "Resume" : "Start"); s.className = "cbtn " + (W.run ? "stop" : "acc");
-  l.textContent = W.run || !e ? "Lap" : "Reset"; l.disabled = !W.run && !e;
+  s.textContent = W.run ? tr("Stop") : (e ? tr("Resume") : tr("Start")); s.className = "cbtn " + (W.run ? "stop" : "acc");
+  l.textContent = W.run || !e ? tr("Lap") : tr("Reset"); l.disabled = !W.run && !e;
   const laps = W.laps; $("#lapCard").style.display = laps.length ? "" : "none";
   if (laps.length) {
     const mn = Math.min(...laps), mx = Math.max(...laps);
     const rows = laps.map((v, i) => ({ i, v })).reverse();
     $("#laps").innerHTML = rows.map(r => {
       const cls = laps.length >= 2 && r.v === mn ? "fast" : laps.length >= 2 && r.v === mx ? "slow" : "";
-      return `<div class="lap ${cls}"><div class="n">Lap ${r.i + 1}</div><div class="bar"><i style="width:${(r.v / mx * 100).toFixed(1)}%"></i></div><div class="v">${swStr(r.v)}</div></div>`;
+      return `<div class="lap ${cls}"><div class="n">${tr("Lap {n}", { n: r.i + 1 })}</div><div class="bar"><i style="width:${(r.v / mx * 100).toFixed(1)}%"></i></div><div class="v">${swStr(r.v)}</div></div>`;
     }).join("");
   }
-  $("#watchSub").textContent = W.run ? "Running · L for a lap, Space to stop" : e ? "Paused · tap the face to switch" : "Tap the face for " + (S.swAnalog ? "big digits" : "the analog dial");
+  $("#watchSub").textContent = W.run ? tr("Running · L for a lap, Space to stop") : e ? tr("Paused · tap the face to switch") : S.swAnalog ? tr("Tap the face for big digits") : tr("Tap the face for the analog dial");
 }
 function renderWatch() {
   const e = swEl(), f = swFmt(e), cur = e - lapSum(), sec = (e / 1000) % 60;
@@ -1800,12 +1823,12 @@ function renderWatch() {
     if (W.laps.length) { lh.style.display = ""; lh.setAttribute("transform", `rotate(${(cur / 1000 % 60) * 6} 150 150)`); } else lh.style.display = "none";
   } else {
     $("#swBig").innerHTML = f.main + `<small>${f.cs}</small>`;
-    $("#swLapD").innerHTML = W.laps.length ? `Lap ${W.laps.length + 1} · <b>${swStr(cur)}</b>` : "";
+    $("#swLapD").innerHTML = W.laps.length ? `${tr("Lap {n}", { n: W.laps.length + 1 })} · <b>${swStr(cur)}</b>` : "";
   }
   const pc = $("#swPace");
   if (W.laps.length && W.run) {
     const avg = lapSum() / W.laps.length, dv = (cur - avg) / 1000;
-    pc.style.visibility = ""; pc.className = "pill " + (dv <= 0 ? "" : "amber"); pc.textContent = (dv <= 0 ? "Ahead " : "Behind ") + Math.abs(dv).toFixed(1) + " s";
+    pc.style.visibility = ""; pc.className = "pill " + (dv <= 0 ? "" : "amber"); pc.textContent = tr(dv <= 0 ? "Ahead {s} s" : "Behind {s} s", { s: Math.abs(dv).toFixed(1) });
   } else pc.style.visibility = "hidden";
 }
 /* the tab dots show what's running */
@@ -1826,7 +1849,7 @@ function renderSkins() {
     $("#skins").innerHTML = sk; $("#skins").dataset.h = sk;
     $$("#skins .swc").forEach(el => el.onclick = () => { S.skin = el.dataset.k; save(); tick(); paintSky(); renderSkins(); drawRuler(); MAP.dots = null; });
   }
-  const ac2 = S.skin === "bed" ? `<div style="font-size:12.5px;color:var(--fg2)">Bedside keeps everything red, so it's easy on your eyes at night.</div>`
+  const ac2 = S.skin === "bed" ? `<div style="font-size:12.5px;color:var(--fg2)">${tr("Bedside keeps everything red, so it's easy on your eyes at night.")}</div>`
     : Object.entries(ACCENTS).map(([k, a]) => `<div class="swc round ${S.accent === k ? "on" : ""}" data-k="${k}"><i style="background:${SKINS[S.skin].cls === "light" ? a.d : a.c}"></i>${a.name}</div>`).join("");
   if ($("#accents").dataset.h !== ac2) {
     $("#accents").innerHTML = ac2; $("#accents").dataset.h = ac2;
@@ -1843,23 +1866,29 @@ const TOGS = [
   ["notify", "Notify when in another tab", "Shows a notification when something rings"],
   ["upcoming", "Upcoming alarm notice", "Two hours before an alarm, a notification lets you dismiss it early"],
   ["ticks", "Tactile sounds", "Soft ticks on the dials, wheels and buttons"]
-];
+].map(([k, t, s]) => [k, tr(t), tr(s)]);
+/* the language list, each in its own language */
+(function langPick() {
+  const sel = $("#langSel");
+  sel.innerHTML = Object.entries(LANGS).map(([code, [name]]) => `<option value="${code}"${code === LANG ? " selected" : ""}>${name}</option>`).join("");
+  sel.onchange = () => setLanguage(sel.value);
+})();
 function renderFontPick() {
   const pv = "10:42".split("").map(glyphSvg).join("");
   const h = `<div class="fp yb ${S.font === "crust" ? "on" : ""}" data-f="crust" style="grid-column:1 / -1"><div class="pv"><b>10:42</b></div>Crust Cream <span id="ybState"></span></div>
     <div class="fp ${S.font === "line" ? "on" : ""}" data-f="line"><div class="pv">${pv}</div>Hora Line</div>
-    <div class="fp ${S.font === "solid" ? "on" : ""}" data-f="solid"><div class="pv"><b>10:42</b></div>Rounded</div>`;
+    <div class="fp ${S.font === "solid" ? "on" : ""}" data-f="solid"><div class="pv"><b>10:42</b></div>${tr("Rounded")}</div>`;
   if ($("#fontPick").innerHTML !== h) {
     $("#fontPick").innerHTML = h;
     $$("#fontPick .fp").forEach(el => el.onclick = () => { S.font = el.dataset.f; S.fontChosen = true; save(); tick(1.2); renderFontPick(); renderFace(); });
   }
-  const st = $("#ybState"); if (st) st.textContent = YB === "ok" ? "" : YB === "missing" ? "· file not found" : "· loading…";
+  const st = $("#ybState"); if (st) st.textContent = YB === "ok" ? "" : YB === "missing" ? "· " + tr("file not found") : "· " + tr("loading…");
 }
 /* Crust Cream is the user's own font file (fonts/CrustCream.otf), or the copy installed on this device. */
 let YB = "wait";
 if (document.fonts && document.fonts.load) {
   document.fonts.load('400 40px "Crust Cream"', "0123456789:").then(f => { YB = f.length ? "ok" : "missing"; }).catch(() => YB = "missing")
-    .finally(() => { if (YB === "missing" && S.font === "crust") toast("Crust Cream font file not found, using Rounded"); renderFace(); if (VIEW === "vProfile") renderFontPick(); });
+    .finally(() => { if (YB === "missing" && S.font === "crust") toast(tr("Crust Cream font file not found, using Rounded")); renderFace(); if (VIEW === "vProfile") renderFontPick(); });
 }
 function renderToggles() {
   const h = TOGS.filter(([k]) => !(NATIVE && (k === "wake" || k === "notify")) && !(!NATIVE && k === "upcoming") && !(k === "fahr" && !S.weather)).map(([k, t, s]) => `<div class="tog"><div>${t}<small>${s}</small></div><div class="sw-t ${S[k] ? "on" : ""}" data-k="${k}"></div></div>`).join("");
@@ -1868,7 +1897,7 @@ function renderToggles() {
   $$("#toggles .sw-t").forEach(el => el.onclick = async () => {
     const k = el.dataset.k; S[k] = !S[k];
     if (k === "notify" && S.notify && "Notification" in window && Notification.permission !== "granted") {
-      try { const p = await Notification.requestPermission(); if (p !== "granted") { S.notify = false; toast("Notifications are blocked in the browser"); } } catch (e) { S.notify = false; }
+      try { const p = await Notification.requestPermission(); if (p !== "granted") { S.notify = false; toast(tr("Notifications are blocked in the browser")); } } catch (e) { S.notify = false; }
     }
     if (k === "wake") await wake();
     if (k === "correct") { recalcAlarms(); paintBadge(); }
@@ -1883,27 +1912,27 @@ async function wake() {
   try {
     if (S.wake && "wakeLock" in navigator && !document.hidden) { if (!WL) { WL = await navigator.wakeLock.request("screen"); WL.addEventListener("release", () => WL = null); } }
     else if (WL) { await WL.release(); WL = null; }
-    if (S.wake && !("wakeLock" in navigator)) toast("This browser can't keep the screen awake");
+    if (S.wake && !("wakeLock" in navigator)) toast(tr("This browser can't keep the screen awake"));
   } catch (e) {}
 }
 
 /* ---------- install & shortcuts ---------- */
 let INSTALL = null;
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); INSTALL = e; if (VIEW === "vProfile") renderDefault(); });
-addEventListener("appinstalled", () => { INSTALL = null; toast("Hora is on your home screen"); renderDefault(); });
+addEventListener("appinstalled", () => { INSTALL = null; toast(tr("Hora is on your home screen")); renderDefault(); });
 const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 function renderDefault() {
   if (NATIVE) return renderNativeCard();
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), inst = standalone();
-  const add = inst ? `<div class="instok">✓ Installed. Hora opens like an app.</div>`
-    : INSTALL ? `<button class="btn wide" id="instBtn" style="width:100%;margin-bottom:12px">Add Hora to home screen</button>`
-    : `<ol class="steps"><li>${ios ? "Tap <b>Share</b>, then <b>Add to Home Screen</b>." : "Open the browser menu <b>⋮</b> and tap <b>Install app</b> or <b>Add to home screen</b>."}</li></ol>`;
+  const add = inst ? `<div class="instok">${tr("✓ Installed. Hora opens like an app.")}</div>`
+    : INSTALL ? `<button class="btn wide" id="instBtn" style="width:100%;margin-bottom:12px">${tr("Add Hora to home screen")}</button>`
+    : `<ol class="steps"><li>${ios ? tr("Tap <b>Share</b>, then <b>Add to Home Screen</b>.") : tr("Open the browser menu <b>⋮</b> and tap <b>Install app</b> or <b>Add to home screen</b>.")}</li></ol>`;
   const h = add + `<ol class="steps" style="${inst || INSTALL ? "" : "counter-reset:s 1"}">
-      <li><b>Move it to your dock</b> where the stock Clock app was, so it's the one you tap.</li>
-      <li><b>Long-press the icon</b> for shortcuts: New alarm, Timer and Stopwatch.</li>
-      <li>Turn on <b>Keep screen awake</b> above, so alarms can ring overnight.</li>
+      <li>${tr("<b>Move it to your dock</b> where the stock Clock app was, so it's the one you tap.")}</li>
+      <li>${tr("<b>Long-press the icon</b> for shortcuts: New alarm, Timer and Stopwatch.")}</li>
+      <li>${tr("Turn on <b>Keep screen awake</b> above, so alarms can ring overnight.")}</li>
     </ol>
-    <div class="honest" style="margin:4px 0 0">For alarms that ring when the phone is locked, use the <b>Android app</b> from Hora's GitHub page. Browsers can't do that.</div>`;
+    <div class="honest" style="margin:4px 0 0">${tr("For alarms that ring when the phone is locked, use the <b>Android app</b> from Hora's GitHub page. Browsers can't do that.")}</div>`;
   if ($("#defBody").innerHTML !== h) {
     $("#defBody").innerHTML = h;
     if ($("#instBtn")) $("#instBtn").onclick = async () => { INSTALL.prompt(); const r = await INSTALL.userChoice.catch(() => ({})); if (r.outcome === "accepted") INSTALL = null; renderDefault(); };
@@ -1913,15 +1942,15 @@ function renderDefault() {
 function renderNativeCard() {
   let exact = true, batt = true, notif = true, full = true, pop = true, ver = "";
   try { exact = NAT.exactAllowed(); batt = NAT.batteryIgnored(); notif = NAT.notificationsAllowed(); full = NAT.fullScreenAllowed(); if (NAT.popupsAllowed) pop = NAT.popupsAllowed(); ver = NAT.version(); } catch (e) {}
-  const row = (ok, title, sub, act, label) => `<div class="tog"><div>${title}<small>${sub}</small></div>${ok ? `<span class="pill">On</span>` : `<button class="btn sm" data-act="${act}">${label}</button>`}</div>`;
-  const h = `<div class="instok">✓ Alarms and timers ring even when Hora is closed or the phone is locked.</div>
+  const row = (ok, title, sub, act, label) => `<div class="tog"><div>${tr(title)}<small>${tr(sub)}</small></div>${ok ? `<span class="pill">${tr("On")}</span>` : `<button class="btn sm" data-act="${act}">${tr(label)}</button>`}</div>`;
+  const h = `<div class="instok">${tr("✓ Alarms and timers ring even when Hora is closed or the phone is locked.")}</div>
     ${row(exact, "Exact alarms", "Lets alarms ring at the exact minute", "exact", "Allow")}
     ${row(batt, "No battery limits", "Stops the phone from putting Hora to sleep", "battery", "Allow")}
     ${row(notif, "Notifications", "Needed for alarms and bedtime reminders", "notif", "Allow")}
     ${row(full, "Full-screen alarms", "Lets an alarm open over the lock screen", "fullscreen", "Allow")}
     ${row(pop, "Alarm pop-ups", "Shows Stop and Snooze on top while you use the phone", "channel", "Turn on")}
-    <div class="honest" style="margin:10px 0 0"><b>On Oppo phones:</b> also open <b>App settings → Battery</b> and allow <b>background activity</b> and <b>auto launch</b>. Otherwise ColorOS may stop Hora overnight.<br><button class="btn ghost sm" data-act="app" style="margin-top:8px">Open app settings</button></div>
-    <div style="font-size:11px;color:var(--fg2);margin-top:10px">Hora for Android ${esc(ver)}</div>`;
+    <div class="honest" style="margin:10px 0 0">${tr("<b>On Oppo phones:</b> also open <b>App settings → Battery</b> and allow <b>background activity</b> and <b>auto launch</b>. Otherwise ColorOS may stop Hora overnight.")}<br><button class="btn ghost sm" data-act="app" style="margin-top:8px">${tr("Open app settings")}</button></div>
+    <div style="font-size:11px;color:var(--fg2);margin-top:10px">${tr("Hora for Android {v}", { v: esc(ver) })}</div>`;
   if ($("#defBody").innerHTML !== h) {
     $("#defBody").innerHTML = h;
     $$("#defBody [data-act]").forEach(b => b.onclick = () => { try { NAT.openSettings(b.dataset.act); } catch (e) {} });
@@ -1940,7 +1969,7 @@ function openFromShortcut() {
 /* Each ring has a key like "a3@1729411200000" (alarm 3 due at that moment). The Android app wakes Hora
    with the same key, so whichever notices first rings it and the other is ignored. */
 const FIRED = new Set();
-const alarmRing = (a, extra = {}) => ring(Object.assign({ kind: "alarm", title: a.label || "Alarm", sub: new Date(now()).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }), sound: a.sound, key: "snd" + a.id, gentle: a.gentle, vib: a.vib, a }, extra));
+const alarmRing = (a, extra = {}) => ring(Object.assign({ kind: "alarm", title: a.label || tr("Alarm"), sub: longDate(new Date(now())), sound: a.sound, key: "snd" + a.id, gentle: a.gentle, vib: a.vib, a }, extra));
 function fireAlarm(a, at) {
   const k = "a" + a.id + "@" + at; if (FIRED.has(k)) return; FIRED.add(k);
   if (!a.days.some(Boolean)) a.on = false;
@@ -1950,12 +1979,12 @@ function fireAlarm(a, at) {
 function fireSnooze(s) {
   const k = "s" + s.a.id + "@" + s.at; SNOOZES = SNOOZES.filter(x => x !== s); saveSnoozes();
   if (FIRED.has(k)) return; FIRED.add(k);
-  if (now() - s.at < 15 * 60000) alarmRing(s.a, { sub: s.auto ? "Snoozed automatically" : "After snoozing", gentle: false, auto: s.auto || 0, ek: k });
+  if (now() - s.at < 15 * 60000) alarmRing(s.a, { sub: s.auto ? tr("Snoozed automatically") : tr("After snoozing"), gentle: false, auto: s.auto || 0, ek: k });
 }
 function fireTimer(t) {
   if (t.done) return;
   t.done = true; t.run = false; t.left = 0; save();
-  ring({ kind: "timer", title: t.label + " is done", sub: "Set for " + dur(t.total) + " · finished " + hmA(new Date(t.endAt)), sound: S.timerSound, key: "sndtimer", gentle: false, vib: "pulse", tid: t.id, ek: "t" + t.id + "@" + t.endAt });
+  ring({ kind: "timer", title: tr("{name} is done", { name: t.label }), sub: tr("Set for {time} · finished {at}", { time: dur(t.total), at: hmA(new Date(t.endAt)) }), sound: S.timerSound, key: "sndtimer", gentle: false, vib: "pulse", tid: t.id, ek: "t" + t.id + "@" + t.endAt });
 }
 /* a quiet nudge: a soft bowl and the island, never a full-screen alarm */
 function fireBed(b) {
@@ -2011,7 +2040,7 @@ window.horaFire = key => {
   const m = /^([astb])(\d+)@(\d+)$/.exec(key || ""); if (!m) return;
   const kind = m[1], id = +m[2], at = +m[3];
   if (kind === "a") { const a = S.alarms.find(x => x.id === id); if (a && !FIRED.has(key)) fireAlarm(a, at); }
-  else if (kind === "s") { const s = SNOOZES.find(x => x.a.id === id && x.at === at); if (s) fireSnooze(s); else { const a = S.alarms.find(x => x.id === id); if (a && !FIRED.has(key) && now() - at < 15 * 60000) { FIRED.add(key); alarmRing(a, { sub: "After snoozing", gentle: false, ek: key }); } } }
+  else if (kind === "s") { const s = SNOOZES.find(x => x.a.id === id && x.at === at); if (s) fireSnooze(s); else { const a = S.alarms.find(x => x.id === id); if (a && !FIRED.has(key) && now() - at < 15 * 60000) { FIRED.add(key); alarmRing(a, { sub: tr("After snoozing"), gentle: false, ek: key }); } } }
   else if (kind === "b") { const b = bedtimes(at - 1000, 1)[0]; if (b) fireBed(b); }
   else { const t = S.timers.find(x => x.id === id); if (t) fireTimer(t); }
   renderAll();
@@ -2088,8 +2117,8 @@ function startDemo() {
   WX.at = Date.now();
   if (DEMO === "timer") {
     S.timers = [
-      { id: 11, label: "Pasta", total: 600000, orig: 600000, left: 372000, endAt: n + 372000, run: true, done: false },
-      { id: 12, label: "Laundry", total: 2700000, orig: 2700000, left: 1300000, endAt: n + 1300000, run: true, done: false }
+      { id: 11, label: tr("Pasta"), total: 600000, orig: 600000, left: 372000, endAt: n + 372000, run: true, done: false },
+      { id: 12, label: tr("Laundry"), total: 2700000, orig: 2700000, left: 1300000, endAt: n + 1300000, run: true, done: false }
     ];
     S.focus = 11;
   }
@@ -2102,6 +2131,6 @@ function runDemo() {
     // show the Gym alarm swiped open, with Skip next and Delete
     setTimeout(() => { const w = $$("#alarmList .aw")[1]; if (w) { const el = w.querySelector(".alarm"); el.style.setProperty("--dx", (w.querySelectorAll(".acts button").length * -84) + "px"); } }, 300);
   }
-  if (DEMO === "ring") setTimeout(() => alarmRing(S.alarms[0], { preview: true, sub: new Date(now()).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) }), 200);
+  if (DEMO === "ring") setTimeout(() => alarmRing(S.alarms[0], { preview: true, sub: longDate(new Date(now())) }), 200);
 }
 })();

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Alarmes e timers</string>
+    <string name="ch_ring_desc">Toca alarmes e timers, com Parar e Soneca. Deixe os pop-ups ativados para que apareçam enquanto você usa o celular</string>
+    <string name="ch_bed">Lembretes de dormir</string>
+    <string name="ch_bed_desc">Um lembrete suave antes da hora de dormir da sua rotina de sono</string>
+    <string name="bed_soon">Hora de dormir chegando</string>
+    <string name="ch_backup">Som de alarme reserva</string>
+    <string name="ch_backup_desc">Toca o som de alarme do próprio celular se o som do Hora não conseguiu começar</string>
+    <string name="backup_timer">Timer terminou · toque para parar</string>
+    <string name="backup_alarm">Alarme · toque para parar ou ativar a soneca</string>
+    <string name="ch_live">Timers e cronômetro em andamento</string>
+    <string name="ch_live_desc">Mostra um timer em andamento ou o cronômetro na barra de status</string>
+    <string name="ch_up">Próximos alarmes</string>
+    <string name="ch_up_desc">O próximo alarme, algumas horas antes, para você poder dispensá-lo com antecedência</string>
+    <string name="up_title">Próximo alarme</string>
+    <string name="up_snoozed">Alarme em soneca</string>
+    <string name="rings_again">toca de novo às %1$s</string>
+    <string name="dismiss">Dispensar</string>
+    <string name="dismiss_now">Dispensar agora</string>
+    <string name="times_up">O tempo acabou</string>
+    <string name="alarm">Alarme</string>
+    <string name="snoozed_label">%1$s (soneca)</string>
+    <string name="snooze_min">Soneca · %1$d min</string>
+    <string name="stop">Parar</string>
+    <string name="bed_title">Hora de desacelerar</string>
+    <string name="ends">Termina às %1$s</string>
+    <string name="plus1">+1 min</string>
+    <string name="plus30">+30 s</string>
+    <string name="timer_done">%1$s terminou</string>
+</resources>

@@ -25,6 +25,7 @@ No app store, no account, no ads. Get the **Android app**, or use Hora in any ph
 - **⏳ Timers:** drag the ring like a kitchen timer, tap the time for exact hours, minutes and seconds, or tap a preset. Pick a built-in sound or your own song for when they end. Name timers, edit the presets, run several at once and pause them all together. Add 30 seconds or a minute to a running timer with one tap. In the Android app a running timer counts down in your phone's status bar and on the lock screen, with its progress bar and +30 s and +1 min buttons, even with Hora closed.
 - **⏱ Stopwatch:** an analog dial with a minutes hand, or big digits. Laps show as bars, with your fastest and slowest marked and whether you're ahead of or behind your average.
 - **🎨 Profile:** five backgrounds, six accent colours, three clock styles, 24-hour time and more.
+- **🌐 33 languages:** Hora follows your phone's language, or pick one under **Profile → Language**. In the Android app, notifications and their buttons follow it too. Arabic and Persian run right to left; times keep the same digits as the clock faces. The translations are machine-made, so corrections are welcome.
 - **🗣 Google Assistant (Android app):** "Hey Google, set an alarm for 7" or "set a timer for 10 minutes" can go to Hora.
 
 ## Screens

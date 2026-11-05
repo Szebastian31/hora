@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scratch/hora-strings.sh from the web app translations; edit those, not this -->
+<resources>
+    <string name="ch_ring">Báo thức và hẹn giờ</string>
+    <string name="ch_ring_desc">Đổ chuông báo thức và hẹn giờ, có Dừng và Báo lại. Hãy bật cửa sổ bật lên để chúng hiện khi bạn đang dùng điện thoại</string>
+    <string name="ch_bed">Nhắc giờ ngủ</string>
+    <string name="ch_bed_desc">Một lời nhắc nhẹ trước giờ đi ngủ trong lịch ngủ của bạn</string>
+    <string name="bed_soon">Sắp đến giờ ngủ</string>
+    <string name="ch_backup">Âm báo thức dự phòng</string>
+    <string name="ch_backup_desc">Phát âm báo thức của chính điện thoại nếu âm thanh của Hora không phát được</string>
+    <string name="backup_timer">Hẹn giờ đã xong · chạm để dừng</string>
+    <string name="backup_alarm">Báo thức · chạm để dừng hoặc báo lại</string>
+    <string name="ch_live">Hẹn giờ và bấm giờ đang chạy</string>
+    <string name="ch_live_desc">Hiện hẹn giờ đang chạy hoặc đồng hồ bấm giờ trên thanh trạng thái</string>
+    <string name="ch_up">Báo thức sắp tới</string>
+    <string name="ch_up_desc">Báo thức tiếp theo, trước vài giờ, để bạn có thể tắt sớm</string>
+    <string name="up_title">Báo thức sắp tới</string>
+    <string name="up_snoozed">Báo thức đã báo lại</string>
+    <string name="rings_again">đổ chuông lại lúc %1$s</string>
+    <string name="dismiss">Bỏ qua</string>
+    <string name="dismiss_now">Tắt ngay</string>
+    <string name="times_up">Hết giờ</string>
+    <string name="alarm">Báo thức</string>
+    <string name="snoozed_label">%1$s (đã báo lại)</string>
+    <string name="snooze_min">Báo lại · %1$d phút</string>
+    <string name="stop">Dừng</string>
+    <string name="bed_title">Đến lúc thư giãn</string>
+    <string name="ends">Kết thúc %1$s</string>
+    <string name="plus1">+1 phút</string>
+    <string name="plus30">+30 giây</string>
+    <string name="timer_done">%1$s đã xong</string>
+</resources>
